@@ -7,6 +7,7 @@ export default defineConfig({
     'process.env.NODE_ENV': '"production"',
   },
   build: {
+    outDir: 'dist',
     lib: {
       entry: 'src/main.jsx',
       name: 'PolotnoApp',
@@ -14,7 +15,7 @@ export default defineConfig({
       formats: ['iife'],
     },
     sourcemap: true,
-    minify: false, // 👈 Add this line here
+    minify: false,
     rollupOptions: {
       output: {
         manualChunks: undefined,
