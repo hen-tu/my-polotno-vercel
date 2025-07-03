@@ -7,13 +7,6 @@ export default defineConfig({
     'process.env.NODE_ENV': '"production"',
   },
   build: {
-    outDir: 'dist',
-    lib: {
-      entry: 'src/main.jsx',
-      name: 'PolotnoApp',
-      fileName: 'bundle',
-      formats: ['iife'],
-    },
     sourcemap: true,
     minify: false,
     rollupOptions: {
