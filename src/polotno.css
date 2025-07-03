@@ -1,0 +1,90 @@
+html, body, #root, #polotno-app-container, .polotno-container {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.toolbar-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 4px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  gap: 8px;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+}
+
+.side-panel {
+  background: #f9f9f9;
+  border-right: 1px solid #ccc;
+}
+
+.workspace-container {
+  flex-grow: 1;
+  background: #fff;
+}
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #eee;
+}
+
+
+
+/* === FIX TOOLBAR LAYOUT 
+.toolbar-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  overflow-x: auto;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+}
+
+🔧 Force Polotno toolbar layout 
+div.polotno-toolbar.bp5-navbar {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 6px !important;
+  background-color: #f9f9f9 !important;
+  border-bottom: 1px solid #ccc !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+div.polotno-toolbar-section {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+  === */
+
+
