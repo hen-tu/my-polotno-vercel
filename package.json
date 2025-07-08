@@ -2,7 +2,7 @@
   "name": "my-polotno-app",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+
   "scripts": {
     "build:photos-json": "node --experimental-specifier-resolution=node scripts/make-photos-json.js",
     "dev": "vite",
