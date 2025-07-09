@@ -1,6 +1,19 @@
+// src/components/TopNav.jsx
+
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Tooltip, Popover, Menu, MenuItem, InputGroup } from '@blueprintjs/core';
+import {
+  Button,
+  Tooltip,
+  Popover,
+  Menu,
+  MenuItem,
+  InputGroup,
+} from '@blueprintjs/core';
+
+import '@blueprintjs/core/lib/css/blueprint.css'; // 🔹 Required for Blueprint UI
+
+console.log('✅ TopNav is rendering');
 
 const inchToPx = (inches) => inches * 96;
 
@@ -42,7 +55,9 @@ const TopNav = observer(({ store }) => {
         />
       ))}
       <div style={{ paddingTop: 8 }}>
-        <div style={{ marginBottom: 4, fontWeight: 600 }}>Custom size (inches)</div>
+        <div style={{ marginBottom: 4, fontWeight: 600 }}>
+          Custom size (inches)
+        </div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
           <InputGroup
             placeholder="Width"
@@ -84,7 +99,10 @@ const TopNav = observer(({ store }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <img src="/logo.png" alt="Logo" style={{ height: '30px' }} />
 
-        <Tooltip content={store.history.canUndo ? 'Undo' : 'Nothing to undo'} hoverOpenDelay={300}>
+        <Tooltip
+          content={store.history.canUndo ? 'Undo' : 'Nothing to undo'}
+          hoverOpenDelay={300}
+        >
           <Button
             icon="undo"
             onClick={handleUndo}
@@ -95,11 +113,16 @@ const TopNav = observer(({ store }) => {
               boxShadow: 'none',
               pointerEvents: store.history.canUndo ? 'auto' : 'none',
             }}
-            className={store.history.canUndo ? 'undo-button active' : 'undo-button disabled'}
+            className={
+              store.history.canUndo ? 'undo-button active' : 'undo-button disabled'
+            }
           />
         </Tooltip>
 
-        <Tooltip content={store.history.canRedo ? 'Redo' : 'Nothing to redo'} hoverOpenDelay={300}>
+        <Tooltip
+          content={store.history.canRedo ? 'Redo' : 'Nothing to redo'}
+          hoverOpenDelay={300}
+        >
           <Button
             icon="redo"
             onClick={handleRedo}
@@ -110,18 +133,26 @@ const TopNav = observer(({ store }) => {
               boxShadow: 'none',
               pointerEvents: store.history.canRedo ? 'auto' : 'none',
             }}
-            className={store.history.canRedo ? 'redo-button active' : 'redo-button disabled'}
+            className={
+              store.history.canRedo ? 'redo-button active' : 'redo-button disabled'
+            }
           />
         </Tooltip>
 
         <Popover content={resizeMenu} position="bottom">
-          <Button icon="resize-video" style={{ background: 'transparent', color: 'white' }}>
+          <Button
+            icon="resize-video"
+            style={{
+              background: 'transparent',
+              color: 'white',
+            }}
+          >
             Resize
           </Button>
         </Popover>
       </div>
 
-      {/* Right spacer only, since download button is removed */}
+      {/* Right spacer */}
       <div style={{ flex: 1 }} />
     </div>
   );
