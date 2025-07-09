@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from 'react';
 import { createStore } from 'polotno/model/store';
 import {
@@ -10,30 +9,32 @@ import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { Workspace } from 'polotno/canvas/workspace';
 
-// 🧠 Create Polotno store once outside component
+import MyTextPanel from './components/MyTextPanel';
+import TemplatesPanel from './components/TemplatesPanel';
+import PhotosPanelWrapper from './components/PhotosPanelWrapper';
+
 const store = createStore({ showCredit: false });
-store.addPage(); // ensures activePage exists
+store.addPage();
 
-// 🧪 Simple debug panel for Resize tab
-const DebugResizePanel = () => (
-  <div style={{ padding: 16, color: 'green' }}>
-    ✅ Resize panel loaded (debug mode)
-  </div>
-);
-
-// ✅ Define sidebar sections using known-safe templates/photos and debug resize
+// ⬇️ Custom sidebar sections
 const MY_SECTIONS = [
   {
-    name: 'resize',
-    title: 'Resize',
-    Panel: DebugResizePanel,
-  },
-  {
     ...DEFAULT_SECTIONS.find((s) => s.name === 'templates'),
+    title: 'My Templates',
+    Panel: TemplatesPanel,
   },
   {
     ...DEFAULT_SECTIONS.find((s) => s.name === 'photos'),
+    Panel: PhotosPanelWrapper,
   },
+  {
+    ...DEFAULT_SECTIONS.find((s) => s.name === 'text'),
+    Panel: MyTextPanel,
+  },
+  // include all remaining default sections except the ones already customized:
+  ...DEFAULT_SECTIONS.filter(
+    (s) => !['text', 'templates', 'photos'].includes(s.name)
+  ),
 ];
 
 export default function App() {
