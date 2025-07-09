@@ -1,15 +1,10 @@
-return (
-  <div
-    style={{
-      width: '100%',
-      height: '50px',
-      background: 'purple',
-      color: 'white',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <p>✅ TopNav is loaded</p>
-  </div>
-);
+import React from 'react';
+
+export default function TopNav() {
+  console.log('🔥 TopNav basic version loaded');
+  return (
+    <div style={{ height: '50px', background: 'black', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      TopNav test
+    </div>
+  );
+}

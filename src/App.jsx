@@ -40,6 +40,8 @@ const MY_SECTIONS = [
 ];
 
 export default function App() {
+  console.log('🔥 Rendering App');
+  console.log('TopNav is:', TopNav); // this should show [Function: TopNav] or similar
   return (
     <PolotnoContainer>
       <TopNav store={store} />
