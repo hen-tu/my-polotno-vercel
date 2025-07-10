@@ -43,6 +43,7 @@ const toolbarFix = new MutationObserver(() => {
       alignItems: 'center',
       gap: '8px',
       overflowX: 'auto',
+      overflowY: 'hidden',
       padding: '6px',
       backgroundColor: '#f9f9f9',
       borderBottom: '1px solid #ccc',
