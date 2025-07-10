@@ -1,6 +1,6 @@
 import { I as IconSvgPaths16 } from "./index-BV5xmvTQ.js";
 import { I as IconSvgPaths20 } from "./index-CeUBAFWF.js";
-import { p as pascalCase, I as IconSize } from "./index-CPAnk4De.js";
+import { p as pascalCase, I as IconSize } from "./index-BHeWp3Nt.js";
 function getIconPaths(name, size) {
   var key = pascalCase(name);
   return size === IconSize.STANDARD ? IconSvgPaths16[key] : IconSvgPaths20[key];
@@ -14,4 +14,4 @@ export {
   getIconPaths,
   iconNameToPathsRecordKey
 };
-//# sourceMappingURL=allPaths-BoOu5l4l.js.map
+//# sourceMappingURL=allPaths-BSmH8BSE.js.map

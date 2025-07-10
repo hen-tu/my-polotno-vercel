@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CN1ZN8Cl.js"
+            "./allPathsLoader-Bwqf_Aut.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-lqrnDmQ2.js"
+            "./splitPathsBySizeLoader-Do_LwZny.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-MuBrm3HE.js"
+            "./allPathsLoader-BP-G8Yu_.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-Dcct7jG1.js"
+            "./splitPathsBySizeLoader-B2LzKmvW.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106775,18 +106775,26 @@ const MY_SECTIONS = [
   )
 ];
 function App() {
-  console.log("🔥 Rendering App");
-  console.log("TopNav is:", TopNav);
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(polotnoAppExports.PolotnoContainer, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(TopNav, { store }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", height: "calc(100vh - 50px)" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(polotnoAppExports.SidePanelWrap, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(sidePanelExports.SidePanel, { store, sections: MY_SECTIONS }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(polotnoAppExports.WorkspaceWrap, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(toolbarExports.Toolbar, { store }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(workspaceExports.Workspace, { store })
-      ] })
-    ] })
-  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    polotnoAppExports.PolotnoContainer,
+    {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh"
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TopNav, { store }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flex: 1 }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(polotnoAppExports.SidePanelWrap, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(sidePanelExports.SidePanel, { store, sections: MY_SECTIONS }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(polotnoAppExports.WorkspaceWrap, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(toolbarExports.Toolbar, { store }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(workspaceExports.Workspace, { store })
+          ] })
+        ] })
+      ]
+    }
+  );
 }
 window.onerror = function(message, source2, lineno, colno, error2) {
   console.error("🌍 Global error caught:", { message, source: source2, lineno, colno, error: error2 });
@@ -106842,4 +106850,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-CPAnk4De.js.map
+//# sourceMappingURL=index-BHeWp3Nt.js.map
