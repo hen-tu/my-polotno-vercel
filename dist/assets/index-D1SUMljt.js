@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Bjn-vBf1.js"
+            "./allPathsLoader-VUnL35Qq.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BBz48u4e.js"
+            "./splitPathsBySizeLoader-CPV0nHSq.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-mq6xmn-w.js"
+            "./allPathsLoader-C-ugn6nE.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BGBM9UHq.js"
+            "./splitPathsBySizeLoader-D1y5NtMM.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106280,6 +106280,7 @@ var sidePanelExports = requireSidePanel();
 var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
 var downloadExports = requireDownload();
+const logo = "/assets/logo-CfXzjx6m.png";
 console.log("✅ TopNav loaded");
 const TopNav = observer(({ store: store2 }) => {
   const handleDownloadImage = () => {
@@ -106913,4 +106914,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-CsuwFDh0.js.map
+//# sourceMappingURL=index-D1SUMljt.js.map

@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
-<img src="/logo.png" alt="Logo" style={{ height: '30px' }} />
+import logo from '../assets/logo.png'; // if TopNav.jsx is in /src/components/
 
 console.log('✅ TopNav loaded');
 
