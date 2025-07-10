@@ -42,22 +42,26 @@ const MY_SECTIONS = [
 export default function App() {
   return (
     <PolotnoContainer
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-      }}
-    >
-      <TopNav store={store} />
-      <div style={{ display: 'flex', flex: 1 }}>
-        <SidePanelWrap>
-          <SidePanel store={store} sections={MY_SECTIONS} />
-        </SidePanelWrap>
-        <WorkspaceWrap>
-          <Toolbar store={store} />
-          <Workspace store={store} />
-        </WorkspaceWrap>
-      </div>
-    </PolotnoContainer>
+  style={{
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
+    overflow: 'hidden', // ⬅️ Prevent weird vertical overflow
+  }}
+>
+  <div style={{ height: '50px', flexShrink: 0 }}>
+    <TopNav store={store} />
+  </div>
+
+  <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+    <SidePanelWrap>
+      <SidePanel store={store} sections={MY_SECTIONS} />
+    </SidePanelWrap>
+    <WorkspaceWrap>
+      <Toolbar store={store} />
+      <Workspace store={store} />
+    </WorkspaceWrap>
+  </div>
+</PolotnoContainer>
   );
 }
