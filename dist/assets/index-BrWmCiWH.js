@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Cg-eQbc2.js"
+            "./allPathsLoader-Ks6vF6oG.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CJ4dzBPS.js"
+            "./splitPathsBySizeLoader-BKeNOaKz.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-D6XWxzzE.js"
+            "./allPathsLoader-BMKCPWP0.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DMhW7cxm.js"
+            "./splitPathsBySizeLoader-BcVvWq5X.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106781,11 +106781,13 @@ function App() {
       style: {
         display: "flex",
         flexDirection: "column",
-        height: "100vh"
+        height: "100vh",
+        overflow: "hidden"
+        // ⬅️ Prevent weird vertical overflow
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TopNav, { store }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flex: 1 }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { height: "50px", flexShrink: 0 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TopNav, { store }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flex: 1, minHeight: 0 }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(polotnoAppExports.SidePanelWrap, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(sidePanelExports.SidePanel, { store, sections: MY_SECTIONS }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(polotnoAppExports.WorkspaceWrap, { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(toolbarExports.Toolbar, { store }),
@@ -106850,4 +106852,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DRLXDdJk.js.map
+//# sourceMappingURL=index-BrWmCiWH.js.map
