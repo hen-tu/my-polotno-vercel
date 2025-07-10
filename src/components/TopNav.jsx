@@ -2,6 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
+<img src="/logo.png" alt="Logo" style={{ height: '30px' }} />
 
 console.log('✅ TopNav loaded');
 
@@ -41,9 +42,9 @@ const TopNav = observer(({ store }) => {
     >
       {/* Left: Logo */}
 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-  <a href="https://tuteachercenter.org">
-    <img src="/website-logo.png" alt="Logo"  />
-  </a>
+<a href="https://tuteachercenter.org">
+  <img src={logo} alt="Logo" style={{ height: '30px' }} />
+</a>
 </div>
 
       {/* Spacer */}

@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Dv5C5pia.js"
+            "./allPathsLoader-Bjn-vBf1.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-B9WC0Qgc.js"
+            "./splitPathsBySizeLoader-BBz48u4e.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-C7_sUp7Z.js"
+            "./allPathsLoader-mq6xmn-w.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CWNrA6Ny.js"
+            "./splitPathsBySizeLoader-BGBM9UHq.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106311,7 +106311,7 @@ const TopNav = observer(({ store: store2 }) => {
         color: "white"
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", alignItems: "center", gap: "8px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/website-logo.png", alt: "Logo" }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", alignItems: "center", gap: "8px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: logo, alt: "Logo", style: { height: "30px" } }) }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "button",
@@ -106913,4 +106913,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-Df7QlA70.js.map
+//# sourceMappingURL=index-CsuwFDh0.js.map
