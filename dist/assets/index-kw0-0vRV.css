@@ -85,7 +85,12 @@
 .undo-button.disabled .bp5-icon,
 .redo-button.disabled .bp5-icon {
   color: #80b7e0 !important;
-}html, body, #root, #polotno-app-container, .polotno-container {
+}
+
+
+
+/**global.css styles**/
+html, body, #root, #polotno-app-container, .polotno-container {
   height: 100%;
   width: 100%;
   margin: 0;

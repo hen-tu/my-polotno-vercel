@@ -13,7 +13,6 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './index.css';
-import './polotno.css'; // ✅ Use local copy of Polotno CSS
 import App from './App.jsx';
 
 // ✅ Mount app
