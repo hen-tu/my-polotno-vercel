@@ -180,3 +180,23 @@ div.polotno-toolbar-section {
   === */
 
 
+div.polotno-toolbar.bp5-navbar {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 6px !important;
+  background-color: #f9f9f9 !important;
+  border-bottom: 1px solid #ccc !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+div.polotno-toolbar-section {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
