@@ -41,7 +41,7 @@ const TopNav = observer(({ store }) => {
     >
       {/* Left: Logo */}
 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-  <a href="https://tuteachercenter.org" target="_blank" rel="noopener noreferrer">
+  <a href="https://tuteachercenter.org">
     <img src="/logo.png" alt="Logo" style={{ height: '30px' }} />
   </a>
 </div>
