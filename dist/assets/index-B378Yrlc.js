@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DkCieemc.js"
+            "./allPathsLoader-CIawmRMy.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BXkSWqgv.js"
+            "./splitPathsBySizeLoader-14jd9jBx.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Dsuswcm4.js"
+            "./allPathsLoader-B1fKPeqM.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-9e22xQh9.js"
+            "./splitPathsBySizeLoader-BgPvBPGu.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106279,10 +106279,70 @@ function requireSidePanel() {
 var sidePanelExports = requireSidePanel();
 var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
-function TopNav() {
-  console.log("🔥 TopNav basic version loaded");
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { height: "50px", background: "black", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }, children: "TopNav test" });
-}
+var downloadExports = requireDownload();
+console.log("✅ TopNav loaded");
+const TopNav = observer(({ store: store2 }) => {
+  const handleDownloadImage = () => {
+    const dataURL = store2.toDataURL();
+    downloadExports.downloadFile(dataURL, "design.png");
+  };
+  const handleDownloadPDF = async () => {
+    const pdfData = await store2.saveAsPDF();
+    const blob = new Blob([pdfData], { type: "application/pdf" });
+    const url2 = URL.createObjectURL(blob);
+    downloadExports.downloadFile(url2, "design.pdf");
+    URL.revokeObjectURL(url2);
+  };
+  const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
+  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      style: {
+        width: "100%",
+        height: "50px",
+        background: "linear-gradient(to right, #488fcc, #ce3c4f)",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 16px",
+        boxSizing: "border-box",
+        color: "white"
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", alignItems: "center", gap: "8px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", target: "_blank", rel: "noopener noreferrer", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.png", alt: "Logo", style: { height: "30px" } }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            style: {
+              borderRadius: "28px",
+              textTransform: "uppercase",
+              fontWeight: "bold",
+              color: "white",
+              backgroundColor: "#ce3c4f",
+              border: "2px solid white",
+              padding: "6px 16px",
+              cursor: "pointer",
+              fontSize: "14px",
+              transition: "all 0.2s ease-in-out"
+            },
+            onMouseOver: (e) => {
+              e.target.style.backgroundColor = "white";
+              e.target.style.color = "#ce3c4f";
+            },
+            onMouseOut: (e) => {
+              e.target.style.backgroundColor = "#ce3c4f";
+              e.target.style.color = "white";
+            },
+            children: "Download"
+          }
+        ) })
+      ]
+    }
+  );
+});
 const templates = [
   {
     label: "Inspirational Quote",
@@ -106853,4 +106913,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-CowcNrG-.js.map
+//# sourceMappingURL=index-B378Yrlc.js.map
