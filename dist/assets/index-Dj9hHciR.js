@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Ks6vF6oG.js"
+            "./allPathsLoader-BgM-yNm2.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BKeNOaKz.js"
+            "./splitPathsBySizeLoader-UlSueqGg.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BMKCPWP0.js"
+            "./allPathsLoader-4HCJQz7A.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BcVvWq5X.js"
+            "./splitPathsBySizeLoader-D7r4kIRa.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106823,6 +106823,7 @@ const toolbarFix = new MutationObserver(() => {
       alignItems: "center",
       gap: "8px",
       overflowX: "auto",
+      overflowY: "hidden",
       padding: "6px",
       backgroundColor: "#f9f9f9",
       borderBottom: "1px solid #ccc"
@@ -106852,4 +106853,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BrWmCiWH.js.map
+//# sourceMappingURL=index-Dj9hHciR.js.map
