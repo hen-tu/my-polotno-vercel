@@ -40,12 +40,16 @@ const MY_SECTIONS = [
 ];
 
 export default function App() {
-  console.log('🔥 Rendering App');
-  console.log('TopNav is:', TopNav); // this should show [Function: TopNav] or similar
   return (
-    <PolotnoContainer>
+    <PolotnoContainer
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+      }}
+    >
       <TopNav store={store} />
-      <div style={{ display: 'flex', height: 'calc(100vh - 50px)' }}>
+      <div style={{ display: 'flex', flex: 1 }}>
         <SidePanelWrap>
           <SidePanel store={store} sections={MY_SECTIONS} />
         </SidePanelWrap>
