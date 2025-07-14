@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-ClFFA8dj.js"
+            "./allPathsLoader-CPdwX2z6.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-q0xAk31s.js"
+            "./splitPathsBySizeLoader-CjJg64DI.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BIpffOVE.js"
+            "./allPathsLoader-xoc_2mMp.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-C3wW3dFt.js"
+            "./splitPathsBySizeLoader-BIZ-l_eg.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106280,8 +106280,17 @@ var sidePanelExports = requireSidePanel();
 var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
 var downloadExports = requireDownload();
-console.log("✅ TopNav loaded");
+const inchToPx = (inches) => inches * 96;
+const PRESETS = [
+  { label: '8.5" × 11" (Letter)', width: 8.5, height: 11 },
+  { label: '11" × 17" (Double)', width: 11, height: 17 },
+  { label: '13" × 19" (Small Poster)', width: 13, height: 19 },
+  { label: '18" × 24" (Large Poster)', width: 18, height: 24 },
+  { label: '24" × 28" (Oaktag)', width: 24, height: 28 }
+];
 const TopNav = observer(({ store: store2 }) => {
+  const [widthInches, setWidthInches] = reactExports.useState("");
+  const [heightInches, setHeightInches] = reactExports.useState("");
   const handleDownloadImage = () => {
     const dataURL = store2.toDataURL();
     downloadExports.downloadFile(dataURL, "design.png");
@@ -106293,6 +106302,51 @@ const TopNav = observer(({ store: store2 }) => {
     downloadExports.downloadFile(url2, "design.pdf");
     URL.revokeObjectURL(url2);
   };
+  const applyResize = (w, h) => {
+    store2.width = inchToPx(w);
+    store2.height = inchToPx(h);
+  };
+  const handleCustomResize = () => {
+    const w = parseFloat(widthInches);
+    const h = parseFloat(heightInches);
+    if (!isNaN(w) && !isNaN(h)) {
+      applyResize(w, h);
+    }
+  };
+  const resizeMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { style: { padding: "12px", width: "240px" }, children: [
+    PRESETS.map((preset) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+      MenuItem,
+      {
+        text: preset.label,
+        onClick: () => applyResize(preset.width, preset.height)
+      },
+      preset.label
+    )),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { paddingTop: 8 }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 4, fontWeight: 600 }, children: "Custom size (inches)" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 6, marginBottom: 6 }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          InputGroup,
+          {
+            placeholder: "Width",
+            value: widthInches,
+            onChange: (e) => setWidthInches(e.target.value),
+            style: { width: "80px" }
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          InputGroup,
+          {
+            placeholder: "Height",
+            value: heightInches,
+            onChange: (e) => setHeightInches(e.target.value),
+            style: { width: "80px" }
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { small: true, fill: true, onClick: handleCustomResize, children: "Resize" })
+    ] })
+  ] });
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
@@ -106311,7 +106365,10 @@ const TopNav = observer(({ store: store2 }) => {
         color: "white"
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", alignItems: "center", gap: "8px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: "12px" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: resizeMenu, position: "bottom-left", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { icon: "resize-video", style: { background: "transparent", color: "white" }, children: "Resize" }) })
+        ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "button",
@@ -106913,4 +106970,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-B-a9vkqc.js.map
+//# sourceMappingURL=index-Ce9yEyfT.js.map
