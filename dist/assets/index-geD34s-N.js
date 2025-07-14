@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CVNI5Ui8.js"
+            "./allPathsLoader-C1eOOdkm.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-B4zeu546.js"
+            "./splitPathsBySizeLoader-BXKK3Bt5.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-D5qS40H9.js"
+            "./allPathsLoader-Ca_6uNOb.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-mmgpCMXd.js"
+            "./splitPathsBySizeLoader-BteVdK_n.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106281,6 +106281,13 @@ var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
 var downloadExports = requireDownload();
 console.log("✅ TopNav loaded");
+const applyResize = action((store2, w, h) => {
+  const page2 = store2.activePage;
+  if (page2) {
+    page2.width = w;
+    page2.height = h;
+  }
+});
 const TopNav = observer(({ store: store2 }) => {
   const [dialogOpen, setDialogOpen] = reactExports.useState(false);
   const [customWidth, setCustomWidth] = reactExports.useState("");
@@ -106301,13 +106308,7 @@ const TopNav = observer(({ store: store2 }) => {
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
   ] });
   const handleResize = (w, h) => {
-    action(() => {
-      const page2 = store2.activePage;
-      if (page2) {
-        page2.width = w;
-        page2.height = h;
-      }
-    })();
+    applyResize(store2, w, h);
     setDialogOpen(false);
   };
   const handleCustomResize = () => {
@@ -106993,4 +106994,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-CK-OSfA5.js.map
+//# sourceMappingURL=index-geD34s-N.js.map

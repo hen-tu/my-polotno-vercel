@@ -3,9 +3,17 @@ import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem, Dialog, InputGroup } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
-import { runInAction } from 'mobx';
 
 console.log('✅ TopNav loaded');
+
+// ✅ Define the MobX action OUTSIDE the component
+const applyResize = action((store, w, h) => {
+  const page = store.activePage;
+  if (page) {
+    page.width = w;
+    page.height = h;
+  }
+});
 
 const TopNav = observer(({ store }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -32,19 +40,10 @@ const TopNav = observer(({ store }) => {
     </Menu>
   );
 
-const handleResize = (w, h) => {
-  // Wrap only the MobX part in action
-  action(() => {
-    const page = store.activePage;
-    if (page) {
-      page.width = w;
-      page.height = h;
-    }
-  })();
-
-  // Keep React state update outside the action
-  setDialogOpen(false);
-};
+  const handleResize = (w, h) => {
+    applyResize(store, w, h); // ✅ Calls the MobX action
+    setDialogOpen(false);     // ✅ Separate from MobX action
+  };
 
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
@@ -95,7 +94,6 @@ const handleResize = (w, h) => {
           RESIZE
         </Button>
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
 
         {/* Download Button */}
