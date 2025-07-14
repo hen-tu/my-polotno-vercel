@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-C1eOOdkm.js"
+            "./allPathsLoader-BPH2TB1q.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BXKK3Bt5.js"
+            "./splitPathsBySizeLoader-5eKc-x1Z.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Ca_6uNOb.js"
+            "./allPathsLoader-C5mJlN8W.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BteVdK_n.js"
+            "./splitPathsBySizeLoader-Bl-1JirR.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106284,8 +106284,7 @@ console.log("✅ TopNav loaded");
 const applyResize = action((store2, w, h) => {
   const page2 = store2.activePage;
   if (page2) {
-    page2.width = w;
-    page2.height = h;
+    page2.set({ width: w, height: h });
   }
 });
 const TopNav = observer(({ store: store2 }) => {
@@ -106994,4 +106993,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-geD34s-N.js.map
+//# sourceMappingURL=index-B5MNjMFG.js.map

@@ -10,8 +10,7 @@ console.log('✅ TopNav loaded');
 const applyResize = action((store, w, h) => {
   const page = store.activePage;
   if (page) {
-    page.width = w;
-    page.height = h;
+    page.set({ width: w, height: h }); // ✅ SAFE mutation
   }
 });
 
