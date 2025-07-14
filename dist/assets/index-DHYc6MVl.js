@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CPdwX2z6.js"
+            "./allPathsLoader-BDt-whqK.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CjJg64DI.js"
+            "./splitPathsBySizeLoader-JtZFecA1.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-xoc_2mMp.js"
+            "./allPathsLoader-DJ1EIb4G.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BIZ-l_eg.js"
+            "./splitPathsBySizeLoader-XiuWKEE7.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106279,58 +106279,44 @@ function requireSidePanel() {
 var sidePanelExports = requireSidePanel();
 var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
-var downloadExports = requireDownload();
 const inchToPx = (inches) => inches * 96;
 const PRESETS = [
   { label: '8.5" × 11" (Letter)', width: 8.5, height: 11 },
-  { label: '11" × 17" (Double)', width: 11, height: 17 },
-  { label: '13" × 19" (Small Poster)', width: 13, height: 19 },
-  { label: '18" × 24" (Large Poster)', width: 18, height: 24 },
-  { label: '24" × 28" (Oaktag)', width: 24, height: 28 }
+  { label: '11" × 17" (Tabloid)', width: 11, height: 17 },
+  { label: '18" × 24" (Poster)', width: 18, height: 24 }
 ];
 const TopNav = observer(({ store: store2 }) => {
-  const [widthInches, setWidthInches] = reactExports.useState("");
-  const [heightInches, setHeightInches] = reactExports.useState("");
-  const handleDownloadImage = () => {
-    const dataURL = store2.toDataURL();
-    downloadExports.downloadFile(dataURL, "design.png");
-  };
-  const handleDownloadPDF = async () => {
-    const pdfData = await store2.saveAsPDF();
-    const blob = new Blob([pdfData], { type: "application/pdf" });
-    const url2 = URL.createObjectURL(blob);
-    downloadExports.downloadFile(url2, "design.pdf");
-    URL.revokeObjectURL(url2);
-  };
+  const [width, setWidth] = reactExports.useState("");
+  const [height, setHeight] = reactExports.useState("");
   const applyResize = (w, h) => {
     store2.width = inchToPx(w);
     store2.height = inchToPx(h);
   };
   const handleCustomResize = () => {
-    const w = parseFloat(widthInches);
-    const h = parseFloat(heightInches);
+    const w = parseFloat(width);
+    const h = parseFloat(height);
     if (!isNaN(w) && !isNaN(h)) {
       applyResize(w, h);
     }
   };
-  const resizeMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { style: { padding: "12px", width: "240px" }, children: [
-    PRESETS.map((preset) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  const resizeMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { style: { padding: 12, width: 250 }, children: [
+    PRESETS.map(({ label: label2, width: width2, height: height2 }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
       MenuItem,
       {
-        text: preset.label,
-        onClick: () => applyResize(preset.width, preset.height)
+        text: label2,
+        onClick: () => applyResize(width2, height2)
       },
-      preset.label
+      label2
     )),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { paddingTop: 8 }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 4, fontWeight: 600 }, children: "Custom size (inches)" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 6, marginBottom: 6 }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { paddingTop: 10 }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: "bold", marginBottom: 4 }, children: "Custom size (inches)" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 6, marginBottom: 8 }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           InputGroup,
           {
             placeholder: "Width",
-            value: widthInches,
-            onChange: (e) => setWidthInches(e.target.value),
+            value: width,
+            onChange: (e) => setWidth(e.target.value),
             style: { width: "80px" }
           }
         ),
@@ -106338,18 +106324,14 @@ const TopNav = observer(({ store: store2 }) => {
           InputGroup,
           {
             placeholder: "Height",
-            value: heightInches,
-            onChange: (e) => setHeightInches(e.target.value),
+            value: height,
+            onChange: (e) => setHeight(e.target.value),
             style: { width: "80px" }
           }
         )
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { small: true, fill: true, onClick: handleCustomResize, children: "Resize" })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { small: true, fill: true, intent: "primary", onClick: handleCustomResize, children: "Resize" })
     ] })
-  ] });
-  const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
   ] });
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
@@ -106361,41 +106343,26 @@ const TopNav = observer(({ store: store2 }) => {
         display: "flex",
         alignItems: "center",
         padding: "0 16px",
-        boxSizing: "border-box",
-        color: "white"
+        color: "white",
+        boxSizing: "border-box"
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: "12px" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: resizeMenu, position: "bottom-left", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { icon: "resize-video", style: { background: "transparent", color: "white" }, children: "Resize" }) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "button",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: resizeMenu, position: "bottom-left", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
           {
+            icon: "resize-video",
             style: {
-              borderRadius: "28px",
-              textTransform: "uppercase",
-              fontWeight: "bold",
+              marginLeft: "12px",
+              background: "transparent",
               color: "white",
-              backgroundColor: "#ce3c4f",
-              border: "2px solid white",
-              padding: "6px 16px",
-              cursor: "pointer",
-              fontSize: "14px",
-              transition: "all 0.2s ease-in-out"
+              border: "none",
+              boxShadow: "none"
             },
-            onMouseOver: (e) => {
-              e.target.style.backgroundColor = "white";
-              e.target.style.color = "#ce3c4f";
-            },
-            onMouseOut: (e) => {
-              e.target.style.backgroundColor = "#ce3c4f";
-              e.target.style.color = "white";
-            },
-            children: "Download"
+            children: "Resize"
           }
-        ) })
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } })
       ]
     }
   );
@@ -106970,4 +106937,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-Ce9yEyfT.js.map
+//# sourceMappingURL=index-DHYc6MVl.js.map
