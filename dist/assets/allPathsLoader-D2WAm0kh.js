@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/allPaths-Dbabz47o.js","assets/index-BV5xmvTQ.js","assets/index-CeUBAFWF.js","assets/index-B5MNjMFG.js","assets/index-DpHVQKPa.css"])))=>i.map(i=>d[i]);
-import { _ as __awaiter, a as __generator, b as __vitePreload } from "./index-B5MNjMFG.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/allPaths-CZ_47JOL.js","assets/index-BV5xmvTQ.js","assets/index-CeUBAFWF.js","assets/index-BpdeZbG5.js","assets/index-DpHVQKPa.css"])))=>i.map(i=>d[i]);
+import { _ as __awaiter, a as __generator, b as __vitePreload } from "./index-BpdeZbG5.js";
 var allPathsLoader = function(name, size) {
   return __awaiter(void 0, void 0, void 0, function() {
     var getIconPaths;
@@ -8,7 +8,7 @@ var allPathsLoader = function(name, size) {
         case 0:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths" */
-            "./allPaths-Dbabz47o.js"
+            "./allPaths-CZ_47JOL.js"
           ), true ? __vite__mapDeps([0,1,2,3,4]) : void 0)];
         case 1:
           getIconPaths = _a.sent().getIconPaths;
@@ -20,4 +20,4 @@ var allPathsLoader = function(name, size) {
 export {
   allPathsLoader
 };
-//# sourceMappingURL=allPathsLoader-BPH2TB1q.js.map
+//# sourceMappingURL=allPathsLoader-D2WAm0kh.js.map

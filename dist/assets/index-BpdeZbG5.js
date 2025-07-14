@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BPH2TB1q.js"
+            "./allPathsLoader-D2WAm0kh.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-5eKc-x1Z.js"
+            "./splitPathsBySizeLoader-DVPXmX0E.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-C5mJlN8W.js"
+            "./allPathsLoader-DhZS2eE6.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-Bl-1JirR.js"
+            "./splitPathsBySizeLoader-D9XWbioZ.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,111 +106317,123 @@ const TopNav = observer(({ store: store2 }) => {
       handleResize(width, height);
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        style: {
-          width: "100%",
-          height: "50px",
-          background: "linear-gradient(to right, #488fcc, #ce3c4f)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          color: "white",
-          gap: "12px"
-        },
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", style: { display: "flex", alignItems: "center" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              minimal: true,
-              onClick: () => setDialogOpen(true),
-              style: {
-                fontWeight: "bold",
-                fontSize: "16px",
-                color: "white",
-                borderRadius: "3%",
-                background: "transparent"
-              },
-              onMouseOver: (e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-              },
-              onMouseOut: (e) => {
-                e.currentTarget.style.background = "transparent";
-              },
-              children: "RESIZE"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              style: {
-                borderRadius: "28px",
-                textTransform: "uppercase",
-                fontWeight: "bold",
-                color: "white",
-                backgroundColor: "#ce3c4f",
-                border: "2px solid white",
-                padding: "6px 16px",
-                cursor: "pointer",
-                fontSize: "14px",
-                transition: "all 0.2s ease-in-out"
-              },
-              onMouseOver: (e) => {
-                e.target.style.backgroundColor = "white";
-                e.target.style.color = "#ce3c4f";
-              },
-              onMouseOut: (e) => {
-                e.target.style.backgroundColor = "#ce3c4f";
-                e.target.style.color = "white";
-              },
-              children: "Download"
-            }
-          ) })
-        ]
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Dialog,
-      {
-        isOpen: dialogOpen,
-        onClose: () => setDialogOpen(false),
-        title: "Resize Canvas",
-        style: { width: "320px" },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(612, 792), children: '8.5" × 11" (Letter)' }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(792, 1224), children: '11" × 17" (Double)' }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(936, 1368), children: '13" × 19" (Small Poster)' }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1296, 1728), children: '18" × 24" (Large Poster)' }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1728, 2016), children: '24" × 28" (Oaktag)' }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: "8px" }, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              InputGroup,
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      style: {
+        width: "100%",
+        height: "50px",
+        background: "linear-gradient(to right, #488fcc, #ce3c4f)",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 16px",
+        boxSizing: "border-box",
+        color: "white",
+        gap: "12px"
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", style: { display: "flex", alignItems: "center" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Popover,
+          {
+            isOpen: dialogOpen,
+            onClose: () => setDialogOpen(false),
+            position: "bottom-left",
+            minimal: true,
+            content: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "div",
               {
-                placeholder: "Width (inches)",
-                value: customWidth,
-                onChange: (e) => setCustomWidth(e.target.value)
+                style: {
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  background: "white",
+                  borderRadius: "8px",
+                  minWidth: "240px"
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(612, 792), children: '8.5" × 11" (Letter)' }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(792, 1224), children: '11" × 17" (Double)' }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(936, 1368), children: '13" × 19" (Small Poster)' }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1296, 1728), children: '18" × 24" (Large Poster)' }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1728, 2016), children: '24" × 28" (Oaktag)' }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: "8px" }, children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      InputGroup,
+                      {
+                        placeholder: "Width (inches)",
+                        value: customWidth,
+                        onChange: (e) => setCustomWidth(e.target.value)
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      InputGroup,
+                      {
+                        placeholder: "Height (inches)",
+                        value: customHeight,
+                        onChange: (e) => setCustomHeight(e.target.value)
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { intent: "primary", onClick: handleCustomResize, children: "Apply Custom Size" })
+                ]
               }
             ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              InputGroup,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
               {
-                placeholder: "Height (inches)",
-                value: customHeight,
-                onChange: (e) => setCustomHeight(e.target.value)
+                minimal: true,
+                onClick: () => setDialogOpen(!dialogOpen),
+                style: {
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  color: "white",
+                  borderRadius: "3%",
+                  background: "transparent"
+                },
+                onMouseOver: (e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                },
+                onMouseOut: (e) => {
+                  e.currentTarget.style.background = "transparent";
+                },
+                children: "RESIZE"
               }
             )
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { intent: "primary", onClick: handleCustomResize, children: "Apply Custom Size" })
-        ] })
-      }
-    )
-  ] });
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            style: {
+              borderRadius: "28px",
+              textTransform: "uppercase",
+              fontWeight: "bold",
+              color: "white",
+              backgroundColor: "#ce3c4f",
+              border: "2px solid white",
+              padding: "6px 16px",
+              cursor: "pointer",
+              fontSize: "14px",
+              transition: "all 0.2s ease-in-out"
+            },
+            onMouseOver: (e) => {
+              e.target.style.backgroundColor = "white";
+              e.target.style.color = "#ce3c4f";
+            },
+            onMouseOut: (e) => {
+              e.target.style.backgroundColor = "#ce3c4f";
+              e.target.style.color = "white";
+            },
+            children: "Download"
+          }
+        ) })
+      ]
+    }
+  ) });
 });
 const templates = [
   {
@@ -106993,4 +107005,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-B5MNjMFG.js.map
+//# sourceMappingURL=index-BpdeZbG5.js.map
