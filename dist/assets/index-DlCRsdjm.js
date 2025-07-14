@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-D2WAm0kh.js"
+            "./allPathsLoader-Dsg3_pYO.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DVPXmX0E.js"
+            "./splitPathsBySizeLoader-DcCYDz7c.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DhZS2eE6.js"
+            "./allPathsLoader-C_-8n-gi.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D9XWbioZ.js"
+            "./splitPathsBySizeLoader-B0lFJBeq.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106284,13 +106284,15 @@ console.log("✅ TopNav loaded");
 const applyResize = action((store2, w, h) => {
   const page2 = store2.activePage;
   if (page2) {
-    page2.set({ width: w, height: h });
+    page2.width = w;
+    page2.height = h;
   }
 });
 const TopNav = observer(({ store: store2 }) => {
-  const [dialogOpen, setDialogOpen] = reactExports.useState(false);
+  const [popoverOpen, setPopoverOpen] = reactExports.useState(false);
   const [customWidth, setCustomWidth] = reactExports.useState("");
   const [customHeight, setCustomHeight] = reactExports.useState("");
+  const resizeButtonRef = reactExports.useRef(null);
   const handleDownloadImage = () => {
     const dataURL = store2.toDataURL();
     downloadExports.downloadFile(dataURL, "design.png");
@@ -106308,7 +106310,7 @@ const TopNav = observer(({ store: store2 }) => {
   ] });
   const handleResize = (w, h) => {
     applyResize(store2, w, h);
-    setDialogOpen(false);
+    setPopoverOpen(false);
   };
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
@@ -106326,20 +106328,29 @@ const TopNav = observer(({ store: store2 }) => {
         background: "linear-gradient(to right, #488fcc, #ce3c4f)",
         display: "flex",
         alignItems: "center",
+        justifyContent: "space-between",
         padding: "0 16px",
         boxSizing: "border-box",
         color: "white",
+        flexWrap: "wrap",
         gap: "12px"
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", style: { display: "flex", alignItems: "center" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "a",
+          {
+            href: "https://tuteachercenter.org",
+            style: { display: "flex", alignItems: "center" },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } })
+          }
+        ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           Popover,
           {
-            isOpen: dialogOpen,
-            onClose: () => setDialogOpen(false),
-            position: "bottom-left",
-            minimal: true,
+            isOpen: popoverOpen,
+            onClose: () => setPopoverOpen(false),
+            interactionKind: PopoverInteractionKind.CLICK,
+            position: Position.BOTTOM_LEFT,
             content: /* @__PURE__ */ jsxRuntimeExports.jsxs(
               "div",
               {
@@ -106353,31 +106364,75 @@ const TopNav = observer(({ store: store2 }) => {
                   minWidth: "240px"
                 },
                 children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(612, 792), children: '8.5" × 11" (Letter)' }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(792, 1224), children: '11" × 17" (Double)' }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(936, 1368), children: '13" × 19" (Small Poster)' }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1296, 1728), children: '18" × 24" (Large Poster)' }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1728, 2016), children: '24" × 28" (Oaktag)' }),
+                  [
+                    { label: '8.5" × 11" (Letter)', w: 612, h: 792 },
+                    { label: '11" × 17" (Double)', w: 792, h: 1224 },
+                    { label: '13" × 19" (Small Poster)', w: 936, h: 1368 },
+                    { label: '18" × 24" (Large Poster)', w: 1296, h: 1728 },
+                    { label: '24" × 28" (Oaktag)', w: 1728, h: 2016 }
+                  ].map(({ label: label2, w, h }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Button,
+                    {
+                      onClick: () => handleResize(w, h),
+                      style: {
+                        paddingTop: "9px",
+                        paddingBottom: "9px",
+                        border: "none",
+                        boxShadow: "none",
+                        whiteSpace: "nowrap"
+                      },
+                      children: label2
+                    },
+                    label2
+                  )),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: "8px" }, children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      InputGroup,
-                      {
-                        placeholder: "Width (inches)",
-                        value: customWidth,
-                        onChange: (e) => setCustomWidth(e.target.value)
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      InputGroup,
-                      {
-                        placeholder: "Height (inches)",
-                        value: customHeight,
-                        onChange: (e) => setCustomHeight(e.target.value)
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { intent: "primary", onClick: handleCustomResize, children: "Apply Custom Size" })
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "div",
+                    {
+                      style: {
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        alignItems: "center"
+                      },
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: "1 1 100px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          InputGroup,
+                          {
+                            placeholder: "Width",
+                            value: customWidth,
+                            onChange: (e) => setCustomWidth(e.target.value),
+                            rightElement: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { padding: "0 6px" }, children: "in" })
+                          }
+                        ) }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: "1 1 100px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          InputGroup,
+                          {
+                            placeholder: "Height",
+                            value: customHeight,
+                            onChange: (e) => setCustomHeight(e.target.value),
+                            rightElement: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { padding: "0 6px" }, children: "in" })
+                          }
+                        ) })
+                      ]
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Button,
+                    {
+                      intent: "primary",
+                      onClick: handleCustomResize,
+                      style: {
+                        backgroundColor: "#488FCC",
+                        color: "white",
+                        paddingTop: "9px",
+                        paddingBottom: "9px",
+                        border: "none",
+                        boxShadow: "none"
+                      },
+                      children: "Apply Custom Size"
+                    }
+                  )
                 ]
               }
             ),
@@ -106385,7 +106440,8 @@ const TopNav = observer(({ store: store2 }) => {
               Button,
               {
                 minimal: true,
-                onClick: () => setDialogOpen(!dialogOpen),
+                elementRef: resizeButtonRef,
+                onClick: () => setPopoverOpen(!popoverOpen),
                 style: {
                   fontWeight: "bold",
                   fontSize: "16px",
@@ -106404,7 +106460,6 @@ const TopNav = observer(({ store: store2 }) => {
             )
           }
         ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "button",
           {
@@ -106415,7 +106470,7 @@ const TopNav = observer(({ store: store2 }) => {
               color: "white",
               backgroundColor: "#ce3c4f",
               border: "2px solid white",
-              padding: "6px 16px",
+              padding: "9px 16px",
               cursor: "pointer",
               fontSize: "14px",
               transition: "all 0.2s ease-in-out"
@@ -107005,4 +107060,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BpdeZbG5.js.map
+//# sourceMappingURL=index-DlCRsdjm.js.map

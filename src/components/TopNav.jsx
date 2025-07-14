@@ -1,23 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Popover, Menu, MenuItem, InputGroup } from '@blueprintjs/core';
+import {
+  Button,
+  Popover,
+  Menu,
+  MenuItem,
+  InputGroup,
+  PopoverInteractionKind,
+  Position,
+} from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
 
 console.log('✅ TopNav loaded');
 
-// ✅ MobX-safe resize handler
+// MobX-safe resize action
 const applyResize = action((store, w, h) => {
   const page = store.activePage;
   if (page) {
-    page.set({ width: w, height: h }); // ✅ Use MST patch method
+    page.width = w;
+    page.height = h;
   }
 });
 
 const TopNav = observer(({ store }) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
+  const resizeButtonRef = useRef(null);
 
   const handleDownloadImage = () => {
     const dataURL = store.toDataURL();
@@ -41,7 +51,7 @@ const TopNav = observer(({ store }) => {
 
   const handleResize = (w, h) => {
     applyResize(store, w, h);
-    setDialogOpen(false);
+    setPopoverOpen(false);
   };
 
   const handleCustomResize = () => {
@@ -61,23 +71,28 @@ const TopNav = observer(({ store }) => {
           background: 'linear-gradient(to right, #488fcc, #ce3c4f)',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '0 16px',
           boxSizing: 'border-box',
           color: 'white',
+          flexWrap: 'wrap',
           gap: '12px',
         }}
       >
         {/* Logo */}
-        <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
+        <a
+          href="https://tuteachercenter.org"
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
           <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
         </a>
 
         {/* Resize Button + Popover */}
         <Popover
-          isOpen={dialogOpen}
-          onClose={() => setDialogOpen(false)}
-          position="bottom-left"
-          minimal
+          isOpen={popoverOpen}
+          onClose={() => setPopoverOpen(false)}
+          interactionKind={PopoverInteractionKind.CLICK}
+          position={Position.BOTTOM_LEFT}
           content={
             <div
               style={{
@@ -90,27 +105,68 @@ const TopNav = observer(({ store }) => {
                 minWidth: '240px',
               }}
             >
-              <Button onClick={() => handleResize(612, 792)}>8.5" × 11" (Letter)</Button>
-              <Button onClick={() => handleResize(792, 1224)}>11" × 17" (Double)</Button>
-              <Button onClick={() => handleResize(936, 1368)}>13" × 19" (Small Poster)</Button>
-              <Button onClick={() => handleResize(1296, 1728)}>18" × 24" (Large Poster)</Button>
-              <Button onClick={() => handleResize(1728, 2016)}>24" × 28" (Oaktag)</Button>
+              {[
+                { label: '8.5" × 11" (Letter)', w: 612, h: 792 },
+                { label: '11" × 17" (Double)', w: 792, h: 1224 },
+                { label: '13" × 19" (Small Poster)', w: 936, h: 1368 },
+                { label: '18" × 24" (Large Poster)', w: 1296, h: 1728 },
+                { label: '24" × 28" (Oaktag)', w: 1728, h: 2016 },
+              ].map(({ label, w, h }) => (
+                <Button
+                  key={label}
+                  onClick={() => handleResize(w, h)}
+                  style={{
+                    paddingTop: '9px',
+                    paddingBottom: '9px',
+                    border: 'none',
+                    boxShadow: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {label}
+                </Button>
+              ))}
 
               <hr />
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <InputGroup
-                  placeholder="Width (inches)"
-                  value={customWidth}
-                  onChange={(e) => setCustomWidth(e.target.value)}
-                />
-                <InputGroup
-                  placeholder="Height (inches)"
-                  value={customHeight}
-                  onChange={(e) => setCustomHeight(e.target.value)}
-                />
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ flex: '1 1 100px' }}>
+                  <InputGroup
+                    placeholder="Width"
+                    value={customWidth}
+                    onChange={(e) => setCustomWidth(e.target.value)}
+                    rightElement={<span style={{ padding: '0 6px' }}>in</span>}
+                  />
+                </div>
+                <div style={{ flex: '1 1 100px' }}>
+                  <InputGroup
+                    placeholder="Height"
+                    value={customHeight}
+                    onChange={(e) => setCustomHeight(e.target.value)}
+                    rightElement={<span style={{ padding: '0 6px' }}>in</span>}
+                  />
+                </div>
               </div>
-              <Button intent="primary" onClick={handleCustomResize}>
+
+              <Button
+                intent="primary"
+                onClick={handleCustomResize}
+                style={{
+                  backgroundColor: '#488FCC',
+                  color: 'white',
+                  paddingTop: '9px',
+                  paddingBottom: '9px',
+                  border: 'none',
+                  boxShadow: 'none',
+                }}
+              >
                 Apply Custom Size
               </Button>
             </div>
@@ -118,7 +174,8 @@ const TopNav = observer(({ store }) => {
         >
           <Button
             minimal
-            onClick={() => setDialogOpen(!dialogOpen)}
+            elementRef={resizeButtonRef}
+            onClick={() => setPopoverOpen(!popoverOpen)}
             style={{
               fontWeight: 'bold',
               fontSize: '16px',
@@ -137,9 +194,6 @@ const TopNav = observer(({ store }) => {
           </Button>
         </Popover>
 
-        {/* Spacer */}
-        <div style={{ flex: 1 }} />
-
         {/* Download Button */}
         <Popover content={downloadMenu} position="bottom-right">
           <button
@@ -150,7 +204,7 @@ const TopNav = observer(({ store }) => {
               color: 'white',
               backgroundColor: '#ce3c4f',
               border: '2px solid white',
-              padding: '6px 16px',
+              padding: '9px 16px',
               cursor: 'pointer',
               fontSize: '14px',
               transition: 'all 0.2s ease-in-out',
