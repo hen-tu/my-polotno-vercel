@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BDt-whqK.js"
+            "./allPathsLoader-jcsLMdkD.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-JtZFecA1.js"
+            "./splitPathsBySizeLoader-6pvU7LcH.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DJ1EIb4G.js"
+            "./allPathsLoader-CfbgPBB3.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-XiuWKEE7.js"
+            "./splitPathsBySizeLoader-DaeU4OgY.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106349,15 +106349,26 @@ const TopNav = observer(({ store: store2 }) => {
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: resizeMenu, position: "bottom-left", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
+          "div",
           {
-            icon: "resize-video",
             style: {
+              padding: "6px 16px",
               marginLeft: "12px",
-              background: "transparent",
+              backgroundColor: "transparent",
               color: "white",
               border: "none",
-              boxShadow: "none"
+              textTransform: "uppercase",
+              fontWeight: "bold",
+              fontSize: "16px",
+              borderRadius: "3%",
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out"
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
             },
             children: "Resize"
           }
@@ -106937,4 +106948,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DHYc6MVl.js.map
+//# sourceMappingURL=index-CmXinpMz.js.map

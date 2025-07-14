@@ -79,19 +79,31 @@ const TopNav = observer(({ store }) => {
       </a>
 
       <Popover content={resizeMenu} position="bottom-left">
-        <Button
-          icon="resize-video"
-          style={{
-            marginLeft: '12px',
-            background: 'transparent',
-            color: 'white',
-            border: 'none',
-            boxShadow: 'none',
-          }}
-        >
-          Resize
-        </Button>
-      </Popover>
+  <div
+    style={{
+      padding: '6px 16px',
+      marginLeft: '12px',
+      backgroundColor: 'transparent',
+      color: 'white',
+      border: 'none',
+      textTransform: 'uppercase',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      borderRadius: '3%',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease-in-out',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = 'transparent';
+    }}
+  >
+    Resize
+  </div>
+</Popover>
+
 
       <div style={{ flex: 1 }} />
     </div>
