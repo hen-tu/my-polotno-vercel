@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-m5ZMeRQw.js"
+            "./allPathsLoader-CInwrLEP.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-IgYcMEuK.js"
+            "./splitPathsBySizeLoader-C8Y-LJ0L.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CzaD6MO9.js"
+            "./allPathsLoader-E0xQdSQ5.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D8AbVYWe.js"
+            "./splitPathsBySizeLoader-Wvg6xgFS.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106281,14 +106281,10 @@ var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
 var downloadExports = requireDownload();
 console.log("✅ TopNav loaded");
-const applyResize = action((store2, width, height) => {
-  const page2 = store2.activePage;
-  if (page2) {
-    page2.width = width;
-    page2.height = height;
-  }
-});
 const TopNav = observer(({ store: store2 }) => {
+  const [dialogOpen, setDialogOpen] = reactExports.useState(false);
+  const [customWidth, setCustomWidth] = reactExports.useState("");
+  const [customHeight, setCustomHeight] = reactExports.useState("");
   const handleDownloadImage = () => {
     const dataURL = store2.toDataURL();
     downloadExports.downloadFile(dataURL, "design.png");
@@ -106300,89 +106296,130 @@ const TopNav = observer(({ store: store2 }) => {
     downloadExports.downloadFile(url2, "design.pdf");
     URL.revokeObjectURL(url2);
   };
-  const handleResize = () => {
-    var _a, _b2;
-    const width = prompt("Enter new width (px):", ((_a = store2.activePage) == null ? void 0 : _a.width) || 800);
-    const height = prompt("Enter new height (px):", ((_b2 = store2.activePage) == null ? void 0 : _b2.height) || 600);
-    if (width && height) {
-      applyResize(store2, parseInt(width, 10), parseInt(height, 10));
-    }
-  };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
   ] });
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    "div",
-    {
-      style: {
-        width: "100%",
-        height: "50px",
-        background: "linear-gradient(to right, #488fcc, #ce3c4f)",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 16px",
-        boxSizing: "border-box",
-        color: "white"
-      },
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: "12px" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
+  const handleResize = action((w, h) => {
+    const page2 = store2.activePage;
+    if (page2) {
+      page2.width = w;
+      page2.height = h;
+    }
+    setDialogOpen(false);
+  });
+  const handleCustomResize = () => {
+    const width = parseFloat(customWidth) * 72;
+    const height = parseFloat(customHeight) * 72;
+    if (!isNaN(width) && !isNaN(height)) {
+      handleResize(width, height);
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        style: {
+          width: "100%",
+          height: "50px",
+          background: "linear-gradient(to right, #488fcc, #ce3c4f)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          boxSizing: "border-box",
+          color: "white",
+          gap: "12px"
+        },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", style: { display: "flex", alignItems: "center" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
+            Button,
             {
-              onClick: handleResize,
+              minimal: true,
+              onClick: () => setDialogOpen(true),
               style: {
                 fontWeight: "bold",
                 fontSize: "16px",
                 color: "white",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
                 borderRadius: "3%",
-                padding: "6px 12px",
-                transition: "all 0.2s ease-in-out"
+                background: "transparent"
               },
               onMouseOver: (e) => {
-                e.target.style.backgroundColor = "rgba(255,255,255,0.1)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.1)";
               },
               onMouseOut: (e) => {
-                e.target.style.backgroundColor = "transparent";
+                e.currentTarget.style.background = "transparent";
               },
               children: "RESIZE"
             }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "button",
-          {
-            style: {
-              borderRadius: "28px",
-              textTransform: "uppercase",
-              fontWeight: "bold",
-              color: "white",
-              backgroundColor: "#ce3c4f",
-              border: "2px solid white",
-              padding: "6px 16px",
-              cursor: "pointer",
-              fontSize: "14px",
-              transition: "all 0.2s ease-in-out"
-            },
-            onMouseOver: (e) => {
-              e.target.style.backgroundColor = "white";
-              e.target.style.color = "#ce3c4f";
-            },
-            onMouseOut: (e) => {
-              e.target.style.backgroundColor = "#ce3c4f";
-              e.target.style.color = "white";
-            },
-            children: "Download"
-          }
-        ) })
-      ]
-    }
-  );
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 } }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              style: {
+                borderRadius: "28px",
+                textTransform: "uppercase",
+                fontWeight: "bold",
+                color: "white",
+                backgroundColor: "#ce3c4f",
+                border: "2px solid white",
+                padding: "6px 16px",
+                cursor: "pointer",
+                fontSize: "14px",
+                transition: "all 0.2s ease-in-out"
+              },
+              onMouseOver: (e) => {
+                e.target.style.backgroundColor = "white";
+                e.target.style.color = "#ce3c4f";
+              },
+              onMouseOut: (e) => {
+                e.target.style.backgroundColor = "#ce3c4f";
+                e.target.style.color = "white";
+              },
+              children: "Download"
+            }
+          ) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Dialog,
+      {
+        isOpen: dialogOpen,
+        onClose: () => setDialogOpen(false),
+        title: "Resize Canvas",
+        style: { width: "320px" },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(612, 792), children: '8.5" × 11" (Letter)' }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(792, 1224), children: '11" × 17" (Double)' }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(936, 1368), children: '13" × 19" (Small Poster)' }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1296, 1728), children: '18" × 24" (Large Poster)' }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1728, 2016), children: '24" × 28" (Oaktag)' }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: "8px" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              InputGroup,
+              {
+                placeholder: "Width (inches)",
+                value: customWidth,
+                onChange: (e) => setCustomWidth(e.target.value)
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              InputGroup,
+              {
+                placeholder: "Height (inches)",
+                value: customHeight,
+                onChange: (e) => setCustomHeight(e.target.value)
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { intent: "primary", onClick: handleCustomResize, children: "Apply Custom Size" })
+        ] })
+      }
+    )
+  ] });
 });
 const templates = [
   {
@@ -106954,4 +106991,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-B-2gVaGc.js.map
+//# sourceMappingURL=index-D0TC8c8d.js.map
