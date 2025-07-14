@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-q5WOigxH.js"
+            "./allPathsLoader-CVDcsHKq.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CEteISNQ.js"
+            "./splitPathsBySizeLoader-D6DUCDx-.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-mdshMzBl.js"
+            "./allPathsLoader-DzzsdFBs.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-Busc6g7-.js"
+            "./splitPathsBySizeLoader-D8gWXryO.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106301,14 +106301,14 @@ const TopNav = observer(({ store: store2 }) => {
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
   ] });
   const handleResize = (w, h) => {
-    action(() => {
+    runInAction(() => {
       const page2 = store2.activePage;
       if (page2) {
         page2.width = w;
         page2.height = h;
       }
-      setDialogOpen(false);
-    })();
+    });
+    setDialogOpen(false);
   };
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
@@ -106993,4 +106993,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-T_OofG-D.js.map
+//# sourceMappingURL=index-6Cp2GlRO.js.map
