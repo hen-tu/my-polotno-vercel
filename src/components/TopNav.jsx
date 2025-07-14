@@ -1,112 +1,165 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Popover, Menu, MenuItem, InputGroup } from '@blueprintjs/core';
+import { Button, Popover, Menu, MenuItem, Dialog, InputGroup } from '@blueprintjs/core';
+import { downloadFile } from 'polotno/utils/download';
+import { action } from 'mobx';
 
-const inchToPx = (inches) => inches * 96;
+console.log('✅ TopNav loaded');
 
-const PRESETS = [
-  { label: '8.5" × 11" (Letter)', width: 8.5, height: 11 },
-  { label: '11" × 17" (Tabloid)', width: 11, height: 17 },
-  { label: '18" × 24" (Poster)', width: 18, height: 24 },
-];
+// ✅ Required for MobX to allow store mutations
+const applyResize = action((store, width, height) => {
+  const page = store.activePage;
+  if (page) {
+    page.width = width;
+    page.height = height;
+  }
+});
 
 const TopNav = observer(({ store }) => {
-  const [width, setWidth] = useState('');
-  const [height, setHeight] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [customWidth, setCustomWidth] = useState('');
+  const [customHeight, setCustomHeight] = useState('');
 
-  const applyResize = (w, h) => {
-    store.width = inchToPx(w);
-    store.height = inchToPx(h);
+  const handleDownloadImage = () => {
+    const dataURL = store.toDataURL();
+    downloadFile(dataURL, 'design.png');
   };
 
-  const handleCustomResize = () => {
-    const w = parseFloat(width);
-    const h = parseFloat(height);
-    if (!isNaN(w) && !isNaN(h)) {
-      applyResize(w, h);
-    }
+  const handleDownloadPDF = async () => {
+    const pdfData = await store.saveAsPDF();
+    const blob = new Blob([pdfData], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    downloadFile(url, 'design.pdf');
+    URL.revokeObjectURL(url);
   };
 
-  const resizeMenu = (
-    <Menu style={{ padding: 12, width: 250 }}>
-      {PRESETS.map(({ label, width, height }) => (
-        <MenuItem
-          key={label}
-          text={label}
-          onClick={() => applyResize(width, height)}
-        />
-      ))}
-      <div style={{ paddingTop: 10 }}>
-        <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
-          Custom size (inches)
-        </div>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-          <InputGroup
-            placeholder="Width"
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
-            style={{ width: '80px' }}
-          />
-          <InputGroup
-            placeholder="Height"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            style={{ width: '80px' }}
-          />
-        </div>
-        <Button small fill intent="primary" onClick={handleCustomResize}>
-          Resize
-        </Button>
-      </div>
+  const downloadMenu = (
+    <Menu>
+      <MenuItem text="Save as Image" onClick={handleDownloadImage} />
+      <MenuItem text="Save as PDF" onClick={handleDownloadPDF} />
     </Menu>
   );
 
+  const handleResize = (w, h) => {
+    applyResize(store, w, h);
+    setDialogOpen(false);
+  };
+
+  const handleCustomResize = () => {
+    const width = parseFloat(customWidth) * 72;
+    const height = parseFloat(customHeight) * 72;
+    if (!isNaN(width) && !isNaN(height)) {
+      handleResize(width, height);
+    }
+  };
+
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '50px',
-        background: 'linear-gradient(to right, #488fcc, #ce3c4f)',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 16px',
-        color: 'white',
-        boxSizing: 'border-box',
-      }}
-    >
-      <a href="https://tuteachercenter.org">
-        <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
-      </a>
+    <>
+      <div
+        style={{
+          width: '100%',
+          height: '50px',
+          background: 'linear-gradient(to right, #488fcc, #ce3c4f)',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 16px',
+          boxSizing: 'border-box',
+          color: 'white',
+          gap: '12px',
+        }}
+      >
+        {/* Logo */}
+        <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
+<img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
+        </a>
 
-      <Popover content={resizeMenu} position="bottom-left">
-  <div
-    style={{
-      padding: '6px 16px',
-      marginLeft: '12px',
-      backgroundColor: 'transparent',
-      color: 'white',
-      border: 'none',
-      textTransform: 'uppercase',
-      fontWeight: 'bold',
-      fontSize: '16px',
-      borderRadius: '3%',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease-in-out',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = 'transparent';
-    }}
-  >
-    Resize
-  </div>
-</Popover>
+        {/* Resize Button */}
+        <Button
+          minimal
+          onClick={() => setDialogOpen(true)}
+          style={{
+            fontWeight: 'bold',
+            fontSize: '16px',
+            color: 'white',
+            borderRadius: '3%',
+            background: 'transparent',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          RESIZE
+        </Button>
 
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
 
-      <div style={{ flex: 1 }} />
-    </div>
+        {/* Download Button */}
+        <Popover content={downloadMenu} position="bottom-right">
+          <button
+            style={{
+              borderRadius: '28px',
+              textTransform: 'uppercase',
+              fontWeight: 'bold',
+              color: 'white',
+              backgroundColor: '#ce3c4f',
+              border: '2px solid white',
+              padding: '6px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              transition: 'all 0.2s ease-in-out',
+            }}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = 'white';
+              e.target.style.color = '#ce3c4f';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = '#ce3c4f';
+              e.target.style.color = 'white';
+            }}
+          >
+            Download
+          </button>
+        </Popover>
+      </div>
+
+      {/* Resize Dialog */}
+      <Dialog
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        title="Resize Canvas"
+        style={{ width: '320px' }}
+      >
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Button onClick={() => handleResize(612, 792)}>8.5" × 11" (Letter)</Button>
+          <Button onClick={() => handleResize(792, 1224)}>11" × 17" (Double)</Button>
+          <Button onClick={() => handleResize(936, 1368)}>13" × 19" (Small Poster)</Button>
+          <Button onClick={() => handleResize(1296, 1728)}>18" × 24" (Large Poster)</Button>
+          <Button onClick={() => handleResize(1728, 2016)}>24" × 28" (Oaktag)</Button>
+
+          <hr />
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <InputGroup
+              placeholder='Width (inches)'
+              value={customWidth}
+              onChange={(e) => setCustomWidth(e.target.value)}
+            />
+            <InputGroup
+              placeholder='Height (inches)'
+              value={customHeight}
+              onChange={(e) => setCustomHeight(e.target.value)}
+            />
+          </div>
+          <Button intent="primary" onClick={handleCustomResize}>
+            Apply Custom Size
+          </Button>
+        </div>
+      </Dialog>
+    </>
   );
 });
 
