@@ -32,14 +32,19 @@ const TopNav = observer(({ store }) => {
     </Menu>
   );
 
-const handleResize = action((w, h) => {
-  const page = store.activePage;
-  if (page) {
-    page.width = w;
-    page.height = h;
-  }
+const handleResize = (w, h) => {
+  // Wrap only the MobX part in action
+  action(() => {
+    const page = store.activePage;
+    if (page) {
+      page.width = w;
+      page.height = h;
+    }
+  })();
+
+  // Keep React state update outside the action
   setDialogOpen(false);
-});
+};
 
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;

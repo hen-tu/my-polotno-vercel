@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CInwrLEP.js"
+            "./allPathsLoader-CVNI5Ui8.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-C8Y-LJ0L.js"
+            "./splitPathsBySizeLoader-B4zeu546.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-E0xQdSQ5.js"
+            "./allPathsLoader-D5qS40H9.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-Wvg6xgFS.js"
+            "./splitPathsBySizeLoader-mmgpCMXd.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106300,14 +106300,16 @@ const TopNav = observer(({ store: store2 }) => {
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
   ] });
-  const handleResize = action((w, h) => {
-    const page2 = store2.activePage;
-    if (page2) {
-      page2.width = w;
-      page2.height = h;
-    }
+  const handleResize = (w, h) => {
+    action(() => {
+      const page2 = store2.activePage;
+      if (page2) {
+        page2.width = w;
+        page2.height = h;
+      }
+    })();
     setDialogOpen(false);
-  });
+  };
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
     const height = parseFloat(customHeight) * 72;
@@ -106991,4 +106993,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-D0TC8c8d.js.map
+//# sourceMappingURL=index-CK-OSfA5.js.map
