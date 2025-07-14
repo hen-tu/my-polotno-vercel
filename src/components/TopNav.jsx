@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem, Dialog, InputGroup } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
+import { action } from 'mobx';
 import { runInAction } from 'mobx';
 
 console.log('✅ TopNav loaded');
@@ -31,16 +32,14 @@ const TopNav = observer(({ store }) => {
     </Menu>
   );
 
-  const handleResize = (w, h) => {
-    runInAction(() => {
-      const page = store.activePage;
-      if (page) {
-        page.width = w;
-        page.height = h;
-      }
-    });
-    setDialogOpen(false);
-  };
+const handleResize = action((w, h) => {
+  const page = store.activePage;
+  if (page) {
+    page.width = w;
+    page.height = h;
+  }
+  setDialogOpen(false);
+});
 
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
