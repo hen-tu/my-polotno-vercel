@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Dsg3_pYO.js"
+            "./allPathsLoader-B2wjE65d.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DcCYDz7c.js"
+            "./splitPathsBySizeLoader-Bd5BAyBx.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-C_-8n-gi.js"
+            "./allPathsLoader-KaZ1_spu.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-B0lFJBeq.js"
+            "./splitPathsBySizeLoader-D8XXLnRJ.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106336,144 +106336,149 @@ const TopNav = observer(({ store: store2 }) => {
         gap: "12px"
       },
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "a",
-          {
-            href: "https://tuteachercenter.org",
-            style: { display: "flex", alignItems: "center" },
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } })
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Popover,
-          {
-            isOpen: popoverOpen,
-            onClose: () => setPopoverOpen(false),
-            interactionKind: PopoverInteractionKind.CLICK,
-            position: Position.BOTTOM_LEFT,
-            content: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "div",
-              {
-                style: {
-                  padding: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
-                  background: "white",
-                  borderRadius: "8px",
-                  minWidth: "240px"
-                },
-                children: [
-                  [
-                    { label: '8.5" × 11" (Letter)', w: 612, h: 792 },
-                    { label: '11" × 17" (Double)', w: 792, h: 1224 },
-                    { label: '13" × 19" (Small Poster)', w: 936, h: 1368 },
-                    { label: '18" × 24" (Large Poster)', w: 1296, h: 1728 },
-                    { label: '24" × 28" (Oaktag)', w: 1728, h: 2016 }
-                  ].map(({ label: label2, w, h }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Button,
-                    {
-                      onClick: () => handleResize(w, h),
-                      style: {
-                        paddingTop: "9px",
-                        paddingBottom: "9px",
-                        border: "none",
-                        boxShadow: "none",
-                        whiteSpace: "nowrap"
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: "12px" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "a",
+            {
+              href: "https://tuteachercenter.org",
+              style: { display: "flex", alignItems: "center" },
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Popover,
+            {
+              isOpen: popoverOpen,
+              onClose: () => setPopoverOpen(false),
+              interactionKind: PopoverInteractionKind.CLICK,
+              position: Position.BOTTOM_LEFT,
+              content: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    padding: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    background: "white",
+                    borderRadius: "8px",
+                    minWidth: "240px"
+                  },
+                  children: [
+                    [
+                      { label: '8.5" × 11" (Letter)', w: 612, h: 792 },
+                      { label: '11" × 17" (Double)', w: 792, h: 1224 },
+                      { label: '13" × 19" (Small Poster)', w: 936, h: 1368 },
+                      { label: '18" × 24" (Large Poster)', w: 1296, h: 1728 },
+                      { label: '24" × 28" (Oaktag)', w: 1728, h: 2016 }
+                    ].map(({ label: label2, w, h }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Button,
+                      {
+                        onClick: () => handleResize(w, h),
+                        style: {
+                          paddingTop: "9px",
+                          paddingBottom: "9px",
+                          border: "none",
+                          boxShadow: "none",
+                          whiteSpace: "nowrap"
+                        },
+                        children: label2
                       },
-                      children: label2
-                    },
-                    label2
-                  )),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    "div",
-                    {
-                      style: {
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: "8px",
-                        alignItems: "center"
-                      },
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: "1 1 100px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          InputGroup,
-                          {
-                            placeholder: "Width",
-                            value: customWidth,
-                            onChange: (e) => setCustomWidth(e.target.value),
-                            rightElement: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { padding: "0 6px" }, children: "in" })
-                          }
-                        ) }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: "1 1 100px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          InputGroup,
-                          {
-                            placeholder: "Height",
-                            value: customHeight,
-                            onChange: (e) => setCustomHeight(e.target.value),
-                            rightElement: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { padding: "0 6px" }, children: "in" })
-                          }
-                        ) })
-                      ]
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    Button,
-                    {
-                      intent: "primary",
-                      onClick: handleCustomResize,
-                      style: {
-                        backgroundColor: "#488FCC",
-                        color: "white",
-                        paddingTop: "9px",
-                        paddingBottom: "9px",
-                        border: "none",
-                        boxShadow: "none"
-                      },
-                      children: "Apply Custom Size"
-                    }
-                  )
-                ]
-              }
-            ),
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                minimal: true,
-                elementRef: resizeButtonRef,
-                onClick: () => setPopoverOpen(!popoverOpen),
-                style: {
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                  color: "white",
-                  borderRadius: "3%",
-                  background: "transparent"
-                },
-                onMouseOver: (e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                },
-                onMouseOut: (e) => {
-                  e.currentTarget.style.background = "transparent";
-                },
-                children: "RESIZE"
-              }
-            )
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      label2
+                    )),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      "div",
+                      {
+                        style: {
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "8px",
+                          alignItems: "center"
+                        },
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: "1 1 100px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            InputGroup,
+                            {
+                              placeholder: "Width",
+                              value: customWidth,
+                              onChange: (e) => setCustomWidth(e.target.value),
+                              rightElement: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { padding: "0 6px" }, children: "in" })
+                            }
+                          ) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: "1 1 100px" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            InputGroup,
+                            {
+                              placeholder: "Height",
+                              value: customHeight,
+                              onChange: (e) => setCustomHeight(e.target.value),
+                              rightElement: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { padding: "0 6px" }, children: "in" })
+                            }
+                          ) })
+                        ]
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Button,
+                      {
+                        intent: "primary",
+                        onClick: handleCustomResize,
+                        style: {
+                          backgroundColor: "#488FCC",
+                          color: "white",
+                          paddingTop: "9px",
+                          paddingBottom: "9px",
+                          border: "none",
+                          boxShadow: "none"
+                        },
+                        children: "Apply Custom Size"
+                      }
+                    )
+                  ]
+                }
+              ),
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Button,
+                {
+                  minimal: true,
+                  elementRef: resizeButtonRef,
+                  onClick: () => setPopoverOpen(!popoverOpen),
+                  style: {
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    color: "white",
+                    borderRadius: "3%",
+                    background: "transparent"
+                  },
+                  onMouseOver: (e) => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                  },
+                  onMouseOut: (e) => {
+                    e.currentTarget.style.background = "transparent";
+                  },
+                  children: "RESIZE"
+                }
+              )
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Popover, { content: downloadMenu, position: "bottom-right", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
           {
             style: {
-              borderRadius: "28px",
+              borderRadius: "4px",
               textTransform: "uppercase",
               fontWeight: "bold",
               color: "white",
               backgroundColor: "#ce3c4f",
-              border: "2px solid white",
+              border: "1px solid white",
               padding: "9px 16px",
               cursor: "pointer",
               fontSize: "14px",
-              transition: "all 0.2s ease-in-out"
+              transition: "all 0.2s ease-in-out",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px"
             },
             onMouseOver: (e) => {
               e.target.style.backgroundColor = "white";
@@ -106483,7 +106488,10 @@ const TopNav = observer(({ store: store2 }) => {
               e.target.style.backgroundColor = "#ce3c4f";
               e.target.style.color = "white";
             },
-            children: "Download"
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { icon: "download" }),
+              " Download"
+            ]
           }
         ) })
       ]
@@ -107060,4 +107068,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DlCRsdjm.js.map
+//# sourceMappingURL=index-DcVj15bF.js.map

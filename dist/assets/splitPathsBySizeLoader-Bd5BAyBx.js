@@ -1,4 +1,4 @@
-import { _ as __awaiter, a as __generator, b as __vitePreload, p as pascalCase, I as IconSize } from "./index-DlCRsdjm.js";
+import { _ as __awaiter, a as __generator, b as __vitePreload, p as pascalCase, I as IconSize } from "./index-DcVj15bF.js";
 var splitPathsBySizeLoader = function(name, size) {
   return __awaiter(void 0, void 0, void 0, function() {
     var key, pathsRecord;
@@ -31,4 +31,4 @@ var splitPathsBySizeLoader = function(name, size) {
 export {
   splitPathsBySizeLoader
 };
-//# sourceMappingURL=splitPathsBySizeLoader-DcCYDz7c.js.map
+//# sourceMappingURL=splitPathsBySizeLoader-Bd5BAyBx.js.map
