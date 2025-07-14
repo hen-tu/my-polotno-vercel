@@ -32,22 +32,24 @@ const TopNav = observer(({ store }) => {
     </Menu>
   );
 
-  const handleResize = action((w, h) => {
+const handleResize = (w, h) => {
+  action(() => {
     const page = store.activePage;
     if (page) {
       page.width = w;
       page.height = h;
     }
     setDialogOpen(false);
-  });
+  })();
+};
 
-  const handleCustomResize = () => {
-    const width = parseFloat(customWidth) * 72;
-    const height = parseFloat(customHeight) * 72;
-    if (!isNaN(width) && !isNaN(height)) {
-      handleResize(width, height);
-    }
-  };
+const handleCustomResize = () => {
+  const width = parseFloat(customWidth) * 72;
+  const height = parseFloat(customHeight) * 72;
+  if (!isNaN(width) && !isNaN(height)) {
+    handleResize(width, height);
+  }
+};
 
   return (
     <>

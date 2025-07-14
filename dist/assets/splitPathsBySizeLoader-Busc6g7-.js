@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-D0TC8c8d.js","assets/index-DpHVQKPa.css"])))=>i.map(i=>d[i]);
-import { _ as __awaiter, a as __generator, b as __vitePreload, p as pascalCase, c as IconSize } from "./index-D0TC8c8d.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-T_OofG-D.js","assets/index-DpHVQKPa.css"])))=>i.map(i=>d[i]);
+import { _ as __awaiter, a as __generator, b as __vitePreload, p as pascalCase, c as IconSize } from "./index-T_OofG-D.js";
 var splitPathsBySizeLoader = function(name, size) {
   return __awaiter(void 0, void 0, void 0, function() {
     var key, pathsRecord;
@@ -10,7 +10,7 @@ var splitPathsBySizeLoader = function(name, size) {
           if (!(size === IconSize.STANDARD)) return [3, 2];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-16px-paths" */
-            "./index-D0TC8c8d.js"
+            "./index-T_OofG-D.js"
           ).then((n) => n.d), true ? __vite__mapDeps([0,1]) : void 0)];
         case 1:
           pathsRecord = _a.sent();
@@ -18,7 +18,7 @@ var splitPathsBySizeLoader = function(name, size) {
         case 2:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-20px-paths" */
-            "./index-D0TC8c8d.js"
+            "./index-T_OofG-D.js"
           ).then((n) => n.e), true ? __vite__mapDeps([0,1]) : void 0)];
         case 3:
           pathsRecord = _a.sent();
@@ -32,4 +32,4 @@ var splitPathsBySizeLoader = function(name, size) {
 export {
   splitPathsBySizeLoader
 };
-//# sourceMappingURL=splitPathsBySizeLoader-Wvg6xgFS.js.map
+//# sourceMappingURL=splitPathsBySizeLoader-Busc6g7-.js.map
