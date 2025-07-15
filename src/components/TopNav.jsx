@@ -1,21 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  Button,
-  Popover,
-  Menu,
-  MenuItem,
-  InputGroup,
-  PopoverInteractionKind,
-  Position,
-} from '@blueprintjs/core';
+import { Button, Popover, Menu, MenuItem, InputGroup, Card } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
 
 console.log('✅ TopNav loaded');
 
-// MobX-safe resize action
+// ✅ Define MobX-safe action outside component
 const applyResize = action((store, w, h) => {
   const page = store.activePage;
   if (page) {
@@ -25,9 +17,9 @@ const applyResize = action((store, w, h) => {
 });
 
 const TopNav = observer(({ store }) => {
-  const [popoverOpen, setPopoverOpen] = useState(false);
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
+  const [resizeOpen, setResizeOpen] = useState(false);
   const resizeButtonRef = useRef(null);
 
   const handleDownloadImage = () => {
@@ -52,7 +44,7 @@ const TopNav = observer(({ store }) => {
 
   const handleResize = (w, h) => {
     applyResize(store, w, h);
-    setPopoverOpen(false);
+    setResizeOpen(false);
   };
 
   const handleCustomResize = () => {
@@ -72,135 +64,104 @@ const TopNav = observer(({ store }) => {
           background: 'linear-gradient(to right, #488fcc, #ce3c4f)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
           padding: '0 16px',
           boxSizing: 'border-box',
           color: 'white',
-          flexWrap: 'wrap',
           gap: '12px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Logo */}
-          <a
-            href="https://tuteachercenter.org"
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
-          </a>
+        {/* Logo */}
+        <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
+        </a>
 
-          {/* Resize Button + Popover */}
-          <Popover
-            isOpen={popoverOpen}
-            onClose={() => setPopoverOpen(false)}
-            interactionKind={PopoverInteractionKind.CLICK}
-            position={Position.BOTTOM_LEFT}
-            content={
-              <div
-                style={{
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  background: 'white',
-                  borderRadius: '8px',
-                  minWidth: '240px',
-                }}
-              >
-                {[
-                  { label: '8.5" × 11" (Letter)', w: 612, h: 792 },
-                  { label: '11" × 17" (Double)', w: 792, h: 1224 },
-                  { label: '13" × 19" (Small Poster)', w: 936, h: 1368 },
-                  { label: '18" × 24" (Large Poster)', w: 1296, h: 1728 },
-                  { label: '24" × 28" (Oaktag)', w: 1728, h: 2016 },
-                ].map(({ label, w, h }) => (
-                  <Button
-                    key={label}
-                    onClick={() => handleResize(w, h)}
-                    style={{
-                      paddingTop: '9px',
-                      paddingBottom: '9px',
-                      border: 'none',
-                      boxShadow: 'none',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {label}
-                  </Button>
-                ))}
+        {/* RESIZE Button with popover */}
+        <Popover
+          isOpen={resizeOpen}
+          onClose={() => setResizeOpen(false)}
+          content={
+            <Card style={{ padding: '16px', width: '300px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <Button style={{ padding: '9px 0' }} onClick={() => handleResize(612, 792)}>
+                  8.5″ × 11″ (Letter)
+                </Button>
+                <Button style={{ padding: '9px 0' }} onClick={() => handleResize(792, 1224)}>
+                  11″ × 17″ (Double)
+                </Button>
+                <Button style={{ padding: '9px 0' }} onClick={() => handleResize(936, 1368)}>
+                  13″ × 19″ (Small Poster)
+                </Button>
+                <Button style={{ padding: '9px 0' }} onClick={() => handleResize(1296, 1728)}>
+                  18″ × 24″ (Large Poster)
+                </Button>
+                <Button style={{ padding: '9px 0' }} onClick={() => handleResize(1728, 2016)}>
+                  24″ × 28″ (Oaktag)
+                </Button>
 
                 <hr />
 
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '8px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div style={{ flex: '1 1 100px' }}>
-                    <InputGroup
-                      placeholder="Width"
-                      value={customWidth}
-                      onChange={(e) => setCustomWidth(e.target.value)}
-                      rightElement={<span style={{ padding: '0 6px' }}>in</span>}
-                    />
-                  </div>
-                  <div style={{ flex: '1 1 100px' }}>
-                    <InputGroup
-                      placeholder="Height"
-                      value={customHeight}
-                      onChange={(e) => setCustomHeight(e.target.value)}
-                      rightElement={<span style={{ padding: '0 6px' }}>in</span>}
-                    />
-                  </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <InputGroup
+                    placeholder='Width (in)'
+                    value={customWidth}
+                    onChange={(e) => setCustomWidth(e.target.value)}
+                  />
+                  <InputGroup
+                    placeholder='Height (in)'
+                    value={customHeight}
+                    onChange={(e) => setCustomHeight(e.target.value)}
+                  />
                 </div>
-
                 <Button
                   intent="primary"
-                  onClick={handleCustomResize}
                   style={{
                     backgroundColor: '#488FCC',
-                    color: 'white',
-                    paddingTop: '9px',
-                    paddingBottom: '9px',
                     border: 'none',
-                    boxShadow: 'none',
+                    padding: '9px 0',
                   }}
+                  onClick={handleCustomResize}
                 >
                   Apply Custom Size
                 </Button>
               </div>
-            }
+            </Card>
+          }
+          position="bottom-left"
+          targetProps={{ ref: resizeButtonRef }}
+        >
+          <Button
+            minimal
+            style={{
+              fontWeight: 'bold',
+              fontSize: '16px',
+              color: 'white',
+              borderRadius: '3%',
+              background: 'transparent',
+              padding: '9px 12px',
+            }}
+            onClick={() => setResizeOpen(!resizeOpen)}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+            ref={resizeButtonRef}
           >
-            <Button
-              minimal
-              elementRef={resizeButtonRef}
-              onClick={() => setPopoverOpen(!popoverOpen)}
-              style={{
-                fontWeight: 'bold',
-                fontSize: '16px',
-                color: 'white',
-                borderRadius: '3%',
-                background: 'transparent',
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              RESIZE
-            </Button>
-          </Popover>
-        </div>
+            RESIZE
+          </Button>
+        </Popover>
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
 
         {/* Download Button */}
         <Popover content={downloadMenu} position="bottom-right">
           <button
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
               borderRadius: '4px',
               textTransform: 'uppercase',
               fontWeight: 'bold',
@@ -211,9 +172,6 @@ const TopNav = observer(({ store }) => {
               cursor: 'pointer',
               fontSize: '14px',
               transition: 'all 0.2s ease-in-out',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
             }}
             onMouseOver={(e) => {
               e.target.style.backgroundColor = 'white';
@@ -224,7 +182,8 @@ const TopNav = observer(({ store }) => {
               e.target.style.color = 'white';
             }}
           >
-            <Icon icon="download" /> Download
+            <Icon icon="download" />
+            Download
           </button>
         </Popover>
       </div>
