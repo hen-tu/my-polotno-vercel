@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DpXgbd9I.js"
+            "./allPathsLoader-BCfGi6cg.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-ByI24LuB.js"
+            "./splitPathsBySizeLoader-DEBYBmjD.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DyLQI5Bi.js"
+            "./allPathsLoader-BcC04Kci.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-Dc5XpGSS.js"
+            "./splitPathsBySizeLoader-vIb3eM0P.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106938,7 +106938,7 @@ const MY_SECTIONS = [
     Panel: MyTextPanel
   },
   ...sidePanelExports.DEFAULT_SECTIONS.filter(
-    (s) => !["text", "templates", "photos"].includes(s.name)
+    (s) => !["text", "templates", "photos", "resize"].includes(s.name)
   )
 ];
 function App() {
@@ -106950,7 +106950,6 @@ function App() {
         flexDirection: "column",
         height: "100vh",
         overflow: "hidden"
-        // ⬅️ Prevent weird vertical overflow
       },
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { height: "50px", flexShrink: 0 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(TopNav, { store }) }),
@@ -107020,4 +107019,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-qIZ0AVnm.js.map
+//# sourceMappingURL=index-BGRqFsKO.js.map

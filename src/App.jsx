@@ -19,7 +19,7 @@ import PhotosPanelWrapper from './components/PhotosPanelWrapper';
 const store = createStore({ showCredit: false });
 store.addPage();
 
-// Custom sidebar sections
+// Custom sidebar sections (excluding "resize")
 const MY_SECTIONS = [
   {
     ...DEFAULT_SECTIONS.find((s) => s.name === 'templates'),
@@ -35,33 +35,33 @@ const MY_SECTIONS = [
     Panel: MyTextPanel,
   },
   ...DEFAULT_SECTIONS.filter(
-    (s) => !['text', 'templates', 'photos'].includes(s.name)
+    (s) => !['text', 'templates', 'photos', 'resize'].includes(s.name)
   ),
 ];
 
 export default function App() {
   return (
     <PolotnoContainer
-  style={{
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-    overflow: 'hidden', // ⬅️ Prevent weird vertical overflow
-  }}
->
-  <div style={{ height: '50px', flexShrink: 0 }}>
-    <TopNav store={store} />
-  </div>
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ height: '50px', flexShrink: 0 }}>
+        <TopNav store={store} />
+      </div>
 
-  <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-    <SidePanelWrap>
-      <SidePanel store={store} sections={MY_SECTIONS} />
-    </SidePanelWrap>
-    <WorkspaceWrap>
-      <Toolbar store={store} />
-      <Workspace store={store} />
-    </WorkspaceWrap>
-  </div>
-</PolotnoContainer>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+        <SidePanelWrap>
+          <SidePanel store={store} sections={MY_SECTIONS} />
+        </SidePanelWrap>
+        <WorkspaceWrap>
+          <Toolbar store={store} />
+          <Workspace store={store} />
+        </WorkspaceWrap>
+      </div>
+    </PolotnoContainer>
   );
 }
