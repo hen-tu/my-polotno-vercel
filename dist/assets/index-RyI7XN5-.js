@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-ZlWYjm15.js"
+            "./allPathsLoader-vD40zgOi.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-B75bGOTK.js"
+            "./splitPathsBySizeLoader-cMSlPGeh.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-zesEIjWY.js"
+            "./allPathsLoader-ymsqDxgF.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-C-WXmc73.js"
+            "./splitPathsBySizeLoader-D3rudg1y.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106941,7 +106941,7 @@ const MY_SECTIONS = [
   },
   getSectionByName("elements"),
   getSectionByName("background"),
-  getSectionByName("uploads"),
+  getSectionByName("upload"),
   getSectionByName("layers")
 ].filter(Boolean);
 function App() {
@@ -107022,4 +107022,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-g0xNQyTy.js.map
+//# sourceMappingURL=index-RyI7XN5-.js.map

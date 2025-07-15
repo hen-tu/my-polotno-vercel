@@ -41,7 +41,7 @@ const MY_SECTIONS = [
   },
   getSectionByName('elements'),
   getSectionByName('background'),
-  getSectionByName('uploads'),
+  getSectionByName('upload'),
   getSectionByName('layers'),
 ].filter(Boolean);
 
