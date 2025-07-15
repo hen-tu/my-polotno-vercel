@@ -20,31 +20,31 @@ import PhotosPanelWrapper from './components/PhotosPanelWrapper';
 const store = createStore({ showCredit: false });
 store.addPage();
 
+// Helper: get default panel for a given section name
+const getDefaultSection = (name) =>
+  DEFAULT_SECTIONS.find((s) => s.name === name);
+
+
 // Build sections manually without 'resize'
 const MY_SECTIONS = [
   {
-    name: 'templates',
-    icon: 'file',
+    ...getDefaultSection('templates'),
     title: 'My Templates',
     Panel: TemplatesPanel,
   },
   {
-    name: 'photos',
-    icon: 'image',
-    title: 'Photos',
+    ...getDefaultSection('photos'),
     Panel: PhotosPanelWrapper,
   },
   {
-    name: 'text',
-    icon: 'font',
-    title: 'Text',
+    ...getDefaultSection('text'),
     Panel: MyTextPanel,
   },
-  { name: 'elements' },
-  { name: 'background' },
-  { name: 'uploads' },
-  { name: 'layers' }, // ✅ added back
-];
+  getDefaultSection('elements'),
+  getDefaultSection('background'),
+  getDefaultSection('uploads'),
+  getDefaultSection('layers'), // ✅ safely included now
+].filter(Boolean); // remove any undefined in case any name doesn’t exist
 
 export default function App() {
   return (

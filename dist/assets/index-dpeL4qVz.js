@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BCM45lJx.js"
+            "./allPathsLoader-D86Oz5mT.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-C8ejt9ym.js"
+            "./splitPathsBySizeLoader-DDhDXxZT.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-loKcQr8J.js"
+            "./allPathsLoader-oZXHfDu6.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-c0zeI8df.js"
+            "./splitPathsBySizeLoader-DoGEDNUY.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106923,31 +106923,27 @@ const PhotosPanelWrapper = observer(({ store: store2 }) => {
 });
 const store = storeExports.createStore({ showCredit: false });
 store.addPage();
+const getDefaultSection = (name) => DEFAULT_SECTIONS.find((s) => s.name === name);
 const MY_SECTIONS = [
   {
-    name: "templates",
-    icon: "file",
+    ...getDefaultSection("templates"),
     title: "My Templates",
     Panel: TemplatesPanel
   },
   {
-    name: "photos",
-    icon: "image",
-    title: "Photos",
+    ...getDefaultSection("photos"),
     Panel: PhotosPanelWrapper
   },
   {
-    name: "text",
-    icon: "font",
-    title: "Text",
+    ...getDefaultSection("text"),
     Panel: MyTextPanel
   },
-  { name: "elements" },
-  { name: "background" },
-  { name: "uploads" },
-  { name: "layers" }
-  // ✅ added back
-];
+  getDefaultSection("elements"),
+  getDefaultSection("background"),
+  getDefaultSection("uploads"),
+  getDefaultSection("layers")
+  // ✅ safely included now
+].filter(Boolean);
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     polotnoAppExports.PolotnoContainer,
@@ -107026,4 +107022,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-CsNy6I3k.js.map
+//# sourceMappingURL=index-dpeL4qVz.js.map
