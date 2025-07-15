@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BCfGi6cg.js"
+            "./allPathsLoader-BCM45lJx.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DEBYBmjD.js"
+            "./splitPathsBySizeLoader-C8ejt9ym.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BcC04Kci.js"
+            "./allPathsLoader-loKcQr8J.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-vIb3eM0P.js"
+            "./splitPathsBySizeLoader-c0zeI8df.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106925,21 +106925,28 @@ const store = storeExports.createStore({ showCredit: false });
 store.addPage();
 const MY_SECTIONS = [
   {
-    ...sidePanelExports.DEFAULT_SECTIONS.find((s) => s.name === "templates"),
+    name: "templates",
+    icon: "file",
     title: "My Templates",
     Panel: TemplatesPanel
   },
   {
-    ...sidePanelExports.DEFAULT_SECTIONS.find((s) => s.name === "photos"),
+    name: "photos",
+    icon: "image",
+    title: "Photos",
     Panel: PhotosPanelWrapper
   },
   {
-    ...sidePanelExports.DEFAULT_SECTIONS.find((s) => s.name === "text"),
+    name: "text",
+    icon: "font",
+    title: "Text",
     Panel: MyTextPanel
   },
-  ...sidePanelExports.DEFAULT_SECTIONS.filter(
-    (s) => !["text", "templates", "photos", "resize"].includes(s.name)
-  )
+  { name: "elements" },
+  { name: "background" },
+  { name: "uploads" },
+  { name: "layers" }
+  // ✅ added back
 ];
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -107019,4 +107026,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BGRqFsKO.js.map
+//# sourceMappingURL=index-CsNy6I3k.js.map

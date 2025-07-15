@@ -7,7 +7,7 @@ import {
   SidePanelWrap,
   WorkspaceWrap,
 } from 'polotno';
-import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import { SidePanel } from 'polotno/side-panel';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { Workspace } from 'polotno/canvas/workspace';
 
@@ -16,27 +16,34 @@ import MyTextPanel from './components/MyTextPanel';
 import TemplatesPanel from './components/TemplatesPanel';
 import PhotosPanelWrapper from './components/PhotosPanelWrapper';
 
+// Create the store
 const store = createStore({ showCredit: false });
 store.addPage();
 
-// Custom sidebar sections (excluding "resize")
+// Build sections manually without 'resize'
 const MY_SECTIONS = [
   {
-    ...DEFAULT_SECTIONS.find((s) => s.name === 'templates'),
+    name: 'templates',
+    icon: 'file',
     title: 'My Templates',
     Panel: TemplatesPanel,
   },
   {
-    ...DEFAULT_SECTIONS.find((s) => s.name === 'photos'),
+    name: 'photos',
+    icon: 'image',
+    title: 'Photos',
     Panel: PhotosPanelWrapper,
   },
   {
-    ...DEFAULT_SECTIONS.find((s) => s.name === 'text'),
+    name: 'text',
+    icon: 'font',
+    title: 'Text',
     Panel: MyTextPanel,
   },
-  ...DEFAULT_SECTIONS.filter(
-    (s) => !['text', 'templates', 'photos', 'resize'].includes(s.name)
-  ),
+  { name: 'elements' },
+  { name: 'background' },
+  { name: 'uploads' },
+  { name: 'layers' }, // ✅ added back
 ];
 
 export default function App() {
