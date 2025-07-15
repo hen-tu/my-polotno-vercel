@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CPAIyuDw.js"
+            "./allPathsLoader-ZlWYjm15.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BLU6spx1.js"
+            "./splitPathsBySizeLoader-B75bGOTK.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-C3V4qxtE.js"
+            "./allPathsLoader-zesEIjWY.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DycdgstP.js"
+            "./splitPathsBySizeLoader-C-WXmc73.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106923,37 +106923,26 @@ const PhotosPanelWrapper = observer(({ store: store2 }) => {
 });
 const store = storeExports.createStore({ showCredit: false });
 store.addPage();
-const getDefaultSection = (name) => sidePanelExports.DEFAULT_SECTIONS.find((s) => s.name === name);
+console.log("Available section names:", sidePanelExports.DEFAULT_SECTIONS.map((s) => s.name));
+const getSectionByName = (name) => sidePanelExports.DEFAULT_SECTIONS.find((s) => s.name === name);
 const MY_SECTIONS = [
   {
-    ...getDefaultSection("templates"),
+    ...getSectionByName("templates"),
     title: "My Templates",
     Panel: TemplatesPanel
   },
   {
-    ...getDefaultSection("photos"),
+    ...getSectionByName("photos"),
     Panel: PhotosPanelWrapper
   },
   {
-    ...getDefaultSection("text"),
+    ...getSectionByName("text"),
     Panel: MyTextPanel
   },
-  {
-    name: "elements",
-    ...getDefaultSection("elements")
-  },
-  {
-    name: "background",
-    ...getDefaultSection("background")
-  },
-  {
-    name: "uploads",
-    ...getDefaultSection("uploads")
-  },
-  {
-    name: "layers",
-    ...getDefaultSection("layers")
-  }
+  getSectionByName("elements"),
+  getSectionByName("background"),
+  getSectionByName("uploads"),
+  getSectionByName("layers")
 ].filter(Boolean);
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -107033,4 +107022,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BHCbpTOu.js.map
+//# sourceMappingURL=index-g0xNQyTy.js.map

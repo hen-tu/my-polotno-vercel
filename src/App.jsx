@@ -19,42 +19,32 @@ import PhotosPanelWrapper from './components/PhotosPanelWrapper';
 const store = createStore({ showCredit: false });
 store.addPage();
 
-// ✅ Helper to get safe default section
-const getDefaultSection = (name) =>
+//sections
+console.log('Available section names:', DEFAULT_SECTIONS.map((s) => s.name));
+
+const getSectionByName = (name) =>
   DEFAULT_SECTIONS.find((s) => s.name === name);
 
-// ✅ Build custom sidebar
 const MY_SECTIONS = [
   {
-    ...getDefaultSection('templates'),
+    ...getSectionByName('templates'),
     title: 'My Templates',
     Panel: TemplatesPanel,
   },
   {
-    ...getDefaultSection('photos'),
+    ...getSectionByName('photos'),
     Panel: PhotosPanelWrapper,
   },
   {
-    ...getDefaultSection('text'),
+    ...getSectionByName('text'),
     Panel: MyTextPanel,
   },
-  {
-    name: 'elements',
-    ...getDefaultSection('elements'),
-  },
-  {
-    name: 'background',
-    ...getDefaultSection('background'),
-  },
-  {
-    name: 'uploads',
-    ...getDefaultSection('uploads'),
-  },
-  {
-    name: 'layers',
-    ...getDefaultSection('layers'),
-  },
+  getSectionByName('elements'),
+  getSectionByName('background'),
+  getSectionByName('uploads'),
+  getSectionByName('layers'),
 ].filter(Boolean);
+
 
 export default function App() {
   return (
