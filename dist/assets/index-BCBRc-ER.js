@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-D86Oz5mT.js"
+            "./allPathsLoader-DLqQSvye.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DDhDXxZT.js"
+            "./splitPathsBySizeLoader-DWD3FRL8.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-oZXHfDu6.js"
+            "./allPathsLoader-C0kX8cKA.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DoGEDNUY.js"
+            "./splitPathsBySizeLoader-DDkOy6wz.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106923,7 +106923,7 @@ const PhotosPanelWrapper = observer(({ store: store2 }) => {
 });
 const store = storeExports.createStore({ showCredit: false });
 store.addPage();
-const getDefaultSection = (name) => DEFAULT_SECTIONS.find((s) => s.name === name);
+const getDefaultSection = (name) => sidePanelExports.DEFAULT_SECTIONS.find((s) => s.name === name);
 const MY_SECTIONS = [
   {
     ...getDefaultSection("templates"),
@@ -106942,7 +106942,6 @@ const MY_SECTIONS = [
   getDefaultSection("background"),
   getDefaultSection("uploads"),
   getDefaultSection("layers")
-  // ✅ safely included now
 ].filter(Boolean);
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -107022,4 +107021,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-dpeL4qVz.js.map
+//# sourceMappingURL=index-BCBRc-ER.js.map
