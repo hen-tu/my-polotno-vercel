@@ -38,11 +38,23 @@ const MY_SECTIONS = [
     ...getDefaultSection('text'),
     Panel: MyTextPanel,
   },
-  getDefaultSection('elements'),
-  getDefaultSection('background'),
-  getDefaultSection('uploads'),
-  getDefaultSection('layers'),
-].filter(Boolean); // ✅ Filters out any undefined sections
+  {
+    name: 'elements',
+    ...getDefaultSection('elements'),
+  },
+  {
+    name: 'background',
+    ...getDefaultSection('background'),
+  },
+  {
+    name: 'uploads',
+    ...getDefaultSection('uploads'),
+  },
+  {
+    name: 'layers',
+    ...getDefaultSection('layers'),
+  },
+].filter(Boolean);
 
 export default function App() {
   return (

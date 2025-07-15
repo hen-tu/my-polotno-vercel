@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DLqQSvye.js"
+            "./allPathsLoader-CPAIyuDw.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DWD3FRL8.js"
+            "./splitPathsBySizeLoader-BLU6spx1.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-C0kX8cKA.js"
+            "./allPathsLoader-C3V4qxtE.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DDkOy6wz.js"
+            "./splitPathsBySizeLoader-DycdgstP.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106938,10 +106938,22 @@ const MY_SECTIONS = [
     ...getDefaultSection("text"),
     Panel: MyTextPanel
   },
-  getDefaultSection("elements"),
-  getDefaultSection("background"),
-  getDefaultSection("uploads"),
-  getDefaultSection("layers")
+  {
+    name: "elements",
+    ...getDefaultSection("elements")
+  },
+  {
+    name: "background",
+    ...getDefaultSection("background")
+  },
+  {
+    name: "uploads",
+    ...getDefaultSection("uploads")
+  },
+  {
+    name: "layers",
+    ...getDefaultSection("layers")
+  }
 ].filter(Boolean);
 function App() {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -107021,4 +107033,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BCBRc-ER.js.map
+//# sourceMappingURL=index-BHCbpTOu.js.map
