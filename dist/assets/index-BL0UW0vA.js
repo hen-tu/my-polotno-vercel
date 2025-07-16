@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-qNh6HmPH.js"
+            "./allPathsLoader-B_ZrjICR.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-mY565xn3.js"
+            "./splitPathsBySizeLoader-CyfrKro1.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-kCyeuvek.js"
+            "./allPathsLoader-H0DEGKIP.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DClnsaKU.js"
+            "./splitPathsBySizeLoader-2Cm9ouzo.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,12 +106317,13 @@ const TopNav = observer(({ store: store2 }) => {
     URL.revokeObjectURL(url2);
   };
   const handleAddToCart = async () => {
-    const pdfBlob = await store2.saveAsPDF();
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64PDF = reader.result;
-      setShowModal(true);
-      setTimeout(() => {
+    setShowModal(true);
+    setTimeout(async () => {
+      const pdfBuffer = await store2.saveAsPDF();
+      const pdfBlob = new Blob([pdfBuffer], { type: "application/pdf" });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64PDF = reader.result;
         const iframe = document.getElementById("woo-iframe");
         if (iframe) {
           iframe.contentWindow.postMessage(
@@ -106333,9 +106334,9 @@ const TopNav = observer(({ store: store2 }) => {
             "*"
           );
         }
-      }, 1e3);
-    };
-    reader.readAsDataURL(pdfBlob);
+      };
+      reader.readAsDataURL(pdfBlob);
+    }, 800);
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -106542,7 +106543,7 @@ const TopNav = observer(({ store: store2 }) => {
                 {
                   id: "woo-iframe",
                   src: "https://tuteachercenter.org/product/customizer-order/",
-                  style: { width: "50%", height: "50%", border: "none" }
+                  style: { width: "100%", height: "100%", border: "none" }
                 }
               )
             ]
@@ -107124,4 +107125,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DAaqTSOH.js.map
+//# sourceMappingURL=index-BL0UW0vA.js.map

@@ -48,29 +48,29 @@ const TopNav = observer(({ store }) => {
   };
 
   const handleAddToCart = async () => {
-    const pdfBlob = await store.saveAsPDF();
-    const reader = new FileReader();
+    setShowModal(true);
 
-    reader.onloadend = () => {
-      const base64PDF = reader.result;
-      setShowModal(true);
+    setTimeout(async () => {
+      const pdfBuffer = await store.saveAsPDF();
+      const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
 
-      // Send the PDF to the iframe after it's loaded
-      setTimeout(() => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64PDF = reader.result;
         const iframe = document.getElementById('woo-iframe');
         if (iframe) {
           iframe.contentWindow.postMessage(
             {
               type: 'SET_PDF',
-              pdfBase64: base64PDF
+              pdfBase64: base64PDF,
             },
             '*'
           );
         }
-      }, 1000);
-    };
+      };
 
-    reader.readAsDataURL(pdfBlob);
+      reader.readAsDataURL(pdfBlob);
+    }, 800);
   };
 
   const downloadMenu = (
@@ -273,7 +273,7 @@ const TopNav = observer(({ store }) => {
             <iframe
               id="woo-iframe"
               src="https://tuteachercenter.org/product/customizer-order/"
-              style={{ width: '50%', height: '50%', border: 'none' }}
+              style={{ width: '100%', height: '100%', border: 'none' }}
             />
           </div>
         </div>
