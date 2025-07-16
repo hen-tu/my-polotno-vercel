@@ -5,7 +5,8 @@ import { Icon } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
 
-// ✅ MobX-safe resize
+console.log('✅ TopNav loaded');
+
 const applyResize = action((store, w, h) => {
   const page = store.activePage;
   if (page) {
@@ -13,12 +14,11 @@ const applyResize = action((store, w, h) => {
   }
 });
 
-console.log('✅ TopNav loaded');
-
 const TopNav = observer(({ store }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
+  const [showModal, setShowModal] = useState(false);
   const resizeButtonRef = useRef(null);
 
   const handleResize = (w, h) => {
@@ -45,6 +45,32 @@ const TopNav = observer(({ store }) => {
     const url = URL.createObjectURL(blob);
     downloadFile(url, 'design.pdf');
     URL.revokeObjectURL(url);
+  };
+
+  const handleAddToCart = async () => {
+    const pdfBlob = await store.saveAsPDF();
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const base64PDF = reader.result;
+      setShowModal(true);
+
+      // Send the PDF to the iframe after it's loaded
+      setTimeout(() => {
+        const iframe = document.getElementById('woo-iframe');
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            {
+              type: 'SET_PDF',
+              pdfBase64: base64PDF
+            },
+            '*'
+          );
+        }
+      }, 1000);
+    };
+
+    reader.readAsDataURL(pdfBlob);
   };
 
   const downloadMenu = (
@@ -131,6 +157,27 @@ const TopNav = observer(({ store }) => {
             Download
           </button>
         </Popover>
+
+        {/* Add to Cart Button */}
+        <Button
+          onClick={handleAddToCart}
+          style={{
+            marginLeft: '8px',
+            textTransform: 'uppercase',
+            color: '#ce3d50',
+            backgroundColor: '#ffffff',
+            borderRadius: '4px',
+            border: '1px solid #ce3d50',
+            padding: '6px 12px',
+            fontWeight: 600,
+            letterSpacing: '0.5px',
+            cursor: 'pointer',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fceced')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
+        >
+          Add to Cart
+        </Button>
       </div>
 
       {/* Resize Dialog */}
@@ -160,12 +207,12 @@ const TopNav = observer(({ store }) => {
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <InputGroup
-              placeholder='Width (inches)'
+              placeholder="Width (inches)"
               value={customWidth}
               onChange={(e) => setCustomWidth(e.target.value)}
             />
             <InputGroup
-              placeholder='Height (inches)'
+              placeholder="Height (inches)"
               value={customHeight}
               onChange={(e) => setCustomHeight(e.target.value)}
             />
@@ -179,6 +226,58 @@ const TopNav = observer(({ store }) => {
           </Button>
         </div>
       </Dialog>
+
+      {/* Add to Cart Modal */}
+      {showModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              width: '90%',
+              height: '90%',
+              backgroundColor: '#fff',
+              position: 'relative',
+              borderRadius: '8px',
+              overflow: 'hidden',
+            }}
+          >
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                zIndex: 2,
+                background: '#ce3d50',
+                color: '#fff',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              ✖
+            </button>
+            <iframe
+              id="woo-iframe"
+              src="https://tuteachercenter.org/product/customizer-order/"
+              style={{ width: '50%', height: '50%', border: 'none' }}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 });

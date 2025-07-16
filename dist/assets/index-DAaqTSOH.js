@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-vD40zgOi.js"
+            "./allPathsLoader-qNh6HmPH.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-cMSlPGeh.js"
+            "./splitPathsBySizeLoader-mY565xn3.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-ymsqDxgF.js"
+            "./allPathsLoader-kCyeuvek.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D3rudg1y.js"
+            "./splitPathsBySizeLoader-DClnsaKU.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106280,18 +106280,19 @@ var sidePanelExports = requireSidePanel();
 var toolbarExports = requireToolbar();
 var workspaceExports = requireWorkspace();
 var downloadExports = requireDownload();
+console.log("✅ TopNav loaded");
 const applyResize = action((store2, w, h) => {
   const page2 = store2.activePage;
   if (page2) {
     page2.set({ width: w, height: h });
   }
 });
-console.log("✅ TopNav loaded");
 const TopNav = observer(({ store: store2 }) => {
   var _a;
   const [dialogOpen, setDialogOpen] = reactExports.useState(false);
   const [customWidth, setCustomWidth] = reactExports.useState("");
   const [customHeight, setCustomHeight] = reactExports.useState("");
+  const [showModal, setShowModal] = reactExports.useState(false);
   const resizeButtonRef = reactExports.useRef(null);
   const handleResize = (w, h) => {
     applyResize(store2, w, h);
@@ -106314,6 +106315,27 @@ const TopNav = observer(({ store: store2 }) => {
     const url2 = URL.createObjectURL(blob);
     downloadExports.downloadFile(url2, "design.pdf");
     URL.revokeObjectURL(url2);
+  };
+  const handleAddToCart = async () => {
+    const pdfBlob = await store2.saveAsPDF();
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64PDF = reader.result;
+      setShowModal(true);
+      setTimeout(() => {
+        const iframe = document.getElementById("woo-iframe");
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            {
+              type: "SET_PDF",
+              pdfBase64: base64PDF
+            },
+            "*"
+          );
+        }
+      }, 1e3);
+    };
+    reader.readAsDataURL(pdfBlob);
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -106391,7 +106413,28 @@ const TopNav = observer(({ store: store2 }) => {
                 "Download"
               ]
             }
-          ) })
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              onClick: handleAddToCart,
+              style: {
+                marginLeft: "8px",
+                textTransform: "uppercase",
+                color: "#ce3d50",
+                backgroundColor: "#ffffff",
+                borderRadius: "4px",
+                border: "1px solid #ce3d50",
+                padding: "6px 12px",
+                fontWeight: 600,
+                letterSpacing: "0.5px",
+                cursor: "pointer"
+              },
+              onMouseOver: (e) => e.currentTarget.style.backgroundColor = "#fceced",
+              onMouseOut: (e) => e.currentTarget.style.backgroundColor = "#ffffff",
+              children: "Add to Cart"
+            }
+          )
         ]
       }
     ),
@@ -106446,6 +106489,65 @@ const TopNav = observer(({ store: store2 }) => {
             }
           )
         ] })
+      }
+    ),
+    showModal && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(0,0,0,0.6)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999
+        },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            style: {
+              width: "90%",
+              height: "90%",
+              backgroundColor: "#fff",
+              position: "relative",
+              borderRadius: "8px",
+              overflow: "hidden"
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  onClick: () => setShowModal(false),
+                  style: {
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    zIndex: 2,
+                    background: "#ce3d50",
+                    color: "#fff",
+                    border: "none",
+                    padding: "4px 10px",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  },
+                  children: "✖"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "iframe",
+                {
+                  id: "woo-iframe",
+                  src: "https://tuteachercenter.org/product/customizer-order/",
+                  style: { width: "50%", height: "50%", border: "none" }
+                }
+              )
+            ]
+          }
+        )
       }
     )
   ] });
@@ -107022,4 +107124,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-RyI7XN5-.js.map
+//# sourceMappingURL=index-DAaqTSOH.js.map
