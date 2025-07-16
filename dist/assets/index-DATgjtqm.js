@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-B_ZrjICR.js"
+            "./allPathsLoader-CP8tUDD8.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CyfrKro1.js"
+            "./splitPathsBySizeLoader-IrvMQRsT.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-H0DEGKIP.js"
+            "./allPathsLoader-D8cVtaJ2.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-2Cm9ouzo.js"
+            "./splitPathsBySizeLoader-BqHedifc.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,15 +106317,15 @@ const TopNav = observer(({ store: store2 }) => {
     URL.revokeObjectURL(url2);
   };
   const handleAddToCart = async () => {
-    setShowModal(true);
-    setTimeout(async () => {
-      const pdfBuffer = await store2.saveAsPDF();
-      const pdfBlob = new Blob([pdfBuffer], { type: "application/pdf" });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64PDF = reader.result;
+    const pdfData = await store2.saveAsPDF();
+    const blob = new Blob([pdfData], { type: "application/pdf" });
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64PDF = reader.result;
+      setShowModal(true);
+      setTimeout(() => {
         const iframe = document.getElementById("woo-iframe");
-        if (iframe) {
+        if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage(
             {
               type: "SET_PDF",
@@ -106334,9 +106334,9 @@ const TopNav = observer(({ store: store2 }) => {
             "*"
           );
         }
-      };
-      reader.readAsDataURL(pdfBlob);
-    }, 800);
+      }, 1e3);
+    };
+    reader.readAsDataURL(blob);
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -107125,4 +107125,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BL0UW0vA.js.map
+//# sourceMappingURL=index-DATgjtqm.js.map

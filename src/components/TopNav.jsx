@@ -48,30 +48,31 @@ const TopNav = observer(({ store }) => {
   };
 
   const handleAddToCart = async () => {
+  const pdfData = await store.saveAsPDF(); // returns Uint8Array
+  const blob = new Blob([pdfData], { type: 'application/pdf' });
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64PDF = reader.result; // this is a data:application/pdf;base64,... string
+
     setShowModal(true);
 
-    setTimeout(async () => {
-      const pdfBuffer = await store.saveAsPDF();
-      const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64PDF = reader.result;
-        const iframe = document.getElementById('woo-iframe');
-        if (iframe) {
-          iframe.contentWindow.postMessage(
-            {
-              type: 'SET_PDF',
-              pdfBase64: base64PDF,
-            },
-            '*'
-          );
-        }
-      };
-
-      reader.readAsDataURL(pdfBlob);
-    }, 800);
+    setTimeout(() => {
+      const iframe = document.getElementById('woo-iframe');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
+          {
+            type: 'SET_PDF',
+            pdfBase64: base64PDF
+          },
+          '*'
+        );
+      }
+    }, 1000);
   };
+
+  reader.readAsDataURL(blob); // ✅ use Blob here, not raw pdfData
+};
 
   const downloadMenu = (
     <Menu>
