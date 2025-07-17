@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-B5Xb9zn-.js"
+            "./allPathsLoader-DUCEO9UG.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BUvtoBwm.js"
+            "./splitPathsBySizeLoader-FlHnA9NV.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Bs89k3rn.js"
+            "./allPathsLoader-CBFGAzNA.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D4hBQR-N.js"
+            "./splitPathsBySizeLoader-CPn555yb.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106310,40 +106310,33 @@ const TopNav = observer(({ store: store2 }) => {
     downloadExports.downloadFile(dataURL, "design.png");
   };
   const handleDownloadPDF = async () => {
-    const pdfData = await store2.saveAsPDF();
-    const blob = new Blob([pdfData], { type: "application/pdf" });
+    const blob = await store2.toPDFBlob();
     const url2 = URL.createObjectURL(blob);
     downloadExports.downloadFile(url2, "design.pdf");
     URL.revokeObjectURL(url2);
   };
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
-    const pdfArray = await store2.saveAsPDF();
-    if (!pdfArray || pdfArray.length < 100) {
-      console.error("❌ Invalid PDF data returned from store.saveAsPDF():", pdfArray);
-      alert("Something went wrong while generating the PDF. Please try again.");
+    const pdfBlob = await store2.toPDFBlob();
+    if (!pdfBlob || !(pdfBlob instanceof Blob)) {
+      console.error("❌ Invalid PDF blob");
       return;
     }
-    const pdfBlob = new Blob([pdfArray], { type: "application/pdf" });
-    console.log("📄 Converted to pdfBlob:", pdfBlob);
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64PDF = reader.result;
-      console.log("📤 Sending to iframe:", base64PDF.slice(0, 100));
+      console.log("📤 Sending to iframe:", (base64PDF == null ? void 0 : base64PDF.slice(0, 40)) + "...");
       setShowModal(true);
       setTimeout(() => {
         const iframe = document.getElementById("woo-iframe");
-        if (iframe && iframe.contentWindow) {
+        if (iframe == null ? void 0 : iframe.contentWindow) {
           console.log("📨 Posting message to iframe...");
           iframe.contentWindow.postMessage(
-            {
-              type: "SET_PDF",
-              pdfBase64: base64PDF
-            },
+            { type: "SET_PDF", pdfBase64: base64PDF },
             "*"
           );
         } else {
-          console.warn("❌ iframe not found or not ready");
+          console.warn("⚠️ iframe not ready");
         }
       }, 2500);
     };
@@ -106384,12 +106377,8 @@ const TopNav = observer(({ store: store2 }) => {
                 borderRadius: "3px",
                 background: "transparent"
               },
-              onMouseOver: (e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-              },
-              onMouseOut: (e) => {
-                e.currentTarget.style.background = "transparent";
-              },
+              onMouseOver: (e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)",
+              onMouseOut: (e) => e.currentTarget.style.background = "transparent",
               children: "RESIZE"
             }
           ),
@@ -106474,32 +106463,10 @@ const TopNav = observer(({ store: store2 }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => handleResize(1728, 2016), children: "24″ × 28″ (Oaktag)" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("hr", {}),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: "8px" }, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              InputGroup,
-              {
-                placeholder: "Width (inches)",
-                value: customWidth,
-                onChange: (e) => setCustomWidth(e.target.value)
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              InputGroup,
-              {
-                placeholder: "Height (inches)",
-                value: customHeight,
-                onChange: (e) => setCustomHeight(e.target.value)
-              }
-            )
+            /* @__PURE__ */ jsxRuntimeExports.jsx(InputGroup, { placeholder: "Width (inches)", value: customWidth, onChange: (e) => setCustomWidth(e.target.value) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(InputGroup, { placeholder: "Height (inches)", value: customHeight, onChange: (e) => setCustomHeight(e.target.value) })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              intent: "primary",
-              style: { backgroundColor: "#488FCC", padding: "9px 14px" },
-              onClick: handleCustomResize,
-              children: "Apply Custom Size"
-            }
-          )
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { intent: "primary", style: { backgroundColor: "#488FCC", padding: "9px 14px" }, onClick: handleCustomResize, children: "Apply Custom Size" })
         ] })
       }
     ),
@@ -107136,4 +107103,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DjB_Apjf.js.map
+//# sourceMappingURL=index-ZoV_KGuW.js.map

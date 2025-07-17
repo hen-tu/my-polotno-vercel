@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Popover, Menu, MenuItem, Dialog, InputGroup, Position } from '@blueprintjs/core';
+import { Button, Popover, Menu, MenuItem, Dialog, InputGroup } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
@@ -40,52 +40,41 @@ const TopNav = observer(({ store }) => {
   };
 
   const handleDownloadPDF = async () => {
-    const pdfData = await store.saveAsPDF();
-    const blob = new Blob([pdfData], { type: 'application/pdf' });
+    const blob = await store.toPDFBlob();
     const url = URL.createObjectURL(blob);
     downloadFile(url, 'design.pdf');
     URL.revokeObjectURL(url);
   };
 
-const handleAddToCart = async () => {
-  console.log('🛒 handleAddToCart started');
+  const handleAddToCart = async () => {
+    console.log('🛒 handleAddToCart started');
+    const pdfBlob = await store.toPDFBlob();
 
-  const pdfArray = await store.saveAsPDF();
-  if (!pdfArray || pdfArray.length < 100) {
-    console.error('❌ Invalid PDF data returned from store.saveAsPDF():', pdfArray);
-    alert('Something went wrong while generating the PDF. Please try again.');
-    return;
-  }
+    if (!pdfBlob || !(pdfBlob instanceof Blob)) {
+      console.error('❌ Invalid PDF blob');
+      return;
+    }
 
-  const pdfBlob = new Blob([pdfArray], { type: 'application/pdf' });
-  console.log('📄 Converted to pdfBlob:', pdfBlob);
-
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const base64PDF = reader.result;
-    console.log('📤 Sending to iframe:', base64PDF.slice(0, 100));
-
-    setShowModal(true);
-
-    setTimeout(() => {
-      const iframe = document.getElementById('woo-iframe');
-      if (iframe && iframe.contentWindow) {
-        console.log('📨 Posting message to iframe...');
-        iframe.contentWindow.postMessage(
-          {
-            type: 'SET_PDF',
-            pdfBase64: base64PDF,
-          },
-          '*'
-        );
-      } else {
-        console.warn('❌ iframe not found or not ready');
-      }
-    }, 2500);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64PDF = reader.result;
+      console.log('📤 Sending to iframe:', base64PDF?.slice(0, 40) + '...');
+      setShowModal(true);
+      setTimeout(() => {
+        const iframe = document.getElementById('woo-iframe');
+        if (iframe?.contentWindow) {
+          console.log('📨 Posting message to iframe...');
+          iframe.contentWindow.postMessage(
+            { type: 'SET_PDF', pdfBase64: base64PDF },
+            '*'
+          );
+        } else {
+          console.warn('⚠️ iframe not ready');
+        }
+      }, 2500);
+    };
+    reader.readAsDataURL(pdfBlob);
   };
-
-  reader.readAsDataURL(pdfBlob);
-};
 
   const downloadMenu = (
     <Menu>
@@ -109,12 +98,10 @@ const handleAddToCart = async () => {
           gap: '12px',
         }}
       >
-        {/* Logo */}
         <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
         </a>
 
-        {/* Resize Button */}
         <Button
           minimal
           elementRef={resizeButtonRef}
@@ -127,20 +114,14 @@ const handleAddToCart = async () => {
             borderRadius: '3px',
             background: 'transparent',
           }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
+          onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
         >
           RESIZE
         </Button>
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Download Button */}
         <Popover content={downloadMenu} position="bottom-right">
           <button
             style={{
@@ -172,7 +153,6 @@ const handleAddToCart = async () => {
           </button>
         </Popover>
 
-        {/* Add to Cart Button */}
         <Button
           onClick={handleAddToCart}
           style={{
@@ -194,7 +174,6 @@ const handleAddToCart = async () => {
         </Button>
       </div>
 
-      {/* Resize Dialog */}
       <Dialog
         isOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -216,32 +195,17 @@ const handleAddToCart = async () => {
           <Button onClick={() => handleResize(936, 1368)}>13″ × 19″ (Small Poster)</Button>
           <Button onClick={() => handleResize(1296, 1728)}>18″ × 24″ (Large Poster)</Button>
           <Button onClick={() => handleResize(1728, 2016)}>24″ × 28″ (Oaktag)</Button>
-
           <hr />
-
           <div style={{ display: 'flex', gap: '8px' }}>
-            <InputGroup
-              placeholder="Width (inches)"
-              value={customWidth}
-              onChange={(e) => setCustomWidth(e.target.value)}
-            />
-            <InputGroup
-              placeholder="Height (inches)"
-              value={customHeight}
-              onChange={(e) => setCustomHeight(e.target.value)}
-            />
+            <InputGroup placeholder="Width (inches)" value={customWidth} onChange={(e) => setCustomWidth(e.target.value)} />
+            <InputGroup placeholder="Height (inches)" value={customHeight} onChange={(e) => setCustomHeight(e.target.value)} />
           </div>
-          <Button
-            intent="primary"
-            style={{ backgroundColor: '#488FCC', padding: '9px 14px' }}
-            onClick={handleCustomResize}
-          >
+          <Button intent="primary" style={{ backgroundColor: '#488FCC', padding: '9px 14px' }} onClick={handleCustomResize}>
             Apply Custom Size
           </Button>
         </div>
       </Dialog>
 
-      {/* Add to Cart Modal */}
       {showModal && (
         <div
           style={{
