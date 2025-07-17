@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-I1tV17VW.js"
+            "./allPathsLoader-BUyZh2XG.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BsCWAoXG.js"
+            "./splitPathsBySizeLoader-C_IGeWtQ.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Cy3dRqAj.js"
+            "./allPathsLoader-CceTkjP1.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-MZcNdBPR.js"
+            "./splitPathsBySizeLoader-CxSV6N4n.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106327,7 +106327,7 @@ const TopNav = observer(({ store: store2 }) => {
         console.log("✅ Iframe loaded, posting image...");
         iframe.contentWindow.postMessage(
           {
-            type: "SET_IMAGE",
+            type: "SET_IMAGE_TO_FORM",
             imageBase64: imageDataUrl
           },
           "*"
@@ -107097,4 +107097,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-3xxLd5CQ.js.map
+//# sourceMappingURL=index-aRKMrjoP.js.map

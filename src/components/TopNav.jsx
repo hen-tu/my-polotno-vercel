@@ -64,7 +64,7 @@ const handleAddToCart = async () => {
       console.log('✅ Iframe loaded, posting image...');
       iframe.contentWindow.postMessage(
         {
-          type: 'SET_IMAGE',
+          type: 'SET_IMAGE_TO_FORM',
           imageBase64: imageDataUrl
         },
         '*'
