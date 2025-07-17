@@ -50,13 +50,14 @@ const TopNav = observer(({ store }) => {
 const handleAddToCart = async () => {
   console.log('🛒 handleAddToCart started');
 
-  const pdfBlob = await store.saveAsPDF();
-  console.log('📄 Got pdfBlob:', pdfBlob);
+  const pdfArray = await store.saveAsPDF();
+  const pdfBlob = new Blob([pdfArray], { type: 'application/pdf' });
+  console.log('📄 Converted to pdfBlob:', pdfBlob);
 
   const reader = new FileReader();
   reader.onloadend = () => {
     const base64PDF = reader.result;
-    console.log('📤 Sending to iframe:', base64PDF.slice(0, 100)); // log start only
+    console.log('📤 Sending to iframe:', base64PDF.slice(0, 100));
 
     setShowModal(true);
 
@@ -79,6 +80,7 @@ const handleAddToCart = async () => {
 
   reader.readAsDataURL(pdfBlob);
 };
+
   const downloadMenu = (
     <Menu>
       <MenuItem text="Save as Image" onClick={handleDownloadImage} />
