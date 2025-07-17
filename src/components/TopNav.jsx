@@ -51,6 +51,12 @@ const handleAddToCart = async () => {
   console.log('🛒 handleAddToCart started');
 
   const pdfArray = await store.saveAsPDF();
+  if (!pdfArray || pdfArray.length < 100) {
+    console.error('❌ Invalid PDF data returned from store.saveAsPDF():', pdfArray);
+    alert('Something went wrong while generating the PDF. Please try again.');
+    return;
+  }
+
   const pdfBlob = new Blob([pdfArray], { type: 'application/pdf' });
   console.log('📄 Converted to pdfBlob:', pdfBlob);
 

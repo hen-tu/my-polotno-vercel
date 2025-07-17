@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Bb6pYSjk.js"
+            "./allPathsLoader-B5Xb9zn-.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DeM49RE3.js"
+            "./splitPathsBySizeLoader-BUvtoBwm.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DZMblHqx.js"
+            "./allPathsLoader-Bs89k3rn.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-GSEalv-F.js"
+            "./splitPathsBySizeLoader-D4hBQR-N.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106319,6 +106319,11 @@ const TopNav = observer(({ store: store2 }) => {
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
     const pdfArray = await store2.saveAsPDF();
+    if (!pdfArray || pdfArray.length < 100) {
+      console.error("❌ Invalid PDF data returned from store.saveAsPDF():", pdfArray);
+      alert("Something went wrong while generating the PDF. Please try again.");
+      return;
+    }
     const pdfBlob = new Blob([pdfArray], { type: "application/pdf" });
     console.log("📄 Converted to pdfBlob:", pdfBlob);
     const reader = new FileReader();
@@ -107131,4 +107136,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BQNUEs8x.js.map
+//# sourceMappingURL=index-DjB_Apjf.js.map
