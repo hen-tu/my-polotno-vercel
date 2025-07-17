@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-VuCAq5oi.js"
+            "./allPathsLoader-I1tV17VW.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BWeYP91k.js"
+            "./splitPathsBySizeLoader-BsCWAoXG.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BTa89-Pb.js"
+            "./allPathsLoader-Cy3dRqAj.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CWymayv3.js"
+            "./splitPathsBySizeLoader-MZcNdBPR.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,26 +106317,24 @@ const TopNav = observer(({ store: store2 }) => {
   };
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
-    const dataUrl = await store2.toDataURL();
-    if (!dataUrl || typeof dataUrl !== "string") {
-      console.error("❌ Failed to generate image from store");
-      return;
-    }
-    console.log("📤 Sending image to iframe:", dataUrl.slice(0, 40) + "...");
+    const imageDataUrl = await store2.toDataURL();
+    console.log("📤 Sending image to iframe:", imageDataUrl.slice(0, 100) + "...");
     setShowModal(true);
-    setTimeout(() => {
+    const waitForIframe = () => {
       const iframe = document.getElementById("woo-iframe");
-      if (iframe == null ? void 0 : iframe.contentWindow) {
-        console.log("📨 Posting message to iframe...");
+      if (!iframe) return;
+      iframe.onload = () => {
+        console.log("✅ Iframe loaded, posting image...");
         iframe.contentWindow.postMessage(
           {
             type: "SET_IMAGE",
-            imageBase64: dataUrl
+            imageBase64: imageDataUrl
           },
           "*"
         );
-      }
-    }, 2500);
+      };
+    };
+    setTimeout(waitForIframe, 100);
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -107099,4 +107097,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DCzFb8ld.js.map
+//# sourceMappingURL=index-3xxLd5CQ.js.map

@@ -49,28 +49,30 @@ const TopNav = observer(({ store }) => {
 const handleAddToCart = async () => {
   console.log('🛒 handleAddToCart started');
 
-  const dataUrl = await store.toDataURL();
-  if (!dataUrl || typeof dataUrl !== 'string') {
-    console.error('❌ Failed to generate image from store');
-    return;
-  }
+  const imageDataUrl = await store.toDataURL();
+  console.log('📤 Sending image to iframe:', imageDataUrl.slice(0, 100) + '...');
 
-  console.log('📤 Sending image to iframe:', dataUrl.slice(0, 40) + '...');
+  // Show modal
   setShowModal(true);
 
-  setTimeout(() => {
+  // Wait for iframe to load before posting
+  const waitForIframe = () => {
     const iframe = document.getElementById('woo-iframe');
-    if (iframe?.contentWindow) {
-      console.log('📨 Posting message to iframe...');
+    if (!iframe) return;
+
+    iframe.onload = () => {
+      console.log('✅ Iframe loaded, posting image...');
       iframe.contentWindow.postMessage(
         {
           type: 'SET_IMAGE',
-          imageBase64: dataUrl
+          imageBase64: imageDataUrl
         },
         '*'
       );
-    }
-  }, 2500);
+    };
+  };
+
+  setTimeout(waitForIframe, 100); // slight delay to allow DOM to mount iframe
 };
 
   const downloadMenu = (
