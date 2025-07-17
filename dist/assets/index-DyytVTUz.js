@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BQ82LnOi.js"
+            "./allPathsLoader-DzIxfJgk.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CITQOg8u.js"
+            "./splitPathsBySizeLoader-D_lagD4h.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CEut1BAC.js"
+            "./allPathsLoader-Q15UWtGy.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CIORnu1-.js"
+            "./splitPathsBySizeLoader-iKJ8xZ_q.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,9 +106317,19 @@ const TopNav = observer(({ store: store2 }) => {
   };
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
-    const pdfBlob = await store2.saveAsPDF();
+    let pdfBlob;
+    if (typeof store2.toPDFBlob === "function") {
+      pdfBlob = await store2.toPDFBlob();
+      console.log("📄 Used store.toPDFBlob()");
+    } else if (typeof store2.saveAsPDF === "function") {
+      console.log("⚠️ store.toPDFBlob() not found, falling back to saveAsPDF");
+      const buffer = await store2.saveAsPDF();
+      if (buffer) {
+        pdfBlob = new Blob([buffer], { type: "application/pdf" });
+      }
+    }
     if (!pdfBlob || !(pdfBlob instanceof Blob)) {
-      console.error("❌ Invalid PDF blob returned from saveAsPDF");
+      console.error("❌ Invalid PDF blob returned from store");
       return;
     }
     const reader = new FileReader();
@@ -107101,4 +107111,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-BT_xMc_c.js.map
+//# sourceMappingURL=index-DyytVTUz.js.map

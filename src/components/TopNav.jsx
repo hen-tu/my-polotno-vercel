@@ -49,10 +49,23 @@ const TopNav = observer(({ store }) => {
 const handleAddToCart = async () => {
   console.log('🛒 handleAddToCart started');
 
-  const pdfBlob = await store.saveAsPDF();
+  let pdfBlob;
+
+  if (typeof store.toPDFBlob === 'function') {
+    // Use if available
+    pdfBlob = await store.toPDFBlob();
+    console.log('📄 Used store.toPDFBlob()');
+  } else if (typeof store.saveAsPDF === 'function') {
+    // Fallback if available
+    console.log('⚠️ store.toPDFBlob() not found, falling back to saveAsPDF');
+    const buffer = await store.saveAsPDF();
+    if (buffer) {
+      pdfBlob = new Blob([buffer], { type: 'application/pdf' });
+    }
+  }
 
   if (!pdfBlob || !(pdfBlob instanceof Blob)) {
-    console.error('❌ Invalid PDF blob returned from saveAsPDF');
+    console.error('❌ Invalid PDF blob returned from store');
     return;
   }
 
@@ -75,7 +88,6 @@ const handleAddToCart = async () => {
 
   reader.readAsDataURL(pdfBlob);
 };
-
   const downloadMenu = (
     <Menu>
       <MenuItem text="Save as Image" onClick={handleDownloadImage} />
