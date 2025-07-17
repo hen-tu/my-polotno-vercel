@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CP8tUDD8.js"
+            "./allPathsLoader-DZVvYQFo.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-IrvMQRsT.js"
+            "./splitPathsBySizeLoader-XRgOfzAm.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-D8cVtaJ2.js"
+            "./allPathsLoader-CByIQ--j.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BqHedifc.js"
+            "./splitPathsBySizeLoader-7kjLN6H6.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,8 +106317,7 @@ const TopNav = observer(({ store: store2 }) => {
     URL.revokeObjectURL(url2);
   };
   const handleAddToCart = async () => {
-    const pdfData = await store2.saveAsPDF();
-    const blob = new Blob([pdfData], { type: "application/pdf" });
+    const pdfBlob = await store2.saveAsPDF();
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64PDF = reader.result;
@@ -106334,9 +106333,9 @@ const TopNav = observer(({ store: store2 }) => {
             "*"
           );
         }
-      }, 1e3);
+      }, 2500);
     };
-    reader.readAsDataURL(blob);
+    reader.readAsDataURL(pdfBlob);
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -107125,4 +107124,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DATgjtqm.js.map
+//# sourceMappingURL=index-DzqjTOOj.js.map

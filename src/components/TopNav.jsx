@@ -47,16 +47,15 @@ const TopNav = observer(({ store }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleAddToCart = async () => {
-  const pdfData = await store.saveAsPDF(); // returns Uint8Array
-  const blob = new Blob([pdfData], { type: 'application/pdf' });
-
+const handleAddToCart = async () => {
+  const pdfBlob = await store.saveAsPDF();
   const reader = new FileReader();
+
   reader.onloadend = () => {
-    const base64PDF = reader.result; // this is a data:application/pdf;base64,... string
+    const base64PDF = reader.result;
 
+    // Wait at least 2.5s before sending to iframe
     setShowModal(true);
-
     setTimeout(() => {
       const iframe = document.getElementById('woo-iframe');
       if (iframe && iframe.contentWindow) {
@@ -68,12 +67,11 @@ const TopNav = observer(({ store }) => {
           '*'
         );
       }
-    }, 1000);
+    }, 2500); // wait for iframe to load completely
   };
 
-  reader.readAsDataURL(blob); // ✅ use Blob here, not raw pdfData
+  reader.readAsDataURL(pdfBlob);
 };
-
   const downloadMenu = (
     <Menu>
       <MenuItem text="Save as Image" onClick={handleDownloadImage} />
