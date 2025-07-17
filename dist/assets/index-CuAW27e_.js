@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DZVvYQFo.js"
+            "./allPathsLoader-BlsFUcuY.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-XRgOfzAm.js"
+            "./splitPathsBySizeLoader-Cm9OvbGb.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CByIQ--j.js"
+            "./allPathsLoader-DU0S8nyN.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-7kjLN6H6.js"
+            "./splitPathsBySizeLoader-BYXBVyN7.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,14 +106317,18 @@ const TopNav = observer(({ store: store2 }) => {
     URL.revokeObjectURL(url2);
   };
   const handleAddToCart = async () => {
+    console.log("🛒 handleAddToCart started");
     const pdfBlob = await store2.saveAsPDF();
+    console.log("📄 Got pdfBlob:", pdfBlob);
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64PDF = reader.result;
+      console.log("📤 Sending to iframe:", base64PDF.slice(0, 100));
       setShowModal(true);
       setTimeout(() => {
         const iframe = document.getElementById("woo-iframe");
         if (iframe && iframe.contentWindow) {
+          console.log("📨 Posting message to iframe...");
           iframe.contentWindow.postMessage(
             {
               type: "SET_PDF",
@@ -106332,6 +106336,8 @@ const TopNav = observer(({ store: store2 }) => {
             },
             "*"
           );
+        } else {
+          console.warn("❌ iframe not found or not ready");
         }
       }, 2500);
     };
@@ -107124,4 +107130,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DzqjTOOj.js.map
+//# sourceMappingURL=index-CuAW27e_.js.map

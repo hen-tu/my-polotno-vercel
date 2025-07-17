@@ -48,26 +48,33 @@ const TopNav = observer(({ store }) => {
   };
 
 const handleAddToCart = async () => {
-  const pdfBlob = await store.saveAsPDF();
-  const reader = new FileReader();
+  console.log('🛒 handleAddToCart started');
 
+  const pdfBlob = await store.saveAsPDF();
+  console.log('📄 Got pdfBlob:', pdfBlob);
+
+  const reader = new FileReader();
   reader.onloadend = () => {
     const base64PDF = reader.result;
+    console.log('📤 Sending to iframe:', base64PDF.slice(0, 100)); // log start only
 
-    // Wait at least 2.5s before sending to iframe
     setShowModal(true);
+
     setTimeout(() => {
       const iframe = document.getElementById('woo-iframe');
       if (iframe && iframe.contentWindow) {
+        console.log('📨 Posting message to iframe...');
         iframe.contentWindow.postMessage(
           {
             type: 'SET_PDF',
-            pdfBase64: base64PDF
+            pdfBase64: base64PDF,
           },
           '*'
         );
+      } else {
+        console.warn('❌ iframe not found or not ready');
       }
-    }, 2500); // wait for iframe to load completely
+    }, 2500);
   };
 
   reader.readAsDataURL(pdfBlob);
