@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DzIxfJgk.js"
+            "./allPathsLoader-VuCAq5oi.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D_lagD4h.js"
+            "./splitPathsBySizeLoader-BWeYP91k.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-Q15UWtGy.js"
+            "./allPathsLoader-BTa89-Pb.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-iKJ8xZ_q.js"
+            "./splitPathsBySizeLoader-CWymayv3.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,38 +106317,26 @@ const TopNav = observer(({ store: store2 }) => {
   };
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
-    let pdfBlob;
-    if (typeof store2.toPDFBlob === "function") {
-      pdfBlob = await store2.toPDFBlob();
-      console.log("📄 Used store.toPDFBlob()");
-    } else if (typeof store2.saveAsPDF === "function") {
-      console.log("⚠️ store.toPDFBlob() not found, falling back to saveAsPDF");
-      const buffer = await store2.saveAsPDF();
-      if (buffer) {
-        pdfBlob = new Blob([buffer], { type: "application/pdf" });
-      }
-    }
-    if (!pdfBlob || !(pdfBlob instanceof Blob)) {
-      console.error("❌ Invalid PDF blob returned from store");
+    const dataUrl = await store2.toDataURL();
+    if (!dataUrl || typeof dataUrl !== "string") {
+      console.error("❌ Failed to generate image from store");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64PDF = reader.result;
-      console.log("📤 Sending to iframe:", (base64PDF == null ? void 0 : base64PDF.slice(0, 40)) + "...");
-      setShowModal(true);
-      setTimeout(() => {
-        const iframe = document.getElementById("woo-iframe");
-        if (iframe == null ? void 0 : iframe.contentWindow) {
-          console.log("📨 Posting message to iframe...");
-          iframe.contentWindow.postMessage(
-            { type: "SET_PDF", pdfBase64: base64PDF },
-            "*"
-          );
-        }
-      }, 2500);
-    };
-    reader.readAsDataURL(pdfBlob);
+    console.log("📤 Sending image to iframe:", dataUrl.slice(0, 40) + "...");
+    setShowModal(true);
+    setTimeout(() => {
+      const iframe = document.getElementById("woo-iframe");
+      if (iframe == null ? void 0 : iframe.contentWindow) {
+        console.log("📨 Posting message to iframe...");
+        iframe.contentWindow.postMessage(
+          {
+            type: "SET_IMAGE",
+            imageBase64: dataUrl
+          },
+          "*"
+        );
+      }
+    }, 2500);
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -107111,4 +107099,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DyytVTUz.js.map
+//# sourceMappingURL=index-DCzFb8ld.js.map

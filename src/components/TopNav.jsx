@@ -49,45 +49,30 @@ const TopNav = observer(({ store }) => {
 const handleAddToCart = async () => {
   console.log('🛒 handleAddToCart started');
 
-  let pdfBlob;
-
-  if (typeof store.toPDFBlob === 'function') {
-    // Use if available
-    pdfBlob = await store.toPDFBlob();
-    console.log('📄 Used store.toPDFBlob()');
-  } else if (typeof store.saveAsPDF === 'function') {
-    // Fallback if available
-    console.log('⚠️ store.toPDFBlob() not found, falling back to saveAsPDF');
-    const buffer = await store.saveAsPDF();
-    if (buffer) {
-      pdfBlob = new Blob([buffer], { type: 'application/pdf' });
-    }
-  }
-
-  if (!pdfBlob || !(pdfBlob instanceof Blob)) {
-    console.error('❌ Invalid PDF blob returned from store');
+  const dataUrl = await store.toDataURL();
+  if (!dataUrl || typeof dataUrl !== 'string') {
+    console.error('❌ Failed to generate image from store');
     return;
   }
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const base64PDF = reader.result;
-    console.log('📤 Sending to iframe:', base64PDF?.slice(0, 40) + '...');
-    setShowModal(true);
-    setTimeout(() => {
-      const iframe = document.getElementById('woo-iframe');
-      if (iframe?.contentWindow) {
-        console.log('📨 Posting message to iframe...');
-        iframe.contentWindow.postMessage(
-          { type: 'SET_PDF', pdfBase64: base64PDF },
-          '*'
-        );
-      }
-    }, 2500);
-  };
+  console.log('📤 Sending image to iframe:', dataUrl.slice(0, 40) + '...');
+  setShowModal(true);
 
-  reader.readAsDataURL(pdfBlob);
+  setTimeout(() => {
+    const iframe = document.getElementById('woo-iframe');
+    if (iframe?.contentWindow) {
+      console.log('📨 Posting message to iframe...');
+      iframe.contentWindow.postMessage(
+        {
+          type: 'SET_IMAGE',
+          imageBase64: dataUrl
+        },
+        '*'
+      );
+    }
+  }, 2500);
 };
+
   const downloadMenu = (
     <Menu>
       <MenuItem text="Save as Image" onClick={handleDownloadImage} />
