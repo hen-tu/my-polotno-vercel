@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DUCEO9UG.js"
+            "./allPathsLoader-BQ82LnOi.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-FlHnA9NV.js"
+            "./splitPathsBySizeLoader-CITQOg8u.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CBFGAzNA.js"
+            "./allPathsLoader-CEut1BAC.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CPn555yb.js"
+            "./splitPathsBySizeLoader-CIORnu1-.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106317,9 +106317,9 @@ const TopNav = observer(({ store: store2 }) => {
   };
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
-    const pdfBlob = await store2.toPDFBlob();
+    const pdfBlob = await store2.saveAsPDF();
     if (!pdfBlob || !(pdfBlob instanceof Blob)) {
-      console.error("❌ Invalid PDF blob");
+      console.error("❌ Invalid PDF blob returned from saveAsPDF");
       return;
     }
     const reader = new FileReader();
@@ -106335,8 +106335,6 @@ const TopNav = observer(({ store: store2 }) => {
             { type: "SET_PDF", pdfBase64: base64PDF },
             "*"
           );
-        } else {
-          console.warn("⚠️ iframe not ready");
         }
       }, 2500);
     };
@@ -107103,4 +107101,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-ZoV_KGuW.js.map
+//# sourceMappingURL=index-BT_xMc_c.js.map

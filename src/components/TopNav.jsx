@@ -46,35 +46,35 @@ const TopNav = observer(({ store }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleAddToCart = async () => {
-    console.log('🛒 handleAddToCart started');
-    const pdfBlob = await store.toPDFBlob();
+const handleAddToCart = async () => {
+  console.log('🛒 handleAddToCart started');
 
-    if (!pdfBlob || !(pdfBlob instanceof Blob)) {
-      console.error('❌ Invalid PDF blob');
-      return;
-    }
+  const pdfBlob = await store.saveAsPDF();
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64PDF = reader.result;
-      console.log('📤 Sending to iframe:', base64PDF?.slice(0, 40) + '...');
-      setShowModal(true);
-      setTimeout(() => {
-        const iframe = document.getElementById('woo-iframe');
-        if (iframe?.contentWindow) {
-          console.log('📨 Posting message to iframe...');
-          iframe.contentWindow.postMessage(
-            { type: 'SET_PDF', pdfBase64: base64PDF },
-            '*'
-          );
-        } else {
-          console.warn('⚠️ iframe not ready');
-        }
-      }, 2500);
-    };
-    reader.readAsDataURL(pdfBlob);
+  if (!pdfBlob || !(pdfBlob instanceof Blob)) {
+    console.error('❌ Invalid PDF blob returned from saveAsPDF');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64PDF = reader.result;
+    console.log('📤 Sending to iframe:', base64PDF?.slice(0, 40) + '...');
+    setShowModal(true);
+    setTimeout(() => {
+      const iframe = document.getElementById('woo-iframe');
+      if (iframe?.contentWindow) {
+        console.log('📨 Posting message to iframe...');
+        iframe.contentWindow.postMessage(
+          { type: 'SET_PDF', pdfBase64: base64PDF },
+          '*'
+        );
+      }
+    }, 2500);
   };
+
+  reader.readAsDataURL(pdfBlob);
+};
 
   const downloadMenu = (
     <Menu>
