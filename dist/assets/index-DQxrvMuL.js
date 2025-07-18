@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-BUyZh2XG.js"
+            "./allPathsLoader-DXc04CQ4.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-C_IGeWtQ.js"
+            "./splitPathsBySizeLoader-WCQrLnSE.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CceTkjP1.js"
+            "./allPathsLoader-nq7TCMHf.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-CxSV6N4n.js"
+            "./splitPathsBySizeLoader-BSMHWB0n.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106292,7 +106292,7 @@ const TopNav = observer(({ store: store2 }) => {
   const [dialogOpen, setDialogOpen] = reactExports.useState(false);
   const [customWidth, setCustomWidth] = reactExports.useState("");
   const [customHeight, setCustomHeight] = reactExports.useState("");
-  const [showModal, setShowModal] = reactExports.useState(false);
+  const [popupLoading, setPopupLoading] = reactExports.useState(false);
   const resizeButtonRef = reactExports.useRef(null);
   const handleResize = (w, h) => {
     applyResize(store2, w, h);
@@ -106317,24 +106317,34 @@ const TopNav = observer(({ store: store2 }) => {
   };
   const handleAddToCart = async () => {
     console.log("🛒 handleAddToCart started");
+    setPopupLoading(true);
     const imageDataUrl = await store2.toDataURL();
-    console.log("📤 Sending image to iframe:", imageDataUrl.slice(0, 100) + "...");
-    setShowModal(true);
-    const waitForIframe = () => {
-      const iframe = document.getElementById("woo-iframe");
-      if (!iframe) return;
-      iframe.onload = () => {
-        console.log("✅ Iframe loaded, posting image...");
-        iframe.contentWindow.postMessage(
-          {
-            type: "SET_IMAGE_TO_FORM",
+    console.log("📤 Sending image to popup:", imageDataUrl.slice(0, 100) + "...");
+    const productUrl = "https://tuteachercenter.org/product/customizer-order/";
+    const popup = window.open(productUrl, "_blank", "width=1200,height=800");
+    if (popup) {
+      const interval = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(interval);
+          console.warn("🛑 Popup was closed before message sent.");
+          setPopupLoading(false);
+          return;
+        }
+        try {
+          popup.postMessage({
+            type: "SET_IMAGE",
             imageBase64: imageDataUrl
-          },
-          "*"
-        );
-      };
-    };
-    setTimeout(waitForIframe, 100);
+          }, "*");
+          console.log("📤 Sent image to popup");
+          clearInterval(interval);
+          setPopupLoading(false);
+        } catch (e) {
+        }
+      }, 500);
+    } else {
+      alert("Please allow popups for this site.");
+      setPopupLoading(false);
+    }
   };
   const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
@@ -106433,6 +106443,24 @@ const TopNav = observer(({ store: store2 }) => {
         ]
       }
     ),
+    popupLoading && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          zIndex: 9999,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
+        },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, { intent: "primary", size: 100 })
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       Dialog,
       {
@@ -106462,65 +106490,6 @@ const TopNav = observer(({ store: store2 }) => {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { intent: "primary", style: { backgroundColor: "#488FCC", padding: "9px 14px" }, onClick: handleCustomResize, children: "Apply Custom Size" })
         ] })
-      }
-    ),
-    showModal && /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        style: {
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundColor: "rgba(0,0,0,0.6)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 9999
-        },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "div",
-          {
-            style: {
-              width: "90%",
-              height: "90%",
-              backgroundColor: "#fff",
-              position: "relative",
-              borderRadius: "8px",
-              overflow: "hidden"
-            },
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "button",
-                {
-                  onClick: () => setShowModal(false),
-                  style: {
-                    position: "absolute",
-                    top: 10,
-                    right: 10,
-                    zIndex: 2,
-                    background: "#ce3d50",
-                    color: "#fff",
-                    border: "none",
-                    padding: "4px 10px",
-                    borderRadius: "4px",
-                    cursor: "pointer"
-                  },
-                  children: "✖"
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "iframe",
-                {
-                  id: "woo-iframe",
-                  src: "https://tuteachercenter.org/product/customizer-order/",
-                  style: { width: "100%", height: "100%", border: "none" }
-                }
-              )
-            ]
-          }
-        )
       }
     )
   ] });
@@ -107097,4 +107066,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-aRKMrjoP.js.map
+//# sourceMappingURL=index-DQxrvMuL.js.map

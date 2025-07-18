@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Popover, Menu, MenuItem, Dialog, InputGroup } from '@blueprintjs/core';
+import { Button, Popover, Menu, MenuItem, Dialog, InputGroup, Spinner } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
@@ -18,7 +18,7 @@ const TopNav = observer(({ store }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [popupLoading, setPopupLoading] = useState(false);
   const resizeButtonRef = useRef(null);
 
   const handleResize = (w, h) => {
@@ -46,34 +46,41 @@ const TopNav = observer(({ store }) => {
     URL.revokeObjectURL(url);
   };
 
-const handleAddToCart = async () => {
-  console.log('🛒 handleAddToCart started');
+  const handleAddToCart = async () => {
+    console.log('🛒 handleAddToCart started');
+    setPopupLoading(true);
 
-  const imageDataUrl = await store.toDataURL();
-  console.log('📤 Sending image to iframe:', imageDataUrl.slice(0, 100) + '...');
+    const imageDataUrl = await store.toDataURL();
+    console.log('📤 Sending image to popup:', imageDataUrl.slice(0, 100) + '...');
 
-  // Show modal
-  setShowModal(true);
+    const productUrl = 'https://tuteachercenter.org/product/customizer-order/';
+    const popup = window.open(productUrl, '_blank', 'width=1200,height=800');
 
-  // Wait for iframe to load before posting
-  const waitForIframe = () => {
-    const iframe = document.getElementById('woo-iframe');
-    if (!iframe) return;
-
-    iframe.onload = () => {
-      console.log('✅ Iframe loaded, posting image...');
-      iframe.contentWindow.postMessage(
-        {
-          type: 'SET_IMAGE_TO_FORM',
-          imageBase64: imageDataUrl
-        },
-        '*'
-      );
-    };
+    if (popup) {
+      const interval = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(interval);
+          console.warn('🛑 Popup was closed before message sent.');
+          setPopupLoading(false);
+          return;
+        }
+        try {
+          popup.postMessage({
+            type: 'SET_IMAGE',
+            imageBase64: imageDataUrl
+          }, '*');
+          console.log('📤 Sent image to popup');
+          clearInterval(interval);
+          setPopupLoading(false);
+        } catch (e) {
+          // continue retrying
+        }
+      }, 500);
+    } else {
+      alert('Please allow popups for this site.');
+      setPopupLoading(false);
+    }
   };
-
-  setTimeout(waitForIframe, 100); // slight delay to allow DOM to mount iframe
-};
 
   const downloadMenu = (
     <Menu>
@@ -173,6 +180,25 @@ const handleAddToCart = async () => {
         </Button>
       </div>
 
+      {popupLoading && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 9999,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <Spinner intent="primary" size={100} />
+        </div>
+      )}
+
       <Dialog
         isOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -204,57 +230,6 @@ const handleAddToCart = async () => {
           </Button>
         </div>
       </Dialog>
-
-      {showModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              width: '90%',
-              height: '90%',
-              backgroundColor: '#fff',
-              position: 'relative',
-              borderRadius: '8px',
-              overflow: 'hidden',
-            }}
-          >
-            <button
-              onClick={() => setShowModal(false)}
-              style={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                zIndex: 2,
-                background: '#ce3d50',
-                color: '#fff',
-                border: 'none',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              ✖
-            </button>
-            <iframe
-              id="woo-iframe"
-              src="https://tuteachercenter.org/product/customizer-order/"
-              style={{ width: '100%', height: '100%', border: 'none' }}
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 });
