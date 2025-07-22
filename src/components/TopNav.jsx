@@ -66,7 +66,7 @@ const TopNav = observer(({ store }) => {
         }
         try {
           popup.postMessage({
-            type: 'SET_IMAGE',
+            type: 'SET_IMAGE_TO_FORM',
             imageBase64: imageDataUrl
           }, '*');
           console.log('📤 Sent image to popup');

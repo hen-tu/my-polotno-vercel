@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DXc04CQ4.js"
+            "./allPathsLoader-CuhWfhLP.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-WCQrLnSE.js"
+            "./splitPathsBySizeLoader-D4tE9LpX.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-nq7TCMHf.js"
+            "./allPathsLoader-B_1WRMQb.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-BSMHWB0n.js"
+            "./splitPathsBySizeLoader-DObBiQBo.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106332,7 +106332,7 @@ const TopNav = observer(({ store: store2 }) => {
         }
         try {
           popup.postMessage({
-            type: "SET_IMAGE",
+            type: "SET_IMAGE_TO_FORM",
             imageBase64: imageDataUrl
           }, "*");
           console.log("📤 Sent image to popup");
@@ -107066,4 +107066,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-DQxrvMuL.js.map
+//# sourceMappingURL=index-ngbiuRqi.js.map
