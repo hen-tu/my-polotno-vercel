@@ -47,6 +47,16 @@ const TopNav = observer(({ store }) => {
   };
 
   const handleAddToCart = async () => {
+
+    setTimeout(() => {
+  popup.postMessage({
+    type: 'SET_IMAGE_TO_FORM',
+    imageBase64: imageDataUrl
+  }, '*');
+  console.log('📤 Sent image to popup (after delay)');
+  setPopupLoading(false);
+}, 5000); // wait 5 seconds
+
     console.log('🛒 handleAddToCart started');
     setPopupLoading(true);
 

@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-CuhWfhLP.js"
+            "./allPathsLoader-DcQO-J4h.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D4tE9LpX.js"
+            "./splitPathsBySizeLoader-NQ7pNtDM.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-B_1WRMQb.js"
+            "./allPathsLoader-DAJkm8b4.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-DObBiQBo.js"
+            "./splitPathsBySizeLoader-D4KrJj3n.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106316,6 +106316,14 @@ const TopNav = observer(({ store: store2 }) => {
     URL.revokeObjectURL(url2);
   };
   const handleAddToCart = async () => {
+    setTimeout(() => {
+      popup.postMessage({
+        type: "SET_IMAGE_TO_FORM",
+        imageBase64: imageDataUrl
+      }, "*");
+      console.log("📤 Sent image to popup (after delay)");
+      setPopupLoading(false);
+    }, 5e3);
     console.log("🛒 handleAddToCart started");
     setPopupLoading(true);
     const imageDataUrl = await store2.toDataURL();
@@ -107066,4 +107074,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-ngbiuRqi.js.map
+//# sourceMappingURL=index-VL9ovxOW.js.map
