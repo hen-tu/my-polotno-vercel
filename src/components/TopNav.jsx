@@ -242,7 +242,7 @@ const TopNav = observer(({ store }) => {
     const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
 
     // Call the WP-domain bridge (same-origin) via postMessage RPC
-    const result = await postToParentRpc("POL_SAVE_DESIGN", { pngBase64 });
+    const result = await postToParentRpc("POL_SAVE_DESIGN", { pngBase64 }, { timeoutMs: 30000 });
 
     if (!result || !result.ok) {
       throw new Error((result && result.error) ? result.error : "Save failed");
