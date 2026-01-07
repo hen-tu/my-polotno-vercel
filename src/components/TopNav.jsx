@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem, Dialog, InputGroup, Spinner } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
@@ -76,8 +76,6 @@ function inIframe() {
 }
 
 // For option availability:
-// Checks if there exists ANY variation in VARIATION_MAP that matches current selections
-// (with one dimension possibly replaced by candidateValue)
 function existsMatchingVariation(current, overrides = {}) {
   const s = { ...current, ...overrides };
   const keys = Object.keys(VARIATION_MAP);
@@ -95,13 +93,11 @@ function existsMatchingVariation(current, overrides = {}) {
 
 // Find first valid variation key for a partially invalid selection (auto-fix)
 function findNearestValid(current) {
-  // Keep size if possible, else fall back to any
   const keys = Object.keys(VARIATION_MAP).map((k) => {
     const [size, amtPerPage, printColor, paperType] = k.split('|');
     return { size, amtPerPage, printColor, paperType };
   });
 
-  // Prefer same size, then same paper, then anything
   const scored = keys
     .map((v) => {
       let score = 0;
@@ -116,36 +112,64 @@ function findNearestValid(current) {
   return scored[0]?.v || null;
 }
 
-// Try to fetch live price via Woo wc-ajax endpoint.
-// NOTE: This works best when your app is embedded on the same WP domain (iframe),
-// or when your WP allows CORS for this endpoint.
-async function fetchVariationPrice({ size, amtPerPage, printColor, paperType }) {
-  const params = new URLSearchParams();
-  params.set('product_id', String(PRODUCT_ID));
-  params.set('attribute_pa_size', String(size));
-  params.set('attribute_pa_amt-per-page', String(amtPerPage));
-  params.set('attribute_pa_print-color', String(printColor));
-  params.set('attribute_pa_paper-type', String(paperType));
+// -----------------------------
+// postMessage RPC helper
+// -----------------------------
+function postToParentRpc(type, payload, { timeoutMs = 9000 } = {}) {
+  const requestId = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
 
-  const url = `${WOO_BASE}/?wc-ajax=get_variation`;
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      window.removeEventListener('message', onMessage);
+      reject(new Error(`${type} timed out`));
+    }, timeoutMs);
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-    body: params.toString(),
-    credentials: 'include',
+    function onMessage(event) {
+      const msg = event.data || {};
+      if (msg.requestId !== requestId) return;
+
+      // We accept either:
+      // 1) { type: "POL_*_RESULT", requestId, payload: {...} }
+      // 2) { requestId, ok: true/false, ... }  (looser)
+      clearTimeout(t);
+      window.removeEventListener('message', onMessage);
+
+      const p = msg.payload ?? msg;
+
+      if (p && p.ok === false) {
+        reject(new Error(p.error || 'Request failed'));
+        return;
+      }
+      resolve(p);
+    }
+
+    window.addEventListener('message', onMessage);
+
+    // Send to parent. Your bridge/plugin should validate origin on its side.
+    window.parent.postMessage({ type, requestId, payload }, '*');
   });
+}
 
-  // Woo returns JSON for valid variation
-  const data = await res.json();
-  // data.display_price is common
-  if (data && (data.display_price !== undefined || data.display_price !== null)) {
-    return Number(data.display_price);
+// Extract numeric price from Woo variation response (robust)
+function extractPriceNumberFromVariation(variation) {
+  if (!variation) return null;
+
+  // common fields
+  const candidates = [
+    variation.display_price,
+    variation.display_regular_price,
+    variation.price,
+    variation.sale_price,
+    variation.regular_price,
+  ];
+
+  for (const c of candidates) {
+    const n = Number(c);
+    if (Number.isFinite(n) && n > 0) return n;
   }
-  // fallback
-  if (data && data.price !== undefined) return Number(data.price);
 
-  throw new Error('Could not read variation price');
+  // sometimes price_html includes number; don't rely on it.
+  return null;
 }
 
 const TopNav = observer(({ store }) => {
@@ -168,6 +192,9 @@ const TopNav = observer(({ store }) => {
   const [priceLoading, setPriceLoading] = useState(false);
   const [currentPrice, setCurrentPrice] = useState(null); // number|null
   const [priceError, setPriceError] = useState('');
+
+  // debounce timer for price
+  const priceTimerRef = useRef(null);
 
   const selection = useMemo(
     () => ({
@@ -214,7 +241,9 @@ const TopNav = observer(({ store }) => {
   const saveDesignToWP = async () => {
     const token = import.meta.env.VITE_POLOTNO_WP_TOKEN;
     if (!token) {
-      throw new Error('Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).');
+      throw new Error(
+        'Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).'
+      );
     }
 
     const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
@@ -233,29 +262,64 @@ const TopNav = observer(({ store }) => {
     return data; // { success, design_id, png_url }
   };
 
-  // Live price updater (called when modal opens + when selection changes inside modal)
+  // ✅ Live price updater via parent bridge (NO CORS)
   const updatePrice = async (nextSelection) => {
     setPriceError('');
     setCurrentPrice(null);
 
-    // If combo invalid, don't fetch (show “—”)
+    // If combo invalid, don't fetch
     if (!resolveVariationId(nextSelection)) return;
 
     setPriceLoading(true);
+
     try {
-      const p = await fetchVariationPrice(nextSelection);
-      setCurrentPrice(p);
+      // Ask the parent (WP domain) to call wc-ajax=get_variation same-origin
+      const resp = await postToParentRpc('POL_GET_VARIATION', {
+        product_id: PRODUCT_ID,
+        attributes: {
+          attribute_pa_size: String(nextSelection.size),
+          'attribute_pa_amt-per-page': String(nextSelection.amtPerPage),
+          'attribute_pa_print-color': String(nextSelection.printColor),
+          'attribute_pa_paper-type': String(nextSelection.paperType),
+        },
+      });
+
+      // Bridge may return variation object directly or wrapped
+      const variation = resp?.variation || resp?.data || resp;
+
+      const priceNum = extractPriceNumberFromVariation(variation);
+      if (priceNum !== null) {
+        setCurrentPrice(priceNum);
+      } else {
+        // Not fatal — but tell user
+        setCurrentPrice(null);
+        setPriceError('Price not available for this selection (still can add to cart).');
+      }
     } catch (e) {
-      // If price fetch fails due to CORS locally, you’ll still be able to proceed.
-      setPriceError('Could not load price here (will still add to cart).');
+      setPriceError(e?.message || 'Could not load price here (will still add to cart).');
       setCurrentPrice(null);
     } finally {
       setPriceLoading(false);
     }
   };
 
+  // Debounced price updates while modal is open
+  useEffect(() => {
+    if (!optionsOpen) return;
+
+    if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
+    priceTimerRef.current = setTimeout(() => {
+      updatePrice(selection);
+    }, 250);
+
+    return () => {
+      if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optionsOpen, selection]);
+
   const openOptions = async () => {
-    // If current combo is invalid for any reason, snap to a valid nearest.
+    // If current combo is invalid, snap to a valid nearest.
     if (!resolveVariationId(selection)) {
       const nearest = findNearestValid(selection);
       if (nearest) {
@@ -265,9 +329,10 @@ const TopNav = observer(({ store }) => {
         setOptPaper(nearest.paperType);
       }
     }
+
     setOptionsOpen(true);
 
-    // price load
+    // initial price load using the (possibly updated) selection
     setTimeout(() => {
       updatePrice({
         size: optSize,
@@ -279,28 +344,23 @@ const TopNav = observer(({ store }) => {
   };
 
   // When you click an option:
-  // - if it makes combo invalid, we still allow selecting it,
-  //   but then we’ll auto-adjust another dimension to reach nearest valid.
   const setOptionSafely = (patch) => {
     const next = { ...selection, ...patch };
 
     if (resolveVariationId(next)) {
-      // valid, apply directly
       if (patch.size !== undefined) setOptSize(patch.size);
       if (patch.amtPerPage !== undefined) setOptAmt(patch.amtPerPage);
       if (patch.printColor !== undefined) setOptColor(patch.printColor);
       if (patch.paperType !== undefined) setOptPaper(patch.paperType);
+
       updatePrice(next);
       return;
     }
 
-    // invalid: apply patch, then snap to nearest valid combo that keeps patched field if possible
     const nearest = findNearestValid(next);
     if (!nearest) return;
 
-    // If user just picked size, keep that size if possible
     const forced = { ...nearest, ...patch };
-    // forced may still be invalid, so just use nearest if forced doesn't exist
     const final = resolveVariationId(forced) ? forced : nearest;
 
     setOptSize(final.size);
@@ -311,7 +371,7 @@ const TopNav = observer(({ store }) => {
     updatePrice(final);
   };
 
-  // ✅ Confirm → save → add to cart without redirect (via parent postMessage)
+  // ✅ Confirm → save → add to cart via parent postMessage (NO CORS)
   // Fallback: redirect add-to-cart if not in iframe
   const handleConfirmAddToCart = async () => {
     console.log('🛒 Confirm & Add to Cart clicked');
@@ -327,24 +387,28 @@ const TopNav = observer(({ store }) => {
       const saved = await saveDesignToWP();
       const designId = saved.design_id;
 
-      const payload = {
-        type: 'POLOTNO_ADD_TO_CART',
-        product_id: PRODUCT_ID,
-        variation_id: variationId,
-        quantity: 1,
-        attributes: {
-          'attribute_pa_size': selection.size,
-          'attribute_pa_amt-per-page': selection.amtPerPage,
-          'attribute_pa_print-color': selection.printColor,
-          'attribute_pa_paper-type': selection.paperType,
-        },
-        polotno_design_id: designId,
+      const attributes = {
+        attribute_pa_size: String(selection.size),
+        'attribute_pa_amt-per-page': String(selection.amtPerPage),
+        'attribute_pa_print-color': String(selection.printColor),
+        'attribute_pa_paper-type': String(selection.paperType),
       };
 
       // If embedded on WP page, ask parent to add-to-cart and open side cart
       if (inIframe()) {
-        console.log('📨 Posting to parent for AJAX add-to-cart:', payload);
-        window.parent.postMessage(payload, '*');
+        console.log('📨 RPC to parent for AJAX add-to-cart');
+
+        // Prefer the new RPC message:
+        await postToParentRpc('POL_ADD_TO_CART', {
+          product_id: PRODUCT_ID,
+          variation_id: variationId,
+          quantity: 1,
+          attributes,
+          polotno_design_id: designId,
+        });
+
+        // If you want, you can close the modal after success:
+        // setOptionsOpen(false);
         return;
       }
 
@@ -353,10 +417,12 @@ const TopNav = observer(({ store }) => {
       params.set('add-to-cart', String(PRODUCT_ID));
       params.set('variation_id', String(variationId));
       params.set('quantity', '1');
+
       params.set('attribute_pa_size', String(selection.size));
       params.set('attribute_pa_amt-per-page', String(selection.amtPerPage));
       params.set('attribute_pa_print-color', String(selection.printColor));
       params.set('attribute_pa_paper-type', String(selection.paperType));
+
       params.set('polotno_design_id', String(designId));
 
       window.location.href = `${WOO_BASE}/?${params.toString()}`;
@@ -374,7 +440,7 @@ const TopNav = observer(({ store }) => {
     </Menu>
   );
 
-  // UI helper: strike/fade unavailable values, but allow click (we will snap to valid)
+  // UI helper: strike/fade unavailable values, but allow click
   const OptionButton = ({ active, disabledLook, onClick, children }) => (
     <Button
       active={active}
@@ -616,7 +682,6 @@ const TopNav = observer(({ store }) => {
               loading={popupLoading}
               disabled={!resolveVariationId(selection)}
               onClick={() => {
-                // keep modal open while adding to cart
                 handleConfirmAddToCart();
               }}
             >
@@ -650,10 +715,22 @@ const TopNav = observer(({ store }) => {
           <Button onClick={() => handleResize(1728, 2016)}>24″ × 28″ (Oaktag)</Button>
           <hr />
           <div style={{ display: 'flex', gap: '8px' }}>
-            <InputGroup placeholder="Width (inches)" value={customWidth} onChange={(e) => setCustomWidth(e.target.value)} />
-            <InputGroup placeholder="Height (inches)" value={customHeight} onChange={(e) => setCustomHeight(e.target.value)} />
+            <InputGroup
+              placeholder="Width (inches)"
+              value={customWidth}
+              onChange={(e) => setCustomWidth(e.target.value)}
+            />
+            <InputGroup
+              placeholder="Height (inches)"
+              value={customHeight}
+              onChange={(e) => setCustomHeight(e.target.value)}
+            />
           </div>
-          <Button intent="primary" style={{ backgroundColor: '#488FCC', padding: '9px 14px' }} onClick={handleCustomResize}>
+          <Button
+            intent="primary"
+            style={{ backgroundColor: '#488FCC', padding: '9px 14px' }}
+            onClick={handleCustomResize}
+          >
             Apply Custom Size
           </Button>
         </div>
