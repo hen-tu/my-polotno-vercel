@@ -29,3 +29,8 @@ dist-ssr
 polotno-woocommerce.zip
 
 polotno-woocommerce/
+
+# Environment variables
+.env
+.env.*
+dist
