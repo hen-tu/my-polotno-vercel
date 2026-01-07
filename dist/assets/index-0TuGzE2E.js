@@ -63514,14 +63514,14 @@ function getLoaderFn$1(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DcQO-J4h.js"
+            "./allPathsLoader-kh4fX22J.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-NQ7pNtDM.js"
+            "./splitPathsBySizeLoader-Dcc7wiHw.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -77331,14 +77331,14 @@ function getLoaderFn(options) {
           if (!(loader2 === "all")) return [3, 3];
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-all-paths-loader" */
-            "./allPathsLoader-DAJkm8b4.js"
+            "./allPathsLoader-BCcxV-zg.js"
           ), true ? [] : void 0)];
         case 2:
           return [2, _b2.sent().allPathsLoader];
         case 3:
           return [4, __vitePreload(() => import(
             /* webpackChunkName: "blueprint-icons-split-paths-by-size-loader" */
-            "./splitPathsBySizeLoader-D4KrJj3n.js"
+            "./splitPathsBySizeLoader-CdNUeDwP.js"
           ), true ? [] : void 0)];
         case 4:
           return [2, _b2.sent().splitPathsBySizeLoader];
@@ -106283,10 +106283,103 @@ var downloadExports = requireDownload();
 console.log("✅ TopNav loaded");
 const applyResize = action((store2, w, h) => {
   const page2 = store2.activePage;
-  if (page2) {
-    page2.set({ width: w, height: h });
-  }
+  if (page2) page2.set({ width: w, height: h });
 });
+const PRODUCT_ID = 199649;
+const VARIATION_MAP = {
+  // --- SOFT ---
+  "22x28|1|color|soft": 199650,
+  "11x17|1|black-and-white|soft": 199665,
+  "8-5x11|1|black-and-white|soft": 199666,
+  "11x17|1|color|soft": 199667,
+  "8-5x11|1|color|soft": 199668,
+  "8-5x11|2|black-and-white|soft": 199669,
+  "8-5x11|2|color|soft": 199670,
+  "8-5x11|35|black-and-white|soft": 199671,
+  "8-5x11|35|color|soft": 199672,
+  "8-5x11|4|black-and-white|soft": 199673,
+  "8-5x11|4|color|soft": 199674,
+  "8-5x11|9|black-and-white|soft": 199675,
+  "8-5x11|9|color|soft": 199676,
+  // --- HARD ---
+  "11x17|1|black-and-white|hard": 199651,
+  "13x19|1|black-and-white|hard": 199652,
+  "8-5x11|1|black-and-white|hard": 199653,
+  "11x17|1|color|hard": 199654,
+  "13x19|1|color|hard": 199655,
+  "8-5x11|1|color|hard": 199656,
+  "8-5x11|2|black-and-white|hard": 199657,
+  "8-5x11|2|color|hard": 199658,
+  "8-5x11|35|black-and-white|hard": 199659,
+  "8-5x11|35|color|hard": 199660,
+  "8-5x11|4|black-and-white|hard": 199661,
+  "8-5x11|4|color|hard": 199662,
+  "8-5x11|9|black-and-white|hard": 199663,
+  "8-5x11|9|color|hard": 199664
+};
+const WOO_BASE = "https://tuteachercenter.org";
+function resolveVariationId({ size: size2, amtPerPage, printColor, paperType }) {
+  const key2 = `${size2}|${amtPerPage}|${printColor}|${paperType}`;
+  return VARIATION_MAP[key2] || null;
+}
+function fmtMoney(n) {
+  if (n === null || n === void 0 || n === "") return "";
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "";
+  return `$${num.toFixed(2)}`;
+}
+function inIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+function existsMatchingVariation(current, overrides = {}) {
+  const s = { ...current, ...overrides };
+  const keys2 = Object.keys(VARIATION_MAP);
+  return keys2.some((k) => {
+    const [size2, amt, color2, paper] = k.split("|");
+    return String(s.size) === size2 && String(s.amtPerPage) === amt && String(s.printColor) === color2 && String(s.paperType) === paper;
+  });
+}
+function findNearestValid(current) {
+  var _a;
+  const keys2 = Object.keys(VARIATION_MAP).map((k) => {
+    const [size2, amtPerPage, printColor, paperType] = k.split("|");
+    return { size: size2, amtPerPage, printColor, paperType };
+  });
+  const scored = keys2.map((v) => {
+    let score = 0;
+    if (v.size === current.size) score += 3;
+    if (v.paperType === current.paperType) score += 2;
+    if (v.printColor === current.printColor) score += 1;
+    if (v.amtPerPage === current.amtPerPage) score += 1;
+    return { v, score };
+  }).sort((a, b) => b.score - a.score);
+  return ((_a = scored[0]) == null ? void 0 : _a.v) || null;
+}
+async function fetchVariationPrice({ size: size2, amtPerPage, printColor, paperType }) {
+  const params = new URLSearchParams();
+  params.set("product_id", String(PRODUCT_ID));
+  params.set("attribute_pa_size", String(size2));
+  params.set("attribute_pa_amt-per-page", String(amtPerPage));
+  params.set("attribute_pa_print-color", String(printColor));
+  params.set("attribute_pa_paper-type", String(paperType));
+  const url2 = `${WOO_BASE}/?wc-ajax=get_variation`;
+  const res = await fetch(url2, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+    body: params.toString(),
+    credentials: "include"
+  });
+  const data = await res.json();
+  if (data && (data.display_price !== void 0 || data.display_price !== null)) {
+    return Number(data.display_price);
+  }
+  if (data && data.price !== void 0) return Number(data.price);
+  throw new Error("Could not read variation price");
+}
 const TopNav = observer(({ store: store2 }) => {
   var _a;
   const [dialogOpen, setDialogOpen] = reactExports.useState(false);
@@ -106294,6 +106387,35 @@ const TopNav = observer(({ store: store2 }) => {
   const [customHeight, setCustomHeight] = reactExports.useState("");
   const [popupLoading, setPopupLoading] = reactExports.useState(false);
   const resizeButtonRef = reactExports.useRef(null);
+  const [optionsOpen, setOptionsOpen] = reactExports.useState(false);
+  const [optSize, setOptSize] = reactExports.useState("8-5x11");
+  const [optAmt, setOptAmt] = reactExports.useState("1");
+  const [optColor, setOptColor] = reactExports.useState("black-and-white");
+  const [optPaper, setOptPaper] = reactExports.useState("hard");
+  const [priceLoading, setPriceLoading] = reactExports.useState(false);
+  const [currentPrice, setCurrentPrice] = reactExports.useState(null);
+  const [priceError, setPriceError] = reactExports.useState("");
+  const selection2 = reactExports.useMemo(
+    () => ({
+      size: optSize,
+      amtPerPage: optAmt,
+      printColor: optColor,
+      paperType: optPaper
+    }),
+    [optSize, optAmt, optColor, optPaper]
+  );
+  const isCurrentComboValid = reactExports.useMemo(() => {
+    return !!resolveVariationId(selection2);
+  }, [selection2]);
+  const avail = reactExports.useMemo(() => {
+    const cur = selection2;
+    return {
+      size: (v) => existsMatchingVariation(cur, { size: v }),
+      amt: (v) => existsMatchingVariation(cur, { amtPerPage: v }),
+      color: (v) => existsMatchingVariation(cur, { printColor: v }),
+      paper: (v) => existsMatchingVariation(cur, { paperType: v })
+    };
+  }, [selection2]);
   const handleResize = (w, h) => {
     applyResize(store2, w, h);
     setDialogOpen(false);
@@ -106301,63 +106423,144 @@ const TopNav = observer(({ store: store2 }) => {
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
     const height = parseFloat(customHeight) * 72;
-    if (!isNaN(width) && !isNaN(height)) {
-      handleResize(width, height);
-    }
+    if (!isNaN(width) && !isNaN(height)) handleResize(width, height);
   };
   const handleDownloadImage = () => {
     const dataURL = store2.toDataURL();
     downloadExports.downloadFile(dataURL, "design.png");
   };
-  const handleDownloadPDF = async () => {
-    const blob = await store2.toPDFBlob();
-    const url2 = URL.createObjectURL(blob);
-    downloadExports.downloadFile(url2, "design.pdf");
-    URL.revokeObjectURL(url2);
+  const saveDesignToWP = async () => {
+    const token = "PQngWUO2kNQtvbyjKbBfa21MrHtWAR7O";
+    const pngBase64 = await store2.toDataURL({ mimeType: "image/png", quality: 1 });
+    const res = await fetch(`${WOO_BASE}/wp-json/polotno/v1/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Polotno-Token": token
+      },
+      body: JSON.stringify({ pngBase64 })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Save failed");
+    return data;
   };
-  const handleAddToCart = async () => {
+  const updatePrice = async (nextSelection) => {
+    setPriceError("");
+    setCurrentPrice(null);
+    if (!resolveVariationId(nextSelection)) return;
+    setPriceLoading(true);
+    try {
+      const p2 = await fetchVariationPrice(nextSelection);
+      setCurrentPrice(p2);
+    } catch (e) {
+      setPriceError("Could not load price here (will still add to cart).");
+      setCurrentPrice(null);
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+  const openOptions = async () => {
+    if (!resolveVariationId(selection2)) {
+      const nearest = findNearestValid(selection2);
+      if (nearest) {
+        setOptSize(nearest.size);
+        setOptAmt(nearest.amtPerPage);
+        setOptColor(nearest.printColor);
+        setOptPaper(nearest.paperType);
+      }
+    }
+    setOptionsOpen(true);
     setTimeout(() => {
-      popup.postMessage({
-        type: "SET_IMAGE_TO_FORM",
-        imageBase64: imageDataUrl
-      }, "*");
-      console.log("📤 Sent image to popup (after delay)");
-      setPopupLoading(false);
-    }, 5e3);
-    console.log("🛒 handleAddToCart started");
+      updatePrice({
+        size: optSize,
+        amtPerPage: optAmt,
+        printColor: optColor,
+        paperType: optPaper
+      });
+    }, 0);
+  };
+  const setOptionSafely = (patch) => {
+    const next = { ...selection2, ...patch };
+    if (resolveVariationId(next)) {
+      if (patch.size !== void 0) setOptSize(patch.size);
+      if (patch.amtPerPage !== void 0) setOptAmt(patch.amtPerPage);
+      if (patch.printColor !== void 0) setOptColor(patch.printColor);
+      if (patch.paperType !== void 0) setOptPaper(patch.paperType);
+      updatePrice(next);
+      return;
+    }
+    const nearest = findNearestValid(next);
+    if (!nearest) return;
+    const forced = { ...nearest, ...patch };
+    const final = resolveVariationId(forced) ? forced : nearest;
+    setOptSize(final.size);
+    setOptAmt(final.amtPerPage);
+    setOptColor(final.printColor);
+    setOptPaper(final.paperType);
+    updatePrice(final);
+  };
+  const handleConfirmAddToCart = async () => {
+    console.log("🛒 Confirm & Add to Cart clicked");
     setPopupLoading(true);
-    const imageDataUrl = await store2.toDataURL();
-    console.log("📤 Sending image to popup:", imageDataUrl.slice(0, 100) + "...");
-    const productUrl = "https://tuteachercenter.org/product/customizer-order/";
-    const popup = window.open(productUrl, "_blank", "width=1200,height=800");
-    if (popup) {
-      const interval = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(interval);
-          console.warn("🛑 Popup was closed before message sent.");
-          setPopupLoading(false);
-          return;
-        }
-        try {
-          popup.postMessage({
-            type: "SET_IMAGE_TO_FORM",
-            imageBase64: imageDataUrl
-          }, "*");
-          console.log("📤 Sent image to popup");
-          clearInterval(interval);
-          setPopupLoading(false);
-        } catch (e) {
-        }
-      }, 500);
-    } else {
-      alert("Please allow popups for this site.");
+    try {
+      const variationId = resolveVariationId(selection2);
+      if (!variationId) {
+        alert("That combination is not available.");
+        return;
+      }
+      const saved2 = await saveDesignToWP();
+      const designId = saved2.design_id;
+      const payload = {
+        type: "POLOTNO_ADD_TO_CART",
+        product_id: PRODUCT_ID,
+        variation_id: variationId,
+        quantity: 1,
+        attributes: {
+          "attribute_pa_size": selection2.size,
+          "attribute_pa_amt-per-page": selection2.amtPerPage,
+          "attribute_pa_print-color": selection2.printColor,
+          "attribute_pa_paper-type": selection2.paperType
+        },
+        polotno_design_id: designId
+      };
+      if (inIframe()) {
+        console.log("📨 Posting to parent for AJAX add-to-cart:", payload);
+        window.parent.postMessage(payload, "*");
+        return;
+      }
+      const params = new URLSearchParams();
+      params.set("add-to-cart", String(PRODUCT_ID));
+      params.set("variation_id", String(variationId));
+      params.set("quantity", "1");
+      params.set("attribute_pa_size", String(selection2.size));
+      params.set("attribute_pa_amt-per-page", String(selection2.amtPerPage));
+      params.set("attribute_pa_print-color", String(selection2.printColor));
+      params.set("attribute_pa_paper-type", String(selection2.paperType));
+      params.set("polotno_design_id", String(designId));
+      window.location.href = `${WOO_BASE}/?${params.toString()}`;
+    } catch (err) {
+      console.error("❌ Add to cart failed:", err);
+      alert(`Could not save/add to cart.
+
+${(err == null ? void 0 : err.message) || err}`);
+    } finally {
       setPopupLoading(false);
     }
   };
-  const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsxs(Menu$1, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as PDF", onClick: handleDownloadPDF })
-  ] });
+  const downloadMenu = /* @__PURE__ */ jsxRuntimeExports.jsx(Menu$1, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(MenuItem, { text: "Save as Image", onClick: handleDownloadImage }) });
+  const OptionButton = ({ active: active2, disabledLook, onClick, children }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+    Button,
+    {
+      active: active2,
+      onClick,
+      style: {
+        opacity: disabledLook ? 0.45 : 1,
+        textDecoration: disabledLook ? "line-through" : "none",
+        cursor: "pointer"
+      },
+      children
+    }
+  );
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
@@ -106374,7 +106577,7 @@ const TopNav = observer(({ store: store2 }) => {
           gap: "12px"
         },
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "https://tuteachercenter.org", style: { display: "flex", alignItems: "center" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: WOO_BASE, style: { display: "flex", alignItems: "center" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "/logo.webp", alt: "Logo", style: { height: "30px" } }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Button,
             {
@@ -106414,12 +106617,12 @@ const TopNav = observer(({ store: store2 }) => {
                 transition: "all 0.2s ease-in-out"
               },
               onMouseOver: (e) => {
-                e.target.style.backgroundColor = "white";
-                e.target.style.color = "#ce3c4f";
+                e.currentTarget.style.backgroundColor = "white";
+                e.currentTarget.style.color = "#ce3c4f";
               },
               onMouseOut: (e) => {
-                e.target.style.backgroundColor = "#ce3c4f";
-                e.target.style.color = "white";
+                e.currentTarget.style.backgroundColor = "#ce3c4f";
+                e.currentTarget.style.color = "white";
               },
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(Icon, { icon: "download" }),
@@ -106430,7 +106633,7 @@ const TopNav = observer(({ store: store2 }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             Button,
             {
-              onClick: handleAddToCart,
+              onClick: openOptions,
               style: {
                 marginLeft: "8px",
                 textTransform: "uppercase",
@@ -106467,6 +106670,119 @@ const TopNav = observer(({ store: store2 }) => {
           alignItems: "center"
         },
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(Spinner, { intent: "primary", size: 100 })
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Dialog,
+      {
+        isOpen: optionsOpen,
+        onClose: () => setOptionsOpen(false),
+        title: "Print Options",
+        canOutsideClickClose: !popupLoading,
+        enforceFocus: true,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 20, display: "flex", flexDirection: "column", gap: 14 }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: 700, marginBottom: 6 }, children: "Size" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: [
+              { v: "8-5x11", label: '8.5"×11"' },
+              { v: "11x17", label: '11"×17"' },
+              { v: "13x19", label: '13"×19"' },
+              { v: "22x28", label: '22"×28"' }
+            ].map((o) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+              OptionButton,
+              {
+                active: optSize === o.v,
+                disabledLook: !avail.size(o.v),
+                onClick: () => setOptionSafely({ size: o.v }),
+                children: o.label
+              },
+              o.v
+            )) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: 700, marginBottom: 6 }, children: "Amount Per Page" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: ["1", "2", "4", "9", "35"].map((v) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+              OptionButton,
+              {
+                active: optAmt === v,
+                disabledLook: !avail.amt(v),
+                onClick: () => setOptionSafely({ amtPerPage: v }),
+                children: v
+              },
+              v
+            )) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: 700, marginBottom: 6 }, children: "Print Color" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                OptionButton,
+                {
+                  active: optColor === "black-and-white",
+                  disabledLook: !avail.color("black-and-white"),
+                  onClick: () => setOptionSafely({ printColor: "black-and-white" }),
+                  children: "Black and White"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                OptionButton,
+                {
+                  active: optColor === "color",
+                  disabledLook: !avail.color("color"),
+                  onClick: () => setOptionSafely({ printColor: "color" }),
+                  children: "Color"
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: 700, marginBottom: 6 }, children: "Paper Type" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                OptionButton,
+                {
+                  active: optPaper === "hard",
+                  disabledLook: !avail.paper("hard"),
+                  onClick: () => setOptionSafely({ paperType: "hard" }),
+                  children: "Hard"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                OptionButton,
+                {
+                  active: optPaper === "soft",
+                  disabledLook: !avail.paper("soft"),
+                  onClick: () => setOptionSafely({ paperType: "soft" }),
+                  children: "Soft"
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 8 } }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { borderTop: "1px solid rgba(0,0,0,0.12)", marginTop: 4 } }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 10 } }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: 800, fontSize: 16 }, children: "Price" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontWeight: 800, fontSize: 16 }, children: priceLoading ? "Loading…" : resolveVariationId(selection2) ? fmtMoney(currentPrice) || "—" : "—" })
+          ] }),
+          priceError ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: 12, opacity: 0.75 }, children: priceError }) : null,
+          !isCurrentComboValid ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: 12, opacity: 0.8 }, children: "That exact combination isn’t available — pick any option that isn’t crossed out." }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 10, marginTop: 10 }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { onClick: () => setOptionsOpen(false), disabled: popupLoading, children: "Cancel" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                intent: "primary",
+                loading: popupLoading,
+                disabled: !resolveVariationId(selection2),
+                onClick: () => {
+                  handleConfirmAddToCart();
+                },
+                children: "Confirm & Add to Cart"
+              }
+            )
+          ] })
+        ] })
       }
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -106638,6 +106954,8 @@ const TemplatesPanel = observer(({ store: store2 }) => {
   const [debouncedQuery, setDebouncedQuery] = reactExports.useState("");
   const [categoryFilterOn, setCategoryFilterOn] = reactExports.useState(false);
   const [activeCategory, setActiveCategory] = reactExports.useState(null);
+  const [setFilterOn, setSetFilterOn] = reactExports.useState(false);
+  const [activeSet, setActiveSet] = reactExports.useState(null);
   reactExports.useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedQuery(query.toLowerCase());
@@ -106656,6 +106974,7 @@ const TemplatesPanel = observer(({ store: store2 }) => {
         const match = data.find((t) => t.id === slug);
         if (match) {
           setActiveCategory(match.category || null);
+          setActiveSet(match.set || null);
           fetch(match.jsonUrl).then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.json();
@@ -106675,8 +106994,43 @@ const TemplatesPanel = observer(({ store: store2 }) => {
   const filteredTemplates = templates2.filter((t) => {
     const matchesQuery = t.name.toLowerCase().includes(debouncedQuery);
     const matchesCategory = !categoryFilterOn || t.category && t.category === activeCategory;
-    return matchesQuery && matchesCategory;
+    const matchesSet = !setFilterOn || t.set && t.set === activeSet;
+    return matchesQuery && matchesCategory && matchesSet;
   });
+  const Toggle = ({ enabled, onToggle, disabled }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      onClick: () => {
+        if (!disabled) onToggle(!enabled);
+      },
+      style: {
+        width: 36,
+        height: 20,
+        backgroundColor: enabled ? "#4caf50" : "#ccc",
+        borderRadius: 20,
+        position: "relative",
+        cursor: disabled ? "not-allowed" : "pointer",
+        transition: "background-color 0.2s"
+      },
+      "aria-checked": enabled,
+      role: "switch",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          style: {
+            width: 16,
+            height: 16,
+            backgroundColor: "#fff",
+            borderRadius: "50%",
+            position: "absolute",
+            top: 2,
+            left: enabled ? 18 : 2,
+            transition: "left 0.2s"
+          }
+        }
+      )
+    }
+  );
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 12, height: "100%", display: "flex", flexDirection: "column" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: 12 }, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -106696,46 +107050,50 @@ const TemplatesPanel = observer(({ store: store2 }) => {
           }
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { fontSize: 14, display: "flex", alignItems: "center", gap: 8 }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
-          {
-            onClick: () => {
-              if (activeCategory) setCategoryFilterOn(!categoryFilterOn);
-            },
-            style: {
-              width: 36,
-              height: 20,
-              backgroundColor: categoryFilterOn ? "#4caf50" : "#ccc",
-              borderRadius: 20,
-              position: "relative",
-              cursor: activeCategory ? "pointer" : "not-allowed",
-              transition: "background-color 0.2s"
-            },
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "div",
-              {
-                style: {
-                  width: 16,
-                  height: 16,
-                  backgroundColor: "#fff",
-                  borderRadius: "50%",
-                  position: "absolute",
-                  top: 2,
-                  left: categoryFilterOn ? 18 : 2,
-                  transition: "left 0.2s"
-                }
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flexDirection: "column", gap: 8 }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { fontSize: 14, display: "flex", alignItems: "center", gap: 8 }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Toggle,
+            {
+              enabled: categoryFilterOn,
+              disabled: !activeCategory,
+              onToggle: (val) => {
+                if (activeCategory) setCategoryFilterOn(val);
               }
-            )
-          }
-        ),
-        "More designs in this category",
-        activeCategory && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { fontStyle: "italic", color: "#555" }, children: [
-          "(",
-          activeCategory,
-          ")"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            "More designs in this category",
+            " ",
+            activeCategory && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { fontStyle: "italic", color: "#555" }, children: [
+              "(",
+              activeCategory,
+              ")"
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { fontSize: 14, display: "flex", alignItems: "center", gap: 8 }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Toggle,
+            {
+              enabled: setFilterOn,
+              disabled: !activeSet,
+              onToggle: (val) => {
+                if (activeSet) setSetFilterOn(val);
+              }
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            "More designs in this set",
+            " ",
+            activeSet && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { fontStyle: "italic", color: "#555" }, children: [
+              "(",
+              activeSet,
+              ")"
+            ] })
+          ] })
         ] })
-      ] }) })
+      ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginBottom: 8, fontSize: 13, color: "#666" }, children: [
       "Showing ",
@@ -106765,6 +107123,7 @@ const TemplatesPanel = observer(({ store: store2 }) => {
                 });
                 await store2.waitLoading();
                 setActiveCategory(t.category || null);
+                setActiveSet(t.set || null);
               } catch (err) {
                 console.error("Failed to load template:", err);
               }
@@ -107074,4 +107433,4 @@ export {
   allPaths as f,
   pascalCase as p
 };
-//# sourceMappingURL=index-VL9ovxOW.js.map
+//# sourceMappingURL=index-0TuGzE2E.js.map

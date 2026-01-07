@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem, Dialog, InputGroup, Spinner } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
@@ -9,10 +9,144 @@ console.log('✅ TopNav loaded');
 
 const applyResize = action((store, w, h) => {
   const page = store.activePage;
-  if (page) {
-    page.set({ width: w, height: h });
-  }
+  if (page) page.set({ width: w, height: h });
 });
+
+// ============================
+// Woo product + variation map
+// ============================
+const PRODUCT_ID = 199649;
+
+// Key format: size|amt|color|paper  (USING WOO SLUG VALUES)
+const VARIATION_MAP = {
+  // --- SOFT ---
+  '22x28|1|color|soft': 199650,
+
+  '11x17|1|black-and-white|soft': 199665,
+  '8-5x11|1|black-and-white|soft': 199666,
+  '11x17|1|color|soft': 199667,
+  '8-5x11|1|color|soft': 199668,
+  '8-5x11|2|black-and-white|soft': 199669,
+  '8-5x11|2|color|soft': 199670,
+  '8-5x11|35|black-and-white|soft': 199671,
+  '8-5x11|35|color|soft': 199672,
+  '8-5x11|4|black-and-white|soft': 199673,
+  '8-5x11|4|color|soft': 199674,
+  '8-5x11|9|black-and-white|soft': 199675,
+  '8-5x11|9|color|soft': 199676,
+
+  // --- HARD ---
+  '11x17|1|black-and-white|hard': 199651,
+  '13x19|1|black-and-white|hard': 199652,
+  '8-5x11|1|black-and-white|hard': 199653,
+  '11x17|1|color|hard': 199654,
+  '13x19|1|color|hard': 199655,
+  '8-5x11|1|color|hard': 199656,
+  '8-5x11|2|black-and-white|hard': 199657,
+  '8-5x11|2|color|hard': 199658,
+  '8-5x11|35|black-and-white|hard': 199659,
+  '8-5x11|35|color|hard': 199660,
+  '8-5x11|4|black-and-white|hard': 199661,
+  '8-5x11|4|color|hard': 199662,
+  '8-5x11|9|black-and-white|hard': 199663,
+  '8-5x11|9|color|hard': 199664,
+};
+
+const WOO_BASE = 'https://tuteachercenter.org';
+
+// ---------- helpers ----------
+function resolveVariationId({ size, amtPerPage, printColor, paperType }) {
+  const key = `${size}|${amtPerPage}|${printColor}|${paperType}`;
+  return VARIATION_MAP[key] || null;
+}
+
+function fmtMoney(n) {
+  if (n === null || n === undefined || n === '') return '';
+  const num = Number(n);
+  if (!Number.isFinite(num)) return '';
+  return `$${num.toFixed(2)}`;
+}
+
+function inIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+
+// For option availability:
+// Checks if there exists ANY variation in VARIATION_MAP that matches current selections
+// (with one dimension possibly replaced by candidateValue)
+function existsMatchingVariation(current, overrides = {}) {
+  const s = { ...current, ...overrides };
+  const keys = Object.keys(VARIATION_MAP);
+
+  return keys.some((k) => {
+    const [size, amt, color, paper] = k.split('|');
+    return (
+      String(s.size) === size &&
+      String(s.amtPerPage) === amt &&
+      String(s.printColor) === color &&
+      String(s.paperType) === paper
+    );
+  });
+}
+
+// Find first valid variation key for a partially invalid selection (auto-fix)
+function findNearestValid(current) {
+  // Keep size if possible, else fall back to any
+  const keys = Object.keys(VARIATION_MAP).map((k) => {
+    const [size, amtPerPage, printColor, paperType] = k.split('|');
+    return { size, amtPerPage, printColor, paperType };
+  });
+
+  // Prefer same size, then same paper, then anything
+  const scored = keys
+    .map((v) => {
+      let score = 0;
+      if (v.size === current.size) score += 3;
+      if (v.paperType === current.paperType) score += 2;
+      if (v.printColor === current.printColor) score += 1;
+      if (v.amtPerPage === current.amtPerPage) score += 1;
+      return { v, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  return scored[0]?.v || null;
+}
+
+// Try to fetch live price via Woo wc-ajax endpoint.
+// NOTE: This works best when your app is embedded on the same WP domain (iframe),
+// or when your WP allows CORS for this endpoint.
+async function fetchVariationPrice({ size, amtPerPage, printColor, paperType }) {
+  const params = new URLSearchParams();
+  params.set('product_id', String(PRODUCT_ID));
+  params.set('attribute_pa_size', String(size));
+  params.set('attribute_pa_amt-per-page', String(amtPerPage));
+  params.set('attribute_pa_print-color', String(printColor));
+  params.set('attribute_pa_paper-type', String(paperType));
+
+  const url = `${WOO_BASE}/?wc-ajax=get_variation`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body: params.toString(),
+    credentials: 'include',
+  });
+
+  // Woo returns JSON for valid variation
+  const data = await res.json();
+  // data.display_price is common
+  if (data && (data.display_price !== undefined || data.display_price !== null)) {
+    return Number(data.display_price);
+  }
+  // fallback
+  if (data && data.price !== undefined) return Number(data.price);
+
+  throw new Error('Could not read variation price');
+}
 
 const TopNav = observer(({ store }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -20,6 +154,45 @@ const TopNav = observer(({ store }) => {
   const [customHeight, setCustomHeight] = useState('');
   const [popupLoading, setPopupLoading] = useState(false);
   const resizeButtonRef = useRef(null);
+
+  // Options modal
+  const [optionsOpen, setOptionsOpen] = useState(false);
+
+  // selections (Woo slugs)
+  const [optSize, setOptSize] = useState('8-5x11');
+  const [optAmt, setOptAmt] = useState('1');
+  const [optColor, setOptColor] = useState('black-and-white');
+  const [optPaper, setOptPaper] = useState('hard');
+
+  // price
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState(null); // number|null
+  const [priceError, setPriceError] = useState('');
+
+  const selection = useMemo(
+    () => ({
+      size: optSize,
+      amtPerPage: optAmt,
+      printColor: optColor,
+      paperType: optPaper,
+    }),
+    [optSize, optAmt, optColor, optPaper]
+  );
+
+  const isCurrentComboValid = useMemo(() => {
+    return !!resolveVariationId(selection);
+  }, [selection]);
+
+  // availability helpers
+  const avail = useMemo(() => {
+    const cur = selection;
+    return {
+      size: (v) => existsMatchingVariation(cur, { size: v }),
+      amt: (v) => existsMatchingVariation(cur, { amtPerPage: v }),
+      color: (v) => existsMatchingVariation(cur, { printColor: v }),
+      paper: (v) => existsMatchingVariation(cur, { paperType: v }),
+    };
+  }, [selection]);
 
   const handleResize = (w, h) => {
     applyResize(store, w, h);
@@ -29,9 +202,7 @@ const TopNav = observer(({ store }) => {
   const handleCustomResize = () => {
     const width = parseFloat(customWidth) * 72;
     const height = parseFloat(customHeight) * 72;
-    if (!isNaN(width) && !isNaN(height)) {
-      handleResize(width, height);
-    }
+    if (!isNaN(width) && !isNaN(height)) handleResize(width, height);
   };
 
   const handleDownloadImage = () => {
@@ -39,55 +210,160 @@ const TopNav = observer(({ store }) => {
     downloadFile(dataURL, 'design.png');
   };
 
-  const handleDownloadPDF = async () => {
-    const blob = await store.toPDFBlob();
-    const url = URL.createObjectURL(blob);
-    downloadFile(url, 'design.pdf');
-    URL.revokeObjectURL(url);
+  // Save design via REST and return design_id
+  const saveDesignToWP = async () => {
+    const token = import.meta.env.VITE_POLOTNO_WP_TOKEN;
+    if (!token) {
+      throw new Error('Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).');
+    }
+
+    const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
+
+    const res = await fetch(`${WOO_BASE}/wp-json/polotno/v1/save`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Polotno-Token': token,
+      },
+      body: JSON.stringify({ pngBase64 }),
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Save failed');
+    return data; // { success, design_id, png_url }
   };
 
-  const handleAddToCart = async () => {
+  // Live price updater (called when modal opens + when selection changes inside modal)
+  const updatePrice = async (nextSelection) => {
+    setPriceError('');
+    setCurrentPrice(null);
 
+    // If combo invalid, don't fetch (show “—”)
+    if (!resolveVariationId(nextSelection)) return;
+
+    setPriceLoading(true);
+    try {
+      const p = await fetchVariationPrice(nextSelection);
+      setCurrentPrice(p);
+    } catch (e) {
+      // If price fetch fails due to CORS locally, you’ll still be able to proceed.
+      setPriceError('Could not load price here (will still add to cart).');
+      setCurrentPrice(null);
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+
+  const openOptions = async () => {
+    // If current combo is invalid for any reason, snap to a valid nearest.
+    if (!resolveVariationId(selection)) {
+      const nearest = findNearestValid(selection);
+      if (nearest) {
+        setOptSize(nearest.size);
+        setOptAmt(nearest.amtPerPage);
+        setOptColor(nearest.printColor);
+        setOptPaper(nearest.paperType);
+      }
+    }
+    setOptionsOpen(true);
+
+    // price load
     setTimeout(() => {
-  popup.postMessage({
-    type: 'SET_IMAGE_TO_FORM',
-    imageBase64: imageDataUrl
-  }, '*');
-  console.log('📤 Sent image to popup (after delay)');
-  setPopupLoading(false);
-}, 5000); // wait 5 seconds
+      updatePrice({
+        size: optSize,
+        amtPerPage: optAmt,
+        printColor: optColor,
+        paperType: optPaper,
+      });
+    }, 0);
+  };
 
-    console.log('🛒 handleAddToCart started');
+  // When you click an option:
+  // - if it makes combo invalid, we still allow selecting it,
+  //   but then we’ll auto-adjust another dimension to reach nearest valid.
+  const setOptionSafely = (patch) => {
+    const next = { ...selection, ...patch };
+
+    if (resolveVariationId(next)) {
+      // valid, apply directly
+      if (patch.size !== undefined) setOptSize(patch.size);
+      if (patch.amtPerPage !== undefined) setOptAmt(patch.amtPerPage);
+      if (patch.printColor !== undefined) setOptColor(patch.printColor);
+      if (patch.paperType !== undefined) setOptPaper(patch.paperType);
+      updatePrice(next);
+      return;
+    }
+
+    // invalid: apply patch, then snap to nearest valid combo that keeps patched field if possible
+    const nearest = findNearestValid(next);
+    if (!nearest) return;
+
+    // If user just picked size, keep that size if possible
+    const forced = { ...nearest, ...patch };
+    // forced may still be invalid, so just use nearest if forced doesn't exist
+    const final = resolveVariationId(forced) ? forced : nearest;
+
+    setOptSize(final.size);
+    setOptAmt(final.amtPerPage);
+    setOptColor(final.printColor);
+    setOptPaper(final.paperType);
+
+    updatePrice(final);
+  };
+
+  // ✅ Confirm → save → add to cart without redirect (via parent postMessage)
+  // Fallback: redirect add-to-cart if not in iframe
+  const handleConfirmAddToCart = async () => {
+    console.log('🛒 Confirm & Add to Cart clicked');
     setPopupLoading(true);
 
-    const imageDataUrl = await store.toDataURL();
-    console.log('📤 Sending image to popup:', imageDataUrl.slice(0, 100) + '...');
+    try {
+      const variationId = resolveVariationId(selection);
+      if (!variationId) {
+        alert('That combination is not available.');
+        return;
+      }
 
-    const productUrl = 'https://tuteachercenter.org/product/customizer-order/';
-    const popup = window.open(productUrl, '_blank', 'width=1200,height=800');
+      const saved = await saveDesignToWP();
+      const designId = saved.design_id;
 
-    if (popup) {
-      const interval = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(interval);
-          console.warn('🛑 Popup was closed before message sent.');
-          setPopupLoading(false);
-          return;
-        }
-        try {
-          popup.postMessage({
-            type: 'SET_IMAGE_TO_FORM',
-            imageBase64: imageDataUrl
-          }, '*');
-          console.log('📤 Sent image to popup');
-          clearInterval(interval);
-          setPopupLoading(false);
-        } catch (e) {
-          // continue retrying
-        }
-      }, 500);
-    } else {
-      alert('Please allow popups for this site.');
+      const payload = {
+        type: 'POLOTNO_ADD_TO_CART',
+        product_id: PRODUCT_ID,
+        variation_id: variationId,
+        quantity: 1,
+        attributes: {
+          'attribute_pa_size': selection.size,
+          'attribute_pa_amt-per-page': selection.amtPerPage,
+          'attribute_pa_print-color': selection.printColor,
+          'attribute_pa_paper-type': selection.paperType,
+        },
+        polotno_design_id: designId,
+      };
+
+      // If embedded on WP page, ask parent to add-to-cart and open side cart
+      if (inIframe()) {
+        console.log('📨 Posting to parent for AJAX add-to-cart:', payload);
+        window.parent.postMessage(payload, '*');
+        return;
+      }
+
+      // Fallback: redirect add-to-cart (standalone)
+      const params = new URLSearchParams();
+      params.set('add-to-cart', String(PRODUCT_ID));
+      params.set('variation_id', String(variationId));
+      params.set('quantity', '1');
+      params.set('attribute_pa_size', String(selection.size));
+      params.set('attribute_pa_amt-per-page', String(selection.amtPerPage));
+      params.set('attribute_pa_print-color', String(selection.printColor));
+      params.set('attribute_pa_paper-type', String(selection.paperType));
+      params.set('polotno_design_id', String(designId));
+
+      window.location.href = `${WOO_BASE}/?${params.toString()}`;
+    } catch (err) {
+      console.error('❌ Add to cart failed:', err);
+      alert(`Could not save/add to cart.\n\n${err?.message || err}`);
+    } finally {
       setPopupLoading(false);
     }
   };
@@ -95,8 +371,22 @@ const TopNav = observer(({ store }) => {
   const downloadMenu = (
     <Menu>
       <MenuItem text="Save as Image" onClick={handleDownloadImage} />
-      <MenuItem text="Save as PDF" onClick={handleDownloadPDF} />
     </Menu>
+  );
+
+  // UI helper: strike/fade unavailable values, but allow click (we will snap to valid)
+  const OptionButton = ({ active, disabledLook, onClick, children }) => (
+    <Button
+      active={active}
+      onClick={onClick}
+      style={{
+        opacity: disabledLook ? 0.45 : 1,
+        textDecoration: disabledLook ? 'line-through' : 'none',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </Button>
   );
 
   return (
@@ -114,7 +404,7 @@ const TopNav = observer(({ store }) => {
           gap: '12px',
         }}
       >
-        <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
+        <a href={WOO_BASE} style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
         </a>
 
@@ -156,12 +446,12 @@ const TopNav = observer(({ store }) => {
               transition: 'all 0.2s ease-in-out',
             }}
             onMouseOver={(e) => {
-              e.target.style.backgroundColor = 'white';
-              e.target.style.color = '#ce3c4f';
+              e.currentTarget.style.backgroundColor = 'white';
+              e.currentTarget.style.color = '#ce3c4f';
             }}
             onMouseOut={(e) => {
-              e.target.style.backgroundColor = '#ce3c4f';
-              e.target.style.color = 'white';
+              e.currentTarget.style.backgroundColor = '#ce3c4f';
+              e.currentTarget.style.color = 'white';
             }}
           >
             <Icon icon="download" />
@@ -170,7 +460,7 @@ const TopNav = observer(({ store }) => {
         </Popover>
 
         <Button
-          onClick={handleAddToCart}
+          onClick={openOptions}
           style={{
             marginLeft: '8px',
             textTransform: 'uppercase',
@@ -202,13 +492,141 @@ const TopNav = observer(({ store }) => {
             zIndex: 9999,
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
           }}
         >
           <Spinner intent="primary" size={100} />
         </div>
       )}
 
+      {/* Print Options Modal */}
+      <Dialog
+        isOpen={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        title="Print Options"
+        canOutsideClickClose={!popupLoading}
+        enforceFocus
+      >
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Size</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { v: '8-5x11', label: '8.5"×11"' },
+                { v: '11x17', label: '11"×17"' },
+                { v: '13x19', label: '13"×19"' },
+                { v: '22x28', label: '22"×28"' },
+              ].map((o) => (
+                <OptionButton
+                  key={o.v}
+                  active={optSize === o.v}
+                  disabledLook={!avail.size(o.v)}
+                  onClick={() => setOptionSafely({ size: o.v })}
+                >
+                  {o.label}
+                </OptionButton>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Amount Per Page</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {['1', '2', '4', '9', '35'].map((v) => (
+                <OptionButton
+                  key={v}
+                  active={optAmt === v}
+                  disabledLook={!avail.amt(v)}
+                  onClick={() => setOptionSafely({ amtPerPage: v })}
+                >
+                  {v}
+                </OptionButton>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Print Color</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <OptionButton
+                active={optColor === 'black-and-white'}
+                disabledLook={!avail.color('black-and-white')}
+                onClick={() => setOptionSafely({ printColor: 'black-and-white' })}
+              >
+                Black and White
+              </OptionButton>
+              <OptionButton
+                active={optColor === 'color'}
+                disabledLook={!avail.color('color')}
+                onClick={() => setOptionSafely({ printColor: 'color' })}
+              >
+                Color
+              </OptionButton>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <OptionButton
+                active={optPaper === 'hard'}
+                disabledLook={!avail.paper('hard')}
+                onClick={() => setOptionSafely({ paperType: 'hard' })}
+              >
+                Hard
+              </OptionButton>
+              <OptionButton
+                active={optPaper === 'soft'}
+                disabledLook={!avail.paper('soft')}
+                onClick={() => setOptionSafely({ paperType: 'soft' })}
+              >
+                Soft
+              </OptionButton>
+            </div>
+          </div>
+
+          {/* spacing + divider line above price */}
+          <div style={{ marginTop: 8 }} />
+          <div style={{ borderTop: '1px solid rgba(0,0,0,0.12)', marginTop: 4 }} />
+          <div style={{ marginTop: 10 }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>Price</div>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>
+              {priceLoading ? 'Loading…' : (resolveVariationId(selection) ? (fmtMoney(currentPrice) || '—') : '—')}
+            </div>
+          </div>
+
+          {priceError ? (
+            <div style={{ fontSize: 12, opacity: 0.75 }}>{priceError}</div>
+          ) : null}
+
+          {!isCurrentComboValid ? (
+            <div style={{ fontSize: 12, opacity: 0.8 }}>
+              That exact combination isn’t available — pick any option that isn’t crossed out.
+            </div>
+          ) : null}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <Button onClick={() => setOptionsOpen(false)} disabled={popupLoading}>
+              Cancel
+            </Button>
+            <Button
+              intent="primary"
+              loading={popupLoading}
+              disabled={!resolveVariationId(selection)}
+              onClick={() => {
+                // keep modal open while adding to cart
+                handleConfirmAddToCart();
+              }}
+            >
+              Confirm & Add to Cart
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Resize Dialog */}
       <Dialog
         isOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
