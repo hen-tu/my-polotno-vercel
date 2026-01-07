@@ -237,29 +237,26 @@ const TopNav = observer(({ store }) => {
     downloadFile(dataURL, 'design.png');
   };
 
-  // Save design via REST and return design_id
+  // Save design via parent-page RPC (NO CORS) and return { success, design_id, png_url }
   const saveDesignToWP = async () => {
-    const token = import.meta.env.VITE_POLOTNO_WP_TOKEN;
-    if (!token) {
-      throw new Error(
-        'Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).'
-      );
-    }
-
     const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
 
-    const res = await fetch(`${WOO_BASE}/wp-json/polotno/v1/save`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Polotno-Token': token,
-      },
-      body: JSON.stringify({ pngBase64 }),
-    });
+    // Call the WP-domain bridge (same-origin) via postMessage RPC
+    const result = await postToParentRpc("POL_SAVE_DESIGN", { pngBase64 });
 
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Save failed');
-    return data; // { success, design_id, png_url }
+    if (!result || !result.ok) {
+      throw new Error((result && result.error) ? result.error : "Save failed");
+    }
+
+    // result.data is the JSON returned by /wp-json/polotno/v1/save
+    // { success:true, design_id, png_url }
+    const data = result.data;
+
+    if (!data || !data.success) {
+      throw new Error((data && data.error) ? data.error : "Save failed");
+    }
+
+    return data;
   };
 
   // ✅ Live price updater via parent bridge (NO CORS)
