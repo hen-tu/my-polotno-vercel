@@ -273,6 +273,12 @@ const TopNav = observer(({ store }) => {
   };
 
   const handleDownloadPDF = async () => {
+    console.log('PDF export methods available:', {
+      toPDFBlob: typeof store.toPDFBlob,
+      saveAsPDF: typeof store.saveAsPDF,
+      toPDFDataURL: typeof store.toPDFDataURL,
+      toPDF: typeof store.toPDF,
+    });
     try {
       if (typeof store.waitLoading === 'function') {
         await store.waitLoading();
