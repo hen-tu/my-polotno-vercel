@@ -732,7 +732,7 @@ const TopNav = observer(({ store }) => {
             <Button
               intent="primary"
               onClick={() => {
-                window.parent.location.href = 'https://tuteachercenter.org/cart/';
+                window.parent.location.href = 'https://tuteachercenter.org/cart-2/';
               }}
             >
               Go to Cart
