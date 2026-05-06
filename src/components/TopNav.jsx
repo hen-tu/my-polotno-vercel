@@ -55,9 +55,48 @@ const VARIATION_MAP = {
 const WOO_BASE = 'https://tuteachercenter.org';
 
 // ---------- helpers ----------
+const PRICE_MAP = {
+  // --- SOFT ---
+  '22x28|1|color|soft': 11.5,
+
+  '11x17|1|black-and-white|soft': 0.25,
+  '8-5x11|1|black-and-white|soft': 0.08,
+  '11x17|1|color|soft': 0.95,
+  '8-5x11|1|color|soft': 0.55,
+  '8-5x11|2|black-and-white|soft': 0.08,
+  '8-5x11|2|color|soft': 0.55,
+  '8-5x11|35|black-and-white|soft': 0.08,
+  '8-5x11|35|color|soft': 0.55,
+  '8-5x11|4|black-and-white|soft': 0.08,
+  '8-5x11|4|color|soft': 0.55,
+  '8-5x11|9|black-and-white|soft': 0.08,
+  '8-5x11|9|color|soft': 0.55,
+
+  // --- HARD ---
+  '11x17|1|black-and-white|hard': 0.55,
+  '13x19|1|black-and-white|hard': 1.85,
+  '8-5x11|1|black-and-white|hard': 0.25,
+  '11x17|1|color|hard': 1.5,
+  '13x19|1|color|hard': 3,
+  '8-5x11|1|color|hard': 0.65,
+  '8-5x11|2|black-and-white|hard': 0.25,
+  '8-5x11|2|color|hard': 0.65,
+  '8-5x11|35|black-and-white|hard': 0.25,
+  '8-5x11|35|color|hard': 0.65,
+  '8-5x11|4|black-and-white|hard': 0.25,
+  '8-5x11|4|color|hard': 0.65,
+  '8-5x11|9|black-and-white|hard': 0.25,
+  '8-5x11|9|color|hard': 0.65,
+};
+
 function resolveVariationId({ size, amtPerPage, printColor, paperType }) {
   const key = `${size}|${amtPerPage}|${printColor}|${paperType}`;
   return VARIATION_MAP[key] || null;
+}
+
+function resolvePrice({ size, amtPerPage, printColor, paperType }) {
+  const key = `${size}|${amtPerPage}|${printColor}|${paperType}`;
+  return PRICE_MAP[key];
 }
 
 function fmtMoney(n) {
@@ -259,44 +298,26 @@ const TopNav = observer(({ store }) => {
     return data;
   };
 
-  // ✅ Live price updater via parent bridge (NO CORS)
-  const updatePrice = async (nextSelection) => {
+  // ✅ Price updater from local PRICE_MAP
+  // No WooCommerce lookup, no postMessage, no timeout.
+  const updatePrice = (nextSelection) => {
     setPriceError('');
-    setCurrentPrice(null);
+    setPriceLoading(false);
 
-    // If combo invalid, don't fetch
-    if (!resolveVariationId(nextSelection)) return;
-
-    setPriceLoading(true);
-
-    try {
-      // Ask the parent (WP domain) to call wc-ajax=get_variation same-origin
-      const resp = await postToParentRpc('POL_GET_VARIATION', {
-        product_id: PRODUCT_ID,
-        attributes: {
-          attribute_pa_size: String(nextSelection.size),
-          'attribute_pa_amt-per-page': String(nextSelection.amtPerPage),
-          'attribute_pa_print-color': String(nextSelection.printColor),
-          'attribute_pa_paper-type': String(nextSelection.paperType),
-        },
-      });
-
-      // Bridge may return variation object directly or wrapped
-      const variation = resp?.variation || resp?.data || resp;
-
-      const priceNum = extractPriceNumberFromVariation(variation);
-      if (priceNum !== null) {
-        setCurrentPrice(priceNum);
-      } else {
-        // Not fatal — but tell user
-        setCurrentPrice(null);
-        setPriceError('Price not available for this selection (still can add to cart).');
-      }
-    } catch (e) {
-      setPriceError(e?.message || 'Could not load price here (will still add to cart).');
+    // If combo invalid, don't show a price
+    if (!resolveVariationId(nextSelection)) {
       setCurrentPrice(null);
-    } finally {
-      setPriceLoading(false);
+      setPriceError('This combination is not available.');
+      return;
+    }
+
+    const priceNum = resolvePrice(nextSelection);
+
+    if (typeof priceNum === 'number' && !Number.isNaN(priceNum)) {
+      setCurrentPrice(priceNum);
+    } else {
+      setCurrentPrice(null);
+      setPriceError('Price not mapped yet for this selection.');
     }
   };
 
@@ -656,7 +677,9 @@ const TopNav = observer(({ store }) => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontWeight: 800, fontSize: 16 }}>Price</div>
             <div style={{ fontWeight: 800, fontSize: 16 }}>
-              {priceLoading ? 'Loading…' : (resolveVariationId(selection) ? (fmtMoney(currentPrice) || '—') : '—')}
+              {resolveVariationId(selection)
+              ? (fmtMoney(resolvePrice(selection)) || 'Price not mapped')
+              : 'Not available'}
             </div>
           </div>
 
