@@ -272,6 +272,29 @@ const TopNav = observer(({ store }) => {
     if (!isNaN(width) && !isNaN(height)) handleResize(width, height);
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      if (typeof store.waitLoading === 'function') {
+        await store.waitLoading();
+      }
+
+      if (typeof store.toPDFBlob !== 'function') {
+        alert('PDF export is not available in this build.');
+        return;
+      }
+
+      const blob = await store.toPDFBlob();
+      const url = URL.createObjectURL(blob);
+
+      downloadFile(url, 'design.pdf');
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PDF download failed:', err);
+      alert('PDF download failed. Please try again.');
+    }
+  };
+
   const handleDownloadTemplate = async () => {
   try {
     if (typeof store.waitLoading === 'function') {
