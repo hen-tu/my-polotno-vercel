@@ -272,9 +272,51 @@ const TopNav = observer(({ store }) => {
     if (!isNaN(width) && !isNaN(height)) handleResize(width, height);
   };
 
-  const handleDownloadImage = () => {
-    const dataURL = store.toDataURL();
-    downloadFile(dataURL, 'design.png');
+  const handleDownloadTemplate = async () => {
+  try {
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
+    }
+
+    const json = store.toJSON();
+    const jsonString = JSON.stringify(json, null, 2);
+
+    const blob = new Blob([jsonString], {
+      type: 'application/json',
+    });
+
+    const url = URL.createObjectURL(blob);
+    downloadFile(url, 'design-template.json');
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Template JSON download failed:', err);
+    alert('Template download failed. Please try again.');
+  }
+};
+
+  const handleDownloadImage = async () => {
+    try {
+      if (typeof store.waitLoading === 'function') {
+        await store.waitLoading();
+      }
+
+      const dataURL = await store.toDataURL({
+        mimeType: 'image/png',
+        quality: 1,
+        pixelRatio: 2,
+      });
+
+      if (!dataURL || !String(dataURL).startsWith('data:image/png')) {
+        console.error('Invalid PNG export:', dataURL);
+        alert('PNG export failed. Please try again.');
+        return;
+      }
+
+      downloadFile(dataURL, 'design.png');
+    } catch (err) {
+      console.error('PNG download failed:', err);
+      alert('PNG download failed. Please try again.');
+    }
   };
 
   // Save design via parent-page RPC (NO CORS) and return { success, design_id, png_url }
@@ -455,7 +497,9 @@ const TopNav = observer(({ store }) => {
 
   const downloadMenu = (
     <Menu>
-      <MenuItem text="Save as Image" onClick={handleDownloadImage} />
+      <MenuItem text="Image" onClick={handleDownloadImage} />
+      <MenuItem text="PDF" onClick={handleDownloadPDF} />
+      <MenuItem text="Template" onClick={handleDownloadTemplate} />
     </Menu>
   );
 
