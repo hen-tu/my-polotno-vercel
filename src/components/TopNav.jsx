@@ -220,6 +220,7 @@ const TopNav = observer(({ store }) => {
 
   // Options modal
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [cartSuccessOpen, setCartSuccessOpen] = useState(false);
 
   // selections (Woo slugs)
   const [optSize, setOptSize] = useState('8-5x11');
@@ -425,8 +426,8 @@ const TopNav = observer(({ store }) => {
           polotno_design_id: designId,
         });
 
-        // If you want, you can close the modal after success:
-        // setOptionsOpen(false);
+        setOptionsOpen(false);
+        setCartSuccessOpen(true);
         return;
       }
 
@@ -706,6 +707,35 @@ const TopNav = observer(({ store }) => {
               }}
             >
               Confirm & Add to Cart
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Add to Cart Success Dialog */}
+      <Dialog
+        isOpen={cartSuccessOpen}
+        onClose={() => setCartSuccessOpen(false)}
+        title="Added to Cart"
+        canOutsideClickClose
+      >
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ fontSize: 15, lineHeight: 1.5 }}>
+            Your design was added to your cart.
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Button onClick={() => setCartSuccessOpen(false)}>
+              Keep Editing
+            </Button>
+
+            <Button
+              intent="primary"
+              onClick={() => {
+                window.parent.location.href = 'https://tuteachercenter.org/cart/';
+              }}
+            >
+              Go to Cart
             </Button>
           </div>
         </div>
