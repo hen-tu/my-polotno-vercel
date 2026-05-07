@@ -3,7 +3,7 @@ export const ASSET_BASE_URL =
   'https://hen-tu.github.io/polotno-assets-cf';
 
 // Change this when you update the asset repo and need to bust GitHub Pages/browser cache.
-export const ASSET_VERSION = '19e0d3a';
+export const ASSET_VERSION = '0219f90';
 
 export function withAssetVersion(url) {
   if (!url) return '';

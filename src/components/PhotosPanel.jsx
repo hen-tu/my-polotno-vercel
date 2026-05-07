@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { action } from 'mobx';
+import { assetIndexUrl, assetUrl } from '../assetUrls';
 
 const photosCache = { data: null };
 
@@ -17,7 +18,7 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
       return;
     }
 
-    fetch('photos/index.json')
+    fetch(assetIndexUrl('photos/index.json'))
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText);
         return res.json();
@@ -39,7 +40,7 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
     const pageH = page.computedHeight;
 
     const img = new window.Image();
-    img.src = p.url;
+    img.src = assetUrl(p.url, { version: true });
 
     img.onload = () => {
       const imgW = img.width;
@@ -56,7 +57,7 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
 
       page.addElement({
         type: 'image',
-        src: p.url,
+        src: assetUrl(p.url, { version: true }),
         width: finalW,
         height: finalH,
         x: (pageW - finalW) / 2,
@@ -65,7 +66,7 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
     };
 
     img.onerror = () => {
-      console.error('Failed to load image for sizing:', p.url);
+      console.error('Failed to load image for sizing:', assetUrl(p.url, { version: true }));
     };
   });
 
@@ -103,11 +104,14 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
             >
               <img
                 loading="lazy"
-                src={p.previewUrl}
-                alt={p.name}
+                src={assetUrl(p.previewUrl || p.url, { version: true })}
+                alt={p.name || p.id || 'Photo'}
                 onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'https://via.placeholder.com/100x80?text=No+Image';
+                  const fallback = assetUrl(p.url, { version: true });
+
+                  if (e.currentTarget.src !== fallback) {
+                    e.currentTarget.src = fallback;
+                  }
                 }}
                 style={styles.thumbImage}
               />
