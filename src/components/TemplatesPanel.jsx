@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { runInAction } from 'mobx';
+import { assetIndexUrl, assetUrl } from '../assetUrls';
 
 const TemplatesPanel = observer(({ store }) => {
   const [templates, setTemplates] = useState([]);
@@ -24,7 +25,7 @@ const TemplatesPanel = observer(({ store }) => {
 
   // Load templates + optional auto-load by URL (?template=slug)
   useEffect(() => {
-    fetch('templates/index.json')
+    fetch(assetIndexUrl('templates/index.json'))
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -42,7 +43,7 @@ const TemplatesPanel = observer(({ store }) => {
             setActiveCategory(match.category || null);
             setActiveSet(match.set || null);
 
-            fetch(match.jsonUrl)
+            fetch(assetUrl(match.jsonUrl, { version: true }))
               .then((res) => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
@@ -187,7 +188,7 @@ const TemplatesPanel = observer(({ store }) => {
                 key={t.id}
                 onClick={async () => {
                   try {
-                    const res = await fetch(t.jsonUrl);
+                    const res = await fetch(assetUrl(t.jsonUrl, { version: true }));
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const json = await res.json();
                     runInAction(() => {
@@ -212,7 +213,7 @@ const TemplatesPanel = observer(({ store }) => {
                 }}
               >
                 <img
-                  src={t.previewUrl}
+                  src={assetUrl(t.previewUrl, { version: true })}
                   alt={t.name}
                   onError={(e) => {
                     e.target.onerror = null;
