@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^5.17.6",
-    "polotno": "^2.40.2",
+    "polotno": "2.40.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
