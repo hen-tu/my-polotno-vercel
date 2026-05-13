@@ -16,6 +16,7 @@ import MyTextPanel from './components/MyTextPanel';
 import TemplatesPanel from './components/TemplatesPanel';
 import PhotosPanelWrapper from './components/PhotosPanelWrapper';
 import { assetIndexUrl, assetUrl } from './assetUrls';
+import BackgroundPanel from './components/BackgroundPanel';
 
 // ✅ Create store
 const store = createStore({ showCredit: false });
@@ -42,7 +43,11 @@ const MY_SECTIONS = [
     Panel: MyTextPanel,
   },
   getSectionByName('elements'),
-  getSectionByName('background'),
+  {
+  ...getSectionByName('background'),
+    title: 'Background',
+    Panel: BackgroundPanel,
+  },
   getSectionByName('upload'),
   getSectionByName('layers'),
 ].filter(Boolean);
