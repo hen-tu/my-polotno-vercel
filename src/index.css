@@ -129,3 +129,60 @@ button:hover {
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
+/* ======= ASSET THUMBNAIL MASONRY ======= */
+
+.asset-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+
+.asset-thumb-card {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.asset-thumb-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+.asset-thumb-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  object-position: center;
+  background: #f0f0f0;
+}
+
+.asset-thumb-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  max-width: calc(100% - 12px);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  color: #222;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.15s ease;
+}
+
+.asset-thumb-card:hover .asset-thumb-label {
+  opacity: 1;
+}
