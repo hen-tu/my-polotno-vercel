@@ -210,27 +210,22 @@ const TopNav = observer(({ store }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Save the print PNG and the editable Polotno template JSON via REST.
+  // Save design via REST and return design_id
   const saveDesignToWP = async () => {
     const token = import.meta.env.VITE_POLOTNO_WP_TOKEN;
     if (!token) {
       throw new Error('Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).');
     }
 
-    // Make sure fonts/images are fully loaded before creating the order artwork.
-    await store.waitLoading();
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
+    }
 
     const pngBase64 = await store.toDataURL({
       mimeType: 'image/png',
       quality: 1,
     });
-
-    // Send the native editable Polotno design as a JSON string.
-    // Sending a string avoids WordPress/PHP nested-object parsing edge cases.
-    const designJson = JSON.stringify(store.toJSON());
-
-    // No PDF is needed for this order flow.
-    const pdfBase64 = '';
+    const designJson = store.toJSON();
 
     const res = await fetch('https://tuteachercenter.org/wp-json/polotno/v1/save', {
       method: 'POST',
@@ -238,35 +233,11 @@ const TopNav = observer(({ store }) => {
         'Content-Type': 'application/json',
         'X-Polotno-Token': token,
       },
-      body: JSON.stringify({
-        pngBase64,
-        pdfBase64,
-        designJson,
-      }),
+      body: JSON.stringify({ pngBase64, designJson }),
     });
 
-    const responseText = await res.text();
-    let data;
-
-    try {
-      data = JSON.parse(responseText);
-    } catch {
-      throw new Error(`Save endpoint returned invalid JSON (HTTP ${res.status}).`);
-    }
-
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || data.message || `Save failed (HTTP ${res.status})`);
-    }
-
-    // Do not add the product to the cart unless BOTH files were saved.
-    // This prevents the editable template from failing silently.
-    if (!data.json_saved || !data.json_url) {
-      throw new Error(
-        data.json_warning ||
-          'The PNG saved, but the editable template did not. Update/activate the Polotno Editable Order Files plugin.'
-      );
-    }
-
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Save failed');
     return data;
   };
 
@@ -275,9 +246,7 @@ const TopNav = observer(({ store }) => {
     try {
       const data = await saveDesignToWP();
       console.log('✅ REST save OK:', data);
-      alert(
-        `Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}\nTemplate: ${data.json_url || ''}`
-      );
+      alert(`Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}\nJSON: ${data.json_url || ''}`);
     } catch (err) {
       console.error('❌ REST save test failed:', err);
       alert(`REST save failed:\n${err.message || err}`);
@@ -331,10 +300,8 @@ const TopNav = observer(({ store }) => {
       form.set('attribute_pa_print-color', String(optColor));
       form.set('attribute_pa_paper-type', String(optPaper));
 
-      // Explicitly send all file references into WooCommerce.
+      // your custom field (must be captured by your Woo hook OR by $_REQUEST)
       form.set('polotno_design_id', String(designId));
-      form.set('polotno_json_url', String(saved.json_url || ''));
-      form.set('polotno_png_url', String(saved.png_url || ''));
 
       const res = await fetch('https://tuteachercenter.org/?wc-ajax=add_to_cart', {
         method: 'POST',
