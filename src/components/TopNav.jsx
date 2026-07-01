@@ -467,27 +467,43 @@ const TopNav = observer(({ store }) => {
     }
   };
 
-  // Save design via parent-page RPC (NO CORS) and return { success, design_id, png_url }
+  // Save the PNG first through the existing parent-page RPC.
+  // Keep a serialized copy of the editable JSON so it can also be handed off
+  // during add-to-cart. This works even when an older parent save handler only
+  // forwards pngBase64 to WordPress.
   const saveDesignToWP = async () => {
-    const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
-    const designJson = store.toJSON();
-
-    // Call the WP-domain bridge (same-origin) via postMessage RPC
-    const result = await postToParentRpc("POL_SAVE_DESIGN", { pngBase64, designJson }, { timeoutMs: 30000 });
-
-    if (!result || !result.ok) {
-      throw new Error((result && result.error) ? result.error : "Save failed");
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
     }
 
-    // result.data is the JSON returned by /wp-json/polotno/v1/save
-    // { success:true, design_id, png_url }
+    const pngBase64 = await store.toDataURL({
+      mimeType: 'image/png',
+      quality: 1,
+    });
+
+    const designJson = JSON.stringify(store.toJSON());
+
+    const result = await postToParentRpc(
+      'POL_SAVE_DESIGN',
+      { pngBase64, designJson },
+      { timeoutMs: 30000 }
+    );
+
+    if (!result || !result.ok) {
+      throw new Error(
+        result && result.error ? result.error : 'Save failed'
+      );
+    }
+
     const data = result.data;
 
     if (!data || !data.success) {
-      throw new Error((data && data.error) ? data.error : "Save failed");
+      throw new Error(
+        data && data.error ? data.error : 'Save failed'
+      );
     }
 
-    return data;
+    return { ...data, designJson };
   };
 
   // ✅ Price updater from local PRICE_MAP
@@ -633,6 +649,7 @@ const TopNav = observer(({ store }) => {
 
       const saved = await saveDesignToWP();
       const designId = saved.design_id;
+      const designJson = saved.designJson;
 
       if (inIframe()) {
         console.log('📨 RPC to parent for AJAX add-to-cart');
@@ -645,6 +662,7 @@ const TopNav = observer(({ store }) => {
             quantity: 1,
             attributes,
             polotno_design_id: designId,
+            designJson,
             ...customFields,
           },
           { timeoutMs: 30000 }
