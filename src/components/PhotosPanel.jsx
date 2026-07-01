@@ -1,7 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { action } from 'mobx';
+import { runInAction } from 'mobx';
 import { assetIndexUrl, assetUrl } from '../assetUrls';
+
+const ASSET_BASE_URL = 'https://hen-tu.github.io/polotno-assets-cf';
+
+function resolveAssetUrl(value) {
+  if (!value) return '';
+
+  const url = String(value).trim();
+
+  // If index already gives a full URL, use it as-is
+  if (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('data:') ||
+    url.startsWith('blob:')
+  ) {
+    return url;
+  }
+
+  // Otherwise treat it as a relative asset path
+  return `${ASSET_BASE_URL}/${url.replace(/^\/+/, '')}`;
+}
+
+function placeholderDataUrl(text = 'No image') {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="120">
+      <rect width="100%" height="100%" fill="#f3f3f3"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Arial" font-size="13" fill="#777">${text}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
 
 const photosCache = { data: null };
 
@@ -32,44 +65,44 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleClick = action((p) => {
+  const handleClick = (p) => {
     const page = store.activePage;
     if (!page) return;
+
+    const imageUrl = resolveAssetUrl(p.url || p.previewUrl);
+
+    if (!imageUrl) {
+      console.error('Photo has no usable URL:', p);
+      return;
+    }
 
     const pageW = page.computedWidth;
     const pageH = page.computedHeight;
 
-    const img = new window.Image();
-    img.src = assetUrl(p.url, { version: true });
+    const imgW = p.width || 600;
+    const imgH = p.height || 400;
 
-    img.onload = () => {
-      const imgW = img.width;
-      const imgH = img.height;
+    const padding = 40;
+    const maxW = pageW - padding * 2;
+    const maxH = pageH - padding * 2;
 
-      const padding = 40;
-      const maxW = pageW - padding * 2;
-      const maxH = pageH - padding * 2;
+    const scale = Math.min(maxW / imgW, maxH / imgH, 1);
 
-      const scale = Math.min(maxW / imgW, maxH / imgH, 1); // Never scale up
+    const finalW = imgW * scale;
+    const finalH = imgH * scale;
 
-      const finalW = imgW * scale;
-      const finalH = imgH * scale;
-
+    runInAction(() => {
       page.addElement({
         type: 'image',
-        src: assetUrl(p.url, { version: true }),
+        src: imageUrl,
         width: finalW,
         height: finalH,
         x: (pageW - finalW) / 2,
         y: (pageH - finalH) / 2,
       });
-    };
-
-    img.onerror = () => {
-      console.error('Failed to load image for sizing:', assetUrl(p.url, { version: true }));
-    };
-  });
-
+    });
+  };
+    
   const filteredPhotos = photos.filter((p) =>
     (p.name || '').toLowerCase().includes(query.toLowerCase())
   );
@@ -95,27 +128,25 @@ const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
       </div>
 
       <div style={styles.scrollableContent}>
-        <div style={styles.grid}>
-          {filteredPhotos.map((p) => (
+        <div className="asset-masonry">
+          {filteredPhotos.map((p, index) => (
             <div
               key={`${p.id}-${p.url}`}
-              style={styles.thumbWrapper}
+              className="asset-thumb-card"
               onClick={() => handleClick(p)}
             >
               <img
-                loading="lazy"
-                src={assetUrl(p.previewUrl || p.url, { version: true })}
-                alt={p.name || p.id || 'Photo'}
+                loading={index < 8 ? 'eager' : 'lazy'}
+                decoding="async"
+                src={resolveAssetUrl(p.previewUrl || p.url)}
+                alt={p.name || ''}
+                className="asset-thumb-image"
                 onError={(e) => {
-                  const fallback = assetUrl(p.url, { version: true });
-
-                  if (e.currentTarget.src !== fallback) {
-                    e.currentTarget.src = fallback;
-                  }
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = placeholderDataUrl('No image');
                 }}
-                style={styles.thumbImage}
               />
-              <div style={styles.thumbLabel}>{p.name}</div>
+              <div className="asset-thumb-label">{p.name}</div>
             </div>
           ))}
         </div>
@@ -158,30 +189,6 @@ const styles = {
     borderRadius: '4px',
     border: '1px solid #ccc',
     boxSizing: 'border-box',
-  },
-  grid: {
-    padding: 12,
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-    gap: 12,
-  },
-  thumbWrapper: {
-    cursor: 'pointer',
-    textAlign: 'center',
-    border: '1px solid #ddd',
-    borderRadius: 4,
-    overflow: 'hidden',
-    backgroundColor: '#fafafa',
-  },
-  thumbImage: {
-    width: '100%',
-    height: 80,
-    objectFit: 'cover',
-    backgroundColor: '#f0f0f0',
-  },
-  thumbLabel: {
-    padding: 4,
-    fontSize: 12,
   },
 };
 
