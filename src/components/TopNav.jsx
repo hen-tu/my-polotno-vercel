@@ -15,7 +15,8 @@ const applyResize = action((store, w, h) => {
 // ============================
 // Woo product + variation map
 // ============================
-const PRODUCT_ID = 199649;
+const REGULAR_PRINT_PRODUCT_ID = 199649;
+const CUSTOM_POSTER_PRODUCT_ID = 206073;
 
 // Key format: size|amt|color|paper  (USING WOO SLUG VALUES)
 const VARIATION_MAP = {
@@ -104,6 +105,111 @@ function fmtMoney(n) {
   const num = Number(n);
   if (!Number.isFinite(num)) return '';
   return `$${num.toFixed(2)}`;
+}
+
+
+// Poster-printing rates used by both the app preview and the Woo server snippet.
+const POSTER_RATES = {
+  paper: {
+    24: 0.5,
+    42: 0.75,
+    60: 1.15,
+  },
+  canvas: {
+    42: 1.0,
+    60: 1.35,
+  },
+};
+
+const POSTER_MAX_MESSAGE =
+  'Maximum size: We can print posters up to 60" wide or 60" tall. Please adjust your dimensions so that at least one side is 60" or less.';
+
+function roundUpPosterInch(value) {
+  const number = Number.parseFloat(value);
+  if (!Number.isFinite(number) || number <= 0) return 0;
+  return Math.ceil(number);
+}
+
+function pickPosterRoll(material, neededWidth) {
+  const rates = POSTER_RATES[material] || POSTER_RATES.paper;
+  const rolls = Object.keys(rates)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  return rolls.find((roll) => neededWidth <= roll) || null;
+}
+
+function calculatePosterPrice(material, rawWidth, rawHeight) {
+  const safeMaterial = material === 'canvas' ? 'canvas' : 'paper';
+  const width = roundUpPosterInch(rawWidth);
+  const height = roundUpPosterInch(rawHeight);
+
+  if (!width || !height) {
+    return {
+      ok: false,
+      error: 'Please enter both width and height.',
+    };
+  }
+
+  // One side may be longer than 60" because that side can run down the roll.
+  // The design is impossible only when neither side can fit across a 60" roll.
+  if (width > 60 && height > 60) {
+    return {
+      ok: false,
+      error: POSTER_MAX_MESSAGE,
+    };
+  }
+
+  const rates = POSTER_RATES[safeMaterial];
+
+  // Option A: width across the roll, height charged as print length.
+  let optionA = null;
+  const rollA = pickPosterRoll(safeMaterial, width);
+  if (rollA && rates[rollA]) {
+    optionA = {
+      orientation: 'width_on_roll',
+      roll: rollA,
+      rate: rates[rollA],
+      charged: height,
+      rollDimension: width,
+      price: Number((rates[rollA] * height).toFixed(2)),
+    };
+  }
+
+  // Option B: height across the roll, width charged as print length.
+  let optionB = null;
+  const rollB = pickPosterRoll(safeMaterial, height);
+  if (rollB && rates[rollB]) {
+    optionB = {
+      orientation: 'height_on_roll',
+      roll: rollB,
+      rate: rates[rollB],
+      charged: width,
+      rollDimension: height,
+      price: Number((rates[rollB] * width).toFixed(2)),
+    };
+  }
+
+  if (!optionA && !optionB) {
+    return {
+      ok: false,
+      error: POSTER_MAX_MESSAGE,
+    };
+  }
+
+  // Match the PHP calculator exactly: choose B only when it is strictly cheaper.
+  let chosen = optionA || optionB;
+  if (optionA && optionB) {
+    chosen = optionB.price < optionA.price ? optionB : optionA;
+  }
+
+  return {
+    ok: true,
+    material: safeMaterial,
+    width,
+    height,
+    ...chosen,
+  };
 }
 
 function inIframe() {
@@ -221,12 +327,18 @@ const TopNav = observer(({ store }) => {
   // Options modal
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [cartSuccessOpen, setCartSuccessOpen] = useState(false);
+  const [printMode, setPrintMode] = useState('regular');
 
-  // selections (Woo slugs)
+  // Regular-printing selections (Woo variation slugs)
   const [optSize, setOptSize] = useState('8-5x11');
   const [optAmt, setOptAmt] = useState('1');
   const [optColor, setOptColor] = useState('black-and-white');
   const [optPaper, setOptPaper] = useState('hard');
+
+  // Custom poster selections for product 206073.
+  const [posterMaterial, setPosterMaterial] = useState('paper');
+  const [posterWidth, setPosterWidth] = useState('');
+  const [posterHeight, setPosterHeight] = useState('');
 
   // price
   const [priceLoading, setPriceLoading] = useState(false);
@@ -244,6 +356,11 @@ const TopNav = observer(({ store }) => {
       paperType: optPaper,
     }),
     [optSize, optAmt, optColor, optPaper]
+  );
+
+  const posterQuote = useMemo(
+    () => calculatePosterPrice(posterMaterial, posterWidth, posterHeight),
+    [posterMaterial, posterWidth, posterHeight]
   );
 
   const isCurrentComboValid = useMemo(() => {
@@ -398,7 +515,7 @@ const TopNav = observer(({ store }) => {
 
   // Debounced price updates while modal is open
   useEffect(() => {
-    if (!optionsOpen) return;
+    if (!optionsOpen || printMode !== 'regular') return;
 
     if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
     priceTimerRef.current = setTimeout(() => {
@@ -409,11 +526,10 @@ const TopNav = observer(({ store }) => {
       if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [optionsOpen, selection]);
+  }, [optionsOpen, printMode, selection]);
 
   const openOptions = async () => {
-    // If current combo is invalid, snap to a valid nearest.
-    if (!resolveVariationId(selection)) {
+    if (printMode === 'regular' && !resolveVariationId(selection)) {
       const nearest = findNearestValid(selection);
       if (nearest) {
         setOptSize(nearest.size);
@@ -425,15 +541,16 @@ const TopNav = observer(({ store }) => {
 
     setOptionsOpen(true);
 
-    // initial price load using the (possibly updated) selection
-    setTimeout(() => {
-      updatePrice({
-        size: optSize,
-        amtPerPage: optAmt,
-        printColor: optColor,
-        paperType: optPaper,
-      });
-    }, 0);
+    if (printMode === 'regular') {
+      setTimeout(() => {
+        updatePrice({
+          size: optSize,
+          amtPerPage: optAmt,
+          printColor: optColor,
+          paperType: optPaper,
+        });
+      }, 0);
+    }
   };
 
   // When you click an option:
@@ -464,59 +581,97 @@ const TopNav = observer(({ store }) => {
     updatePrice(final);
   };
 
-  // ✅ Confirm → save → add to cart via parent postMessage (NO CORS)
-  // Fallback: redirect add-to-cart if not in iframe
+  // Confirm → save design → add either regular printing or a custom poster.
   const handleConfirmAddToCart = async () => {
     console.log('🛒 Confirm & Add to Cart clicked');
     setPopupLoading(true);
 
     try {
-      const variationId = resolveVariationId(selection);
-      if (!variationId) {
-        alert('That combination is not available.');
-        return;
+      let productId;
+      let variationId = 0;
+      let attributes = {};
+      let customFields = {};
+
+      if (printMode === 'poster') {
+        if (!posterQuote.ok) {
+          alert(posterQuote.error || 'Please enter valid poster dimensions.');
+          return;
+        }
+
+        productId = CUSTOM_POSTER_PRODUCT_ID;
+
+        // These names exactly match the existing Woo poster calculator snippet.
+        customFields = {
+          ld_calc_material: String(posterQuote.material),
+          ld_calc_w: String(posterQuote.width),
+          ld_calc_h: String(posterQuote.height),
+          ld_calc_roll: String(posterQuote.roll),
+          ld_calc_price: String(posterQuote.price),
+          ld_calc_rate: String(posterQuote.rate),
+          ld_calc_charged: String(posterQuote.charged),
+          ld_calc_orientation: String(posterQuote.orientation),
+        };
+
+        // The current WordPress parent bridge forwards the attributes object
+        // into the Woo add-to-cart request, so include the fields there too.
+        attributes = customFields;
+      } else {
+        variationId = resolveVariationId(selection);
+        if (!variationId) {
+          alert('That combination is not available.');
+          return;
+        }
+
+        productId = REGULAR_PRINT_PRODUCT_ID;
+        attributes = {
+          attribute_pa_size: String(selection.size),
+          'attribute_pa_amt-per-page': String(selection.amtPerPage),
+          'attribute_pa_print-color': String(selection.printColor),
+          'attribute_pa_paper-type': String(selection.paperType),
+        };
       }
 
       const saved = await saveDesignToWP();
       const designId = saved.design_id;
 
-      const attributes = {
-        attribute_pa_size: String(selection.size),
-        'attribute_pa_amt-per-page': String(selection.amtPerPage),
-        'attribute_pa_print-color': String(selection.printColor),
-        'attribute_pa_paper-type': String(selection.paperType),
-      };
-
-      // If embedded on WP page, ask parent to add-to-cart and open side cart
       if (inIframe()) {
         console.log('📨 RPC to parent for AJAX add-to-cart');
 
-        // Prefer the new RPC message:
-        await postToParentRpc('POL_ADD_TO_CART', {
-          product_id: PRODUCT_ID,
-          variation_id: variationId,
-          quantity: 1,
-          attributes,
-          polotno_design_id: designId,
-        });
+        await postToParentRpc(
+          'POL_ADD_TO_CART',
+          {
+            product_id: productId,
+            variation_id: variationId,
+            quantity: 1,
+            attributes,
+            polotno_design_id: designId,
+            ...customFields,
+          },
+          { timeoutMs: 30000 }
+        );
 
         setOptionsOpen(false);
         setCartSuccessOpen(true);
         return;
       }
 
-      // Fallback: redirect add-to-cart (standalone)
+      // Standalone fallback: send the same fields through a Woo add-to-cart URL.
       const params = new URLSearchParams();
-      params.set('add-to-cart', String(PRODUCT_ID));
-      params.set('variation_id', String(variationId));
+      params.set('add-to-cart', String(productId));
       params.set('quantity', '1');
-
-      params.set('attribute_pa_size', String(selection.size));
-      params.set('attribute_pa_amt-per-page', String(selection.amtPerPage));
-      params.set('attribute_pa_print-color', String(selection.printColor));
-      params.set('attribute_pa_paper-type', String(selection.paperType));
-
       params.set('polotno_design_id', String(designId));
+
+      if (variationId) {
+        params.set('variation_id', String(variationId));
+      }
+
+      Object.entries(attributes).forEach(([key, value]) => {
+        params.set(key, String(value));
+      });
+
+      Object.entries(customFields).forEach(([key, value]) => {
+        params.set(key, String(value));
+      });
 
       window.location.href = `${WOO_BASE}/?${params.toString()}`;
     } catch (err) {
@@ -670,105 +825,224 @@ const TopNav = observer(({ store }) => {
       >
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Size</div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Printing Type</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[
-                { v: '8-5x11', label: '8.5"×11"' },
-                { v: '11x17', label: '11"×17"' },
-                { v: '13x19', label: '13"×19"' },
-                { v: '22x28', label: '22"×28"' },
-              ].map((o) => (
-                <OptionButton
-                  key={o.v}
-                  active={optSize === o.v}
-                  disabledLook={!avail.size(o.v)}
-                  onClick={() => setOptionSafely({ size: o.v })}
-                >
-                  {o.label}
-                </OptionButton>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Amount Per Page</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['1', '2', '4', '9', '35'].map((v) => (
-                <OptionButton
-                  key={v}
-                  active={optAmt === v}
-                  disabledLook={!avail.amt(v)}
-                  onClick={() => setOptionSafely({ amtPerPage: v })}
-                >
-                  {v}
-                </OptionButton>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Print Color</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <OptionButton
-                active={optColor === 'black-and-white'}
-                disabledLook={!avail.color('black-and-white')}
-                onClick={() => setOptionSafely({ printColor: 'black-and-white' })}
+              <Button
+                active={printMode === 'regular'}
+                onClick={() => {
+                  setPrintMode('regular');
+                  updatePrice(selection);
+                }}
               >
-                Black and White
-              </OptionButton>
-              <OptionButton
-                active={optColor === 'color'}
-                disabledLook={!avail.color('color')}
-                onClick={() => setOptionSafely({ printColor: 'color' })}
+                Regular Printing
+              </Button>
+              <Button
+                active={printMode === 'poster'}
+                onClick={() => setPrintMode('poster')}
               >
-                Color
-              </OptionButton>
+                Poster Printing
+              </Button>
             </div>
           </div>
 
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <OptionButton
-                active={optPaper === 'hard'}
-                disabledLook={!avail.paper('hard')}
-                onClick={() => setOptionSafely({ paperType: 'hard' })}
+          {printMode === 'regular' ? (
+            <>
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Size</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { v: '8-5x11', label: '8.5"×11"' },
+                    { v: '11x17', label: '11"×17"' },
+                    { v: '13x19', label: '13"×19"' },
+                    { v: '22x28', label: '22"×28"' },
+                  ].map((o) => (
+                    <OptionButton
+                      key={o.v}
+                      active={optSize === o.v}
+                      disabledLook={!avail.size(o.v)}
+                      onClick={() => setOptionSafely({ size: o.v })}
+                    >
+                      {o.label}
+                    </OptionButton>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Amount Per Page</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {['1', '2', '4', '9', '35'].map((v) => (
+                    <OptionButton
+                      key={v}
+                      active={optAmt === v}
+                      disabledLook={!avail.amt(v)}
+                      onClick={() => setOptionSafely({ amtPerPage: v })}
+                    >
+                      {v}
+                    </OptionButton>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Print Color</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <OptionButton
+                    active={optColor === 'black-and-white'}
+                    disabledLook={!avail.color('black-and-white')}
+                    onClick={() => setOptionSafely({ printColor: 'black-and-white' })}
+                  >
+                    Black and White
+                  </OptionButton>
+                  <OptionButton
+                    active={optColor === 'color'}
+                    disabledLook={!avail.color('color')}
+                    onClick={() => setOptionSafely({ printColor: 'color' })}
+                  >
+                    Color
+                  </OptionButton>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <OptionButton
+                    active={optPaper === 'hard'}
+                    disabledLook={!avail.paper('hard')}
+                    onClick={() => setOptionSafely({ paperType: 'hard' })}
+                  >
+                    Hard
+                  </OptionButton>
+                  <OptionButton
+                    active={optPaper === 'soft'}
+                    disabledLook={!avail.paper('soft')}
+                    onClick={() => setOptionSafely({ paperType: 'soft' })}
+                  >
+                    Soft
+                  </OptionButton>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid rgba(0,0,0,0.12)', marginTop: 8, paddingTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>Price</div>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>
+                    {resolveVariationId(selection)
+                      ? fmtMoney(resolvePrice(selection)) || 'Price not mapped'
+                      : 'Not available'}
+                  </div>
+                </div>
+              </div>
+
+              {priceError ? (
+                <div style={{ fontSize: 12, opacity: 0.75 }}>{priceError}</div>
+              ) : null}
+
+              {!isCurrentComboValid ? (
+                <div style={{ fontSize: 12, opacity: 0.8 }}>
+                  That exact combination isn’t available — pick any option that isn’t crossed out.
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Button
+                    active={posterMaterial === 'paper'}
+                    onClick={() => setPosterMaterial('paper')}
+                  >
+                    Paper
+                  </Button>
+                  <Button
+                    active={posterMaterial === 'canvas'}
+                    onClick={() => setPosterMaterial('canvas')}
+                  >
+                    Canvas
+                  </Button>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 12,
+                }}
               >
-                Hard
-              </OptionButton>
-              <OptionButton
-                active={optPaper === 'soft'}
-                disabledLook={!avail.paper('soft')}
-                onClick={() => setOptionSafely({ paperType: 'soft' })}
-              >
-                Soft
-              </OptionButton>
-            </div>
-          </div>
+                <div>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Width (inches)</div>
+                  <InputGroup
+                    type="number"
+                    min={1}
+                    step="0.01"
+                    inputMode="decimal"
+                    value={posterWidth}
+                    onChange={(e) => setPosterWidth(e.target.value)}
+                  />
+                </div>
 
-          {/* spacing + divider line above price */}
-          <div style={{ marginTop: 8 }} />
-          <div style={{ borderTop: '1px solid rgba(0,0,0,0.12)', marginTop: 4 }} />
-          <div style={{ marginTop: 10 }} />
+                <div>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Height (inches)</div>
+                  <InputGroup
+                    type="number"
+                    min={1}
+                    step="0.01"
+                    inputMode="decimal"
+                    value={posterHeight}
+                    onChange={(e) => setPosterHeight(e.target.value)}
+                  />
+                </div>
+              </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontWeight: 800, fontSize: 16 }}>Price</div>
-            <div style={{ fontWeight: 800, fontSize: 16 }}>
-              {resolveVariationId(selection)
-              ? (fmtMoney(resolvePrice(selection)) || 'Price not mapped')
-              : 'Not available'}
-            </div>
-          </div>
+              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.45 }}>
+                Dimensions are rounded up to the nearest whole inch for pricing. Both printing
+                directions are calculated, and the cheaper price is used.
+              </div>
 
-          {priceError ? (
-            <div style={{ fontSize: 12, opacity: 0.75 }}>{priceError}</div>
-          ) : null}
-
-          {!isCurrentComboValid ? (
-            <div style={{ fontSize: 12, opacity: 0.8 }}>
-              That exact combination isn’t available — pick any option that isn’t crossed out.
-            </div>
-          ) : null}
+              {posterQuote.ok ? (
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.12)', marginTop: 4, paddingTop: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span>Priced size</span>
+                    <strong>
+                      {posterQuote.width}″ × {posterQuote.height}″
+                    </strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span>Chosen roll</span>
+                    <strong>{posterQuote.roll}″</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span>Rate</span>
+                    <strong>{fmtMoney(posterQuote.rate)} / inch</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span>Charged inches</span>
+                    <strong>{posterQuote.charged}″</strong>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      borderTop: '1px solid rgba(0,0,0,0.08)',
+                      paddingTop: 10,
+                      fontSize: 18,
+                    }}
+                  >
+                    <strong>Price</strong>
+                    <strong>{fmtMoney(posterQuote.price)}</strong>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ color: '#b00020', fontSize: 13, fontWeight: 600 }}>
+                  {posterQuote.error}
+                </div>
+              )}
+            </>
+          )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <Button onClick={() => setOptionsOpen(false)} disabled={popupLoading}>
@@ -777,10 +1051,12 @@ const TopNav = observer(({ store }) => {
             <Button
               intent="primary"
               loading={popupLoading}
-              disabled={!resolveVariationId(selection)}
-              onClick={() => {
-                handleConfirmAddToCart();
-              }}
+              disabled={
+                printMode === 'regular'
+                  ? !resolveVariationId(selection)
+                  : !posterQuote.ok
+              }
+              onClick={handleConfirmAddToCart}
             >
               Confirm & Add to Cart
             </Button>
