@@ -217,15 +217,10 @@ const TopNav = observer(({ store }) => {
       throw new Error('Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).');
     }
 
-    if (typeof store.waitLoading === 'function') {
-      await store.waitLoading();
-    }
+    const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
 
-    const pngBase64 = await store.toDataURL({
-      mimeType: 'image/png',
-      quality: 1,
-    });
-    const designJson = store.toJSON();
+    // You said no PDF needed
+    const pdfBase64 = '';
 
     const res = await fetch('https://tuteachercenter.org/wp-json/polotno/v1/save', {
       method: 'POST',
@@ -233,7 +228,7 @@ const TopNav = observer(({ store }) => {
         'Content-Type': 'application/json',
         'X-Polotno-Token': token,
       },
-      body: JSON.stringify({ pngBase64, designJson }),
+      body: JSON.stringify({ pngBase64, pdfBase64 }),
     });
 
     const data = await res.json();
@@ -246,7 +241,7 @@ const TopNav = observer(({ store }) => {
     try {
       const data = await saveDesignToWP();
       console.log('✅ REST save OK:', data);
-      alert(`Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}\nJSON: ${data.json_url || ''}`);
+      alert(`Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}`);
     } catch (err) {
       console.error('❌ REST save test failed:', err);
       alert(`REST save failed:\n${err.message || err}`);
@@ -359,18 +354,18 @@ const TopNav = observer(({ store }) => {
       <div
         style={{
           width: '100%',
-          height: '50px',
+          height: '56px',
           background: 'linear-gradient(to right, #488fcc, #ce3c4f)',
           display: 'flex',
           alignItems: 'center',
-          padding: '0 16px',
+          padding: '0 18px',
           boxSizing: 'border-box',
           color: 'white',
-          gap: '12px',
+          gap: '14px',
         }}
       >
         <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
+          <img src="/logo.webp" alt="Logo" style={{ height: '34px' }} />
         </a>
 
         <Button
@@ -379,9 +374,9 @@ const TopNav = observer(({ store }) => {
           onClick={() => setDialogOpen(true)}
           style={{
             fontWeight: 'bold',
-            fontSize: '16px',
+            fontSize: '17px',
             color: 'white',
-            padding: '9px 14px',
+            padding: '10px 15px',
             borderRadius: '3px',
             background: 'transparent',
           }}
@@ -398,16 +393,16 @@ const TopNav = observer(({ store }) => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '7px',
               borderRadius: '4px',
               textTransform: 'uppercase',
               fontWeight: 'bold',
               color: 'white',
               backgroundColor: '#ce3c4f',
               border: '1px solid white',
-              padding: '9px 16px',
+              padding: '10px 18px',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '15px',
               transition: 'all 0.2s ease-in-out',
             }}
             onMouseOver={(e) => {
@@ -419,7 +414,7 @@ const TopNav = observer(({ store }) => {
               e.currentTarget.style.color = 'white';
             }}
           >
-            <Icon icon="download" />
+            <Icon icon="download" size={18} />
             Download
           </button>
         </Popover>
@@ -433,9 +428,10 @@ const TopNav = observer(({ store }) => {
             backgroundColor: '#ffffff',
             borderRadius: '4px',
             border: '1px solid #ce3d50',
-            padding: '6px 12px',
-            fontWeight: 600,
+            padding: '9px 15px',
+            fontWeight: 700,
             letterSpacing: '0.5px',
+            fontSize: '15px',
             cursor: 'pointer',
           }}
           onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fceced')}

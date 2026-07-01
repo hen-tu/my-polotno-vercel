@@ -1,6 +1,6 @@
 const templates = [
   {
-    label: 'Inspirational Quote',
+    label: 'A Teacher Affects Eternity',
     multi: true,
     parts: [
       {
@@ -11,7 +11,7 @@ const templates = [
       {
         text: 'eternity',
         fontSize: 48,
-        fontFamily: 'Pacifico', // script font
+        fontFamily: 'Pacifico',
       },
       {
         text: 'he can never tell where his influence stops.',
@@ -20,8 +20,9 @@ const templates = [
       },
     ],
   },
+
   {
-    label: 'Heartfelt Teacher',
+    label: 'A Teacher Takes a Hand',
     multi: true,
     parts: [
       {
@@ -56,6 +57,7 @@ const templates = [
       },
     ],
   },
+
   {
     label: 'Where to Look',
     multi: true,
