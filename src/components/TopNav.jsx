@@ -217,10 +217,15 @@ const TopNav = observer(({ store }) => {
       throw new Error('Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).');
     }
 
-    const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
+    }
 
-    // You said no PDF needed
-    const pdfBase64 = '';
+    const pngBase64 = await store.toDataURL({
+      mimeType: 'image/png',
+      quality: 1,
+    });
+    const designJson = store.toJSON();
 
     const res = await fetch('https://tuteachercenter.org/wp-json/polotno/v1/save', {
       method: 'POST',
@@ -228,7 +233,7 @@ const TopNav = observer(({ store }) => {
         'Content-Type': 'application/json',
         'X-Polotno-Token': token,
       },
-      body: JSON.stringify({ pngBase64, pdfBase64 }),
+      body: JSON.stringify({ pngBase64, designJson }),
     });
 
     const data = await res.json();
@@ -241,7 +246,7 @@ const TopNav = observer(({ store }) => {
     try {
       const data = await saveDesignToWP();
       console.log('✅ REST save OK:', data);
-      alert(`Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}`);
+      alert(`Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}\nJSON: ${data.json_url || ''}`);
     } catch (err) {
       console.error('❌ REST save test failed:', err);
       alert(`REST save failed:\n${err.message || err}`);
@@ -430,8 +435,8 @@ const TopNav = observer(({ store }) => {
             border: '1px solid #ce3d50',
             padding: '9px 15px',
             fontWeight: 700,
-            letterSpacing: '0.5px',
             fontSize: '15px',
+            letterSpacing: '0.5px',
             cursor: 'pointer',
           }}
           onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fceced')}
