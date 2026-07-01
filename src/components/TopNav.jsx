@@ -651,6 +651,16 @@ const TopNav = observer(({ store }) => {
       const designId = saved.design_id;
       const designJson = saved.designJson;
 
+      // Some parent-page bridge versions forward only a fixed set of
+      // top-level fields. Put the editable JSON inside attributes too, because
+      // that object is already forwarded for both regular and poster orders.
+      // The WordPress bridge removes this helper field before Woo variation
+      // processing and saves it as design-{id}.json.
+      const rpcAttributes = {
+        ...attributes,
+        polotno_design_json: designJson,
+      };
+
       if (inIframe()) {
         console.log('📨 RPC to parent for AJAX add-to-cart');
 
@@ -660,9 +670,10 @@ const TopNav = observer(({ store }) => {
             product_id: productId,
             variation_id: variationId,
             quantity: 1,
-            attributes,
+            attributes: rpcAttributes,
             polotno_design_id: designId,
             designJson,
+            polotno_design_json: designJson,
             ...customFields,
           },
           { timeoutMs: 30000 }
