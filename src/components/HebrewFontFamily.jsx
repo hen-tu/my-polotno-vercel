@@ -230,7 +230,7 @@ const HebrewAwareFontMenu = ({
               cursor: 'pointer',
             }}
           >
-            Hebrew
+            Filter Hebrew Fonts
           </button>
 
           {hebrewOnly && (
