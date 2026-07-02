@@ -91,8 +91,6 @@ const PageControls = observer((props) => {
 
   const pageIndex = store.pages.indexOf(props.page);
   const currentPage = pageIndex >= 0 ? pageIndex + 1 : 1;
-  const labelTop = Math.max(6, props.yPadding - 38);
-  const labelLeft = props.xPadding + props.width / 2;
 
   return (
     <>
@@ -101,20 +99,17 @@ const PageControls = observer((props) => {
         aria-label={`Page ${currentPage} of ${totalPages}`}
         style={{
           position: 'absolute',
-          top: `${labelTop}px`,
-          left: `${labelLeft}px`,
-          transform: 'translateX(-50%)',
+          top: `${props.yPadding + 4}px`,
+          left: `${props.xPadding}px`,
           zIndex: 20,
-          padding: '7px 16px',
+          padding: '4px 10px',
           borderRadius: '999px',
-          background: '#173f70',
+          background: '#5f6368',
           color: '#ffffff',
-          fontSize: '16px',
-          fontWeight: 800,
+          fontSize: '13px',
+          fontWeight: 700,
           lineHeight: 1.2,
-          letterSpacing: '0.4px',
           whiteSpace: 'nowrap',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.28)',
           pointerEvents: 'none',
         }}
       >
@@ -254,7 +249,6 @@ export default function App() {
           <Workspace
             store={store}
             components={{ PageControls }}
-            pageGap={58}
           />
         </WorkspaceWrap>
       </div>
