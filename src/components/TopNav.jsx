@@ -1,14 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Dialog, InputGroup, Menu, MenuItem, Popover, Spinner } from '@blueprintjs/core';
+import { Button, Popover, Menu, MenuItem, Dialog, InputGroup, Spinner } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
 import { action } from 'mobx';
-import {
-  getPolotnoAccountSession,
-  goToAccountLogin,
-  saveAccountDesign,
-} from './saved-designs-api';
 
 console.log('✅ TopNav loaded');
 
@@ -17,20 +12,11 @@ const applyResize = action((store, w, h) => {
   if (page) page.set({ width: w, height: h });
 });
 
-// Helper: convert Blob → base64 data URL (data:application/pdf;base64,...)
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
 // ============================
 // Woo product + variation map
 // ============================
-const PRODUCT_ID = 199649;
+const REGULAR_PRINT_PRODUCT_ID = 199649;
+const CUSTOM_POSTER_PRODUCT_ID = 206073;
 
 // Key format: size|amt|color|paper  (USING WOO SLUG VALUES)
 const VARIATION_MAP = {
@@ -67,15 +53,9 @@ const VARIATION_MAP = {
   '8-5x11|9|color|hard': 199664,
 };
 
-/**
- * ✅ Price map (same keys as VARIATION_MAP)
- * Fill these with your actual Woo prices.
- * Based on your page source earlier, examples were:
- * 22x28 color soft = 11.50
- * 13x19 BW hard = 1.85
- * 8.5x11 BW soft = 0.08
- * etc.
- */
+const WOO_BASE = 'https://tuteachercenter.org';
+
+// ---------- helpers ----------
 const PRICE_MAP = {
   // --- SOFT ---
   '22x28|1|color|soft': 11.5,
@@ -117,25 +97,224 @@ function resolveVariationId({ size, amtPerPage, printColor, paperType }) {
 
 function resolvePrice({ size, amtPerPage, printColor, paperType }) {
   const key = `${size}|${amtPerPage}|${printColor}|${paperType}`;
-  return PRICE_MAP[key]; // undefined => not available / not mapped
+  return PRICE_MAP[key];
 }
 
-// Build a list of variations so we can compute "possible options"
-const ALL_VARIATIONS = Object.keys(VARIATION_MAP).map((key) => {
-  const [size, amtPerPage, printColor, paperType] = key.split('|');
-  return { key, size, amtPerPage, printColor, paperType };
-});
+function fmtMoney(n) {
+  if (n === null || n === undefined || n === '') return '';
+  const num = Number(n);
+  if (!Number.isFinite(num)) return '';
+  return `$${num.toFixed(2)}`;
+}
 
-function optionBtnStyle(isPossible) {
+
+// Poster-printing rates used by both the app preview and the Woo server snippet.
+const POSTER_RATES = {
+  paper: {
+    24: 0.5,
+    42: 0.75,
+    60: 1.15,
+  },
+  canvas: {
+    42: 1.0,
+    60: 1.35,
+  },
+};
+
+const POSTER_MAX_MESSAGE =
+  'Maximum size: We can print posters up to 60" wide or 60" tall. Please adjust your dimensions so that at least one side is 60" or less.';
+
+function roundUpPosterInch(value) {
+  const number = Number.parseFloat(value);
+  if (!Number.isFinite(number) || number <= 0) return 0;
+  return Math.ceil(number);
+}
+
+function pickPosterRoll(material, neededWidth) {
+  const rates = POSTER_RATES[material] || POSTER_RATES.paper;
+  const rolls = Object.keys(rates)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  return rolls.find((roll) => neededWidth <= roll) || null;
+}
+
+function calculatePosterPrice(material, rawWidth, rawHeight) {
+  const safeMaterial = material === 'canvas' ? 'canvas' : 'paper';
+  const width = roundUpPosterInch(rawWidth);
+  const height = roundUpPosterInch(rawHeight);
+
+  if (!width || !height) {
+    return {
+      ok: false,
+      error: 'Please enter both width and height.',
+    };
+  }
+
+  // One side may be longer than 60" because that side can run down the roll.
+  // The design is impossible only when neither side can fit across a 60" roll.
+  if (width > 60 && height > 60) {
+    return {
+      ok: false,
+      error: POSTER_MAX_MESSAGE,
+    };
+  }
+
+  const rates = POSTER_RATES[safeMaterial];
+
+  // Option A: width across the roll, height charged as print length.
+  let optionA = null;
+  const rollA = pickPosterRoll(safeMaterial, width);
+  if (rollA && rates[rollA]) {
+    optionA = {
+      orientation: 'width_on_roll',
+      roll: rollA,
+      rate: rates[rollA],
+      charged: height,
+      rollDimension: width,
+      price: Number((rates[rollA] * height).toFixed(2)),
+    };
+  }
+
+  // Option B: height across the roll, width charged as print length.
+  let optionB = null;
+  const rollB = pickPosterRoll(safeMaterial, height);
+  if (rollB && rates[rollB]) {
+    optionB = {
+      orientation: 'height_on_roll',
+      roll: rollB,
+      rate: rates[rollB],
+      charged: width,
+      rollDimension: height,
+      price: Number((rates[rollB] * width).toFixed(2)),
+    };
+  }
+
+  if (!optionA && !optionB) {
+    return {
+      ok: false,
+      error: POSTER_MAX_MESSAGE,
+    };
+  }
+
+  // Match the PHP calculator exactly: choose B only when it is strictly cheaper.
+  let chosen = optionA || optionB;
+  if (optionA && optionB) {
+    chosen = optionB.price < optionA.price ? optionB : optionA;
+  }
+
   return {
-    opacity: isPossible ? 1 : 0.35,
-    textDecoration: isPossible ? 'none' : 'line-through',
+    ok: true,
+    material: safeMaterial,
+    width,
+    height,
+    ...chosen,
   };
 }
 
-function formatMoney(n) {
-  if (typeof n !== 'number' || Number.isNaN(n)) return '';
-  return `$${n.toFixed(2)}`;
+function inIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+
+// For option availability:
+function existsMatchingVariation(current, overrides = {}) {
+  const s = { ...current, ...overrides };
+  const keys = Object.keys(VARIATION_MAP);
+
+  return keys.some((k) => {
+    const [size, amt, color, paper] = k.split('|');
+    return (
+      String(s.size) === size &&
+      String(s.amtPerPage) === amt &&
+      String(s.printColor) === color &&
+      String(s.paperType) === paper
+    );
+  });
+}
+
+// Find first valid variation key for a partially invalid selection (auto-fix)
+function findNearestValid(current) {
+  const keys = Object.keys(VARIATION_MAP).map((k) => {
+    const [size, amtPerPage, printColor, paperType] = k.split('|');
+    return { size, amtPerPage, printColor, paperType };
+  });
+
+  const scored = keys
+    .map((v) => {
+      let score = 0;
+      if (v.size === current.size) score += 3;
+      if (v.paperType === current.paperType) score += 2;
+      if (v.printColor === current.printColor) score += 1;
+      if (v.amtPerPage === current.amtPerPage) score += 1;
+      return { v, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  return scored[0]?.v || null;
+}
+
+// -----------------------------
+// postMessage RPC helper
+// -----------------------------
+function postToParentRpc(type, payload, { timeoutMs = 9000 } = {}) {
+  const requestId = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      window.removeEventListener('message', onMessage);
+      reject(new Error(`${type} timed out`));
+    }, timeoutMs);
+
+    function onMessage(event) {
+      const msg = event.data || {};
+      if (msg.requestId !== requestId) return;
+
+      // We accept either:
+      // 1) { type: "POL_*_RESULT", requestId, payload: {...} }
+      // 2) { requestId, ok: true/false, ... }  (looser)
+      clearTimeout(t);
+      window.removeEventListener('message', onMessage);
+
+      const p = msg.payload ?? msg;
+
+      if (p && p.ok === false) {
+        reject(new Error(p.error || 'Request failed'));
+        return;
+      }
+      resolve(p);
+    }
+
+    window.addEventListener('message', onMessage);
+
+    // Send to parent. Your bridge/plugin should validate origin on its side.
+    window.parent.postMessage({ type, requestId, payload }, '*');
+  });
+}
+
+// Extract numeric price from Woo variation response (robust)
+function extractPriceNumberFromVariation(variation) {
+  if (!variation) return null;
+
+  // common fields
+  const candidates = [
+    variation.display_price,
+    variation.display_regular_price,
+    variation.price,
+    variation.sale_price,
+    variation.regular_price,
+  ];
+
+  for (const c of candidates) {
+    const n = Number(c);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+
+  // sometimes price_html includes number; don't rely on it.
+  return null;
 }
 
 const TopNav = observer(({ store }) => {
@@ -145,56 +324,59 @@ const TopNav = observer(({ store }) => {
   const [popupLoading, setPopupLoading] = useState(false);
   const resizeButtonRef = useRef(null);
 
-  // Saved-design account state
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [saveName, setSaveName] = useState('');
-  const [saveLoading, setSaveLoading] = useState(false);
-  const [saveError, setSaveError] = useState('');
-  const [activeSavedId, setActiveSavedId] = useState(0);
-  const [activeSavedName, setActiveSavedName] = useState('');
-
-  // Options modal state
+  // Options modal
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [cartSuccessOpen, setCartSuccessOpen] = useState(false);
+  const [printMode, setPrintMode] = useState('regular');
 
-  // IMPORTANT: these are WOO SLUG values from your page source
+  // Regular-printing selections (Woo variation slugs)
   const [optSize, setOptSize] = useState('8-5x11');
   const [optAmt, setOptAmt] = useState('1');
   const [optColor, setOptColor] = useState('black-and-white');
   const [optPaper, setOptPaper] = useState('hard');
 
-  // compute possible Amt/Color/Paper based ONLY on selected size
-  const possibleBySize = useMemo(() => {
-    const rows = ALL_VARIATIONS.filter((v) => v.size === optSize);
+  // Custom poster selections for product 206073.
+  const [posterMaterial, setPosterMaterial] = useState('paper');
+  const [posterWidth, setPosterWidth] = useState('');
+  const [posterHeight, setPosterHeight] = useState('');
+
+  // price
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState(null); // number|null
+  const [priceError, setPriceError] = useState('');
+
+  // debounce timer for price
+  const priceTimerRef = useRef(null);
+
+  const selection = useMemo(
+    () => ({
+      size: optSize,
+      amtPerPage: optAmt,
+      printColor: optColor,
+      paperType: optPaper,
+    }),
+    [optSize, optAmt, optColor, optPaper]
+  );
+
+  const posterQuote = useMemo(
+    () => calculatePosterPrice(posterMaterial, posterWidth, posterHeight),
+    [posterMaterial, posterWidth, posterHeight]
+  );
+
+  const isCurrentComboValid = useMemo(() => {
+    return !!resolveVariationId(selection);
+  }, [selection]);
+
+  // availability helpers
+  const avail = useMemo(() => {
+    const cur = selection;
     return {
-      amts: new Set(rows.map((v) => v.amtPerPage)),
-      colors: new Set(rows.map((v) => v.printColor)),
-      papers: new Set(rows.map((v) => v.paperType)),
+      size: (v) => existsMatchingVariation(cur, { size: v }),
+      amt: (v) => existsMatchingVariation(cur, { amtPerPage: v }),
+      color: (v) => existsMatchingVariation(cur, { printColor: v }),
+      paper: (v) => existsMatchingVariation(cur, { paperType: v }),
     };
-  }, [optSize]);
-
-  // If size changes and previous selection becomes invalid, snap it
-  const normalizeSelectionForSize = (newSize) => {
-    const rows = ALL_VARIATIONS.filter((v) => v.size === newSize);
-    const amts = new Set(rows.map((v) => v.amtPerPage));
-    const colors = new Set(rows.map((v) => v.printColor));
-    const papers = new Set(rows.map((v) => v.paperType));
-
-    const pickFirst = (set, fallback) => {
-      const arr = Array.from(set);
-      return arr.length ? arr[0] : fallback;
-    };
-
-    if (!amts.has(optAmt)) setOptAmt(pickFirst(amts, '1'));
-    if (!colors.has(optColor)) setOptColor(pickFirst(colors, 'black-and-white'));
-    if (!papers.has(optPaper)) setOptPaper(pickFirst(papers, 'hard'));
-  };
-
-  const sizeOptions = [
-    { value: '11x17', label: '11"×17"' },
-    { value: '13x19', label: '13"×19"' },
-    { value: '22x28', label: '22"×28"' },
-    { value: '8-5x11', label: '8.5"×11"' },
-  ];
+  }, [selection]);
 
   const handleResize = (w, h) => {
     applyResize(store, w, h);
@@ -207,252 +389,323 @@ const TopNav = observer(({ store }) => {
     if (!isNaN(width) && !isNaN(height)) handleResize(width, height);
   };
 
-  const handleDownloadImage = () => {
-    const dataURL = store.toDataURL();
-    downloadFile(dataURL, 'design.png');
+  const handleDownloadPDF = async () => {
+    try {
+      if (typeof store.waitLoading === 'function') {
+        await store.waitLoading();
+      }
+
+      if (typeof store.toPDFDataURL === 'function') {
+        const dataURL = await store.toPDFDataURL();
+
+        if (!dataURL || !String(dataURL).startsWith('data:application/pdf')) {
+          console.error('Invalid PDF export:', dataURL);
+          alert('PDF export failed. Please try again.');
+          return;
+        }
+
+        downloadFile(dataURL, 'design.pdf');
+        return;
+      }
+
+      if (typeof store.saveAsPDF === 'function') {
+        await store.saveAsPDF({ fileName: 'design.pdf' });
+        return;
+      }
+
+      alert('PDF export is not available in this build.');
+    } catch (err) {
+      console.error('PDF download failed:', err);
+      alert('PDF download failed. Please try again.');
+    }
   };
 
-  const handleDownloadPDF = async () => {
-    if (typeof store.toPDFBlob !== 'function') {
-      alert('PDF export is not available in this build.');
+  const handleDownloadTemplate = async () => {
+  try {
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
+    }
+
+    const json = store.toJSON();
+    const jsonString = JSON.stringify(json, null, 2);
+
+    const blob = new Blob([jsonString], {
+      type: 'application/json',
+    });
+
+    const url = URL.createObjectURL(blob);
+    downloadFile(url, 'design-template.json');
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Template JSON download failed:', err);
+    alert('Template download failed. Please try again.');
+  }
+};
+
+  const handleDownloadImage = async () => {
+    try {
+      if (typeof store.waitLoading === 'function') {
+        await store.waitLoading();
+      }
+
+      const dataURL = await store.toDataURL({
+        mimeType: 'image/png',
+        quality: 1,
+        pixelRatio: 2,
+      });
+
+      if (!dataURL || !String(dataURL).startsWith('data:image/png')) {
+        console.error('Invalid PNG export:', dataURL);
+        alert('PNG export failed. Please try again.');
+        return;
+      }
+
+      downloadFile(dataURL, 'design.png');
+    } catch (err) {
+      console.error('PNG download failed:', err);
+      alert('PNG download failed. Please try again.');
+    }
+  };
+
+  // Save the PNG first through the existing parent-page RPC.
+  // Keep a serialized copy of the editable JSON so it can also be handed off
+  // during add-to-cart. This works even when an older parent save handler only
+  // forwards pngBase64 to WordPress.
+  const saveDesignToWP = async () => {
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
+    }
+
+    const pngBase64 = await store.toDataURL({
+      mimeType: 'image/png',
+      quality: 1,
+    });
+
+    const designJson = JSON.stringify(store.toJSON());
+
+    const result = await postToParentRpc(
+      'POL_SAVE_DESIGN',
+      { pngBase64, designJson },
+      { timeoutMs: 30000 }
+    );
+
+    if (!result || !result.ok) {
+      throw new Error(
+        result && result.error ? result.error : 'Save failed'
+      );
+    }
+
+    const data = result.data;
+
+    if (!data || !data.success) {
+      throw new Error(
+        data && data.error ? data.error : 'Save failed'
+      );
+    }
+
+    return { ...data, designJson };
+  };
+
+  // ✅ Price updater from local PRICE_MAP
+  // No WooCommerce lookup, no postMessage, no timeout.
+  const updatePrice = (nextSelection) => {
+    setPriceError('');
+    setPriceLoading(false);
+
+    // If combo invalid, don't show a price
+    if (!resolveVariationId(nextSelection)) {
+      setCurrentPrice(null);
+      setPriceError('This combination is not available.');
       return;
     }
-    const blob = await store.toPDFBlob();
-    const url = URL.createObjectURL(blob);
-    downloadFile(url, 'design.pdf');
-    URL.revokeObjectURL(url);
+
+    const priceNum = resolvePrice(nextSelection);
+
+    if (typeof priceNum === 'number' && !Number.isNaN(priceNum)) {
+      setCurrentPrice(priceNum);
+    } else {
+      setCurrentPrice(null);
+      setPriceError('Price not mapped yet for this selection.');
+    }
   };
 
+  // Debounced price updates while modal is open
   useEffect(() => {
-    const handleLoaded = (event) => {
-      const id = Number(event?.detail?.id || 0);
-      const name = String(event?.detail?.name || '');
-      setActiveSavedId(id);
-      setActiveSavedName(name);
-    };
+    if (!optionsOpen || printMode !== 'regular') return;
 
-    const handleDeleted = (event) => {
-      const deletedId = Number(event?.detail?.id || 0);
-      setActiveSavedId((currentId) => {
-        if (currentId !== deletedId) return currentId;
-        setActiveSavedName('');
-        return 0;
-      });
-    };
-
-    const handleNewDesign = () => {
-      setActiveSavedId(0);
-      setActiveSavedName('');
-    };
-
-    window.addEventListener('ttc-polotno-design-loaded', handleLoaded);
-    window.addEventListener('ttc-polotno-design-deleted', handleDeleted);
-    window.addEventListener('ttc-polotno-new-design', handleNewDesign);
+    if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
+    priceTimerRef.current = setTimeout(() => {
+      updatePrice(selection);
+    }, 250);
 
     return () => {
-      window.removeEventListener('ttc-polotno-design-loaded', handleLoaded);
-      window.removeEventListener('ttc-polotno-design-deleted', handleDeleted);
-      window.removeEventListener('ttc-polotno-new-design', handleNewDesign);
+      if (priceTimerRef.current) clearTimeout(priceTimerRef.current);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optionsOpen, printMode, selection]);
 
-  const openSaveDialog = async () => {
-    setSaveError('');
-
-    try {
-      const session = await getPolotnoAccountSession();
-      if (!session.logged_in) {
-        goToAccountLogin(session);
-        return;
+  const openOptions = async () => {
+    if (printMode === 'regular' && !resolveVariationId(selection)) {
+      const nearest = findNearestValid(selection);
+      if (nearest) {
+        setOptSize(nearest.size);
+        setOptAmt(nearest.amtPerPage);
+        setOptColor(nearest.printColor);
+        setOptPaper(nearest.paperType);
       }
+    }
 
-      setSaveName(activeSavedName || 'Untitled Design');
-      setSaveDialogOpen(true);
-    } catch (error) {
-      console.error('Could not start account save:', error);
-      window.alert(error.message || 'Could not connect to your account.');
+    setOptionsOpen(true);
+
+    if (printMode === 'regular') {
+      setTimeout(() => {
+        updatePrice({
+          size: optSize,
+          amtPerPage: optAmt,
+          printColor: optColor,
+          paperType: optPaper,
+        });
+      }, 0);
     }
   };
 
-  const saveToAccount = async ({ asCopy = false } = {}) => {
-    const trimmedName = saveName.trim();
-    if (!trimmedName) {
-      setSaveError('Enter a name for this design.');
+  // When you click an option:
+  const setOptionSafely = (patch) => {
+    const next = { ...selection, ...patch };
+
+    if (resolveVariationId(next)) {
+      if (patch.size !== undefined) setOptSize(patch.size);
+      if (patch.amtPerPage !== undefined) setOptAmt(patch.amtPerPage);
+      if (patch.printColor !== undefined) setOptColor(patch.printColor);
+      if (patch.paperType !== undefined) setOptPaper(patch.paperType);
+
+      updatePrice(next);
       return;
     }
 
-    setSaveLoading(true);
-    setSaveError('');
+    const nearest = findNearestValid(next);
+    if (!nearest) return;
 
-    try {
-      const design = store.toJSON();
-      const previewBase64 = await Promise.resolve(
-        store.toDataURL({
-          mimeType: 'image/jpeg',
-          quality: 0.78,
-          pixelRatio: 0.2,
-        })
-      );
+    const forced = { ...nearest, ...patch };
+    const final = resolveVariationId(forced) ? forced : nearest;
 
-      const data = await saveAccountDesign({
-        id: asCopy ? 0 : activeSavedId,
-        name: trimmedName,
-        design,
-        previewBase64,
-      });
+    setOptSize(final.size);
+    setOptAmt(final.amtPerPage);
+    setOptColor(final.printColor);
+    setOptPaper(final.paperType);
 
-      const item = data.item;
-      setActiveSavedId(item.id);
-      setActiveSavedName(item.name);
-      setSaveName(item.name);
-      setSaveDialogOpen(false);
-
-      const nextUrl = new URL(window.location.href);
-      nextUrl.searchParams.set('saved', String(item.id));
-      nextUrl.searchParams.delete('template');
-      window.history.replaceState({}, '', nextUrl.toString());
-
-      window.dispatchEvent(
-        new CustomEvent('ttc-polotno-design-saved', { detail: item })
-      );
-    } catch (error) {
-      console.error('Could not save design to account:', error);
-      if (error.code === 'LOGIN_REQUIRED') {
-        goToAccountLogin(error);
-        return;
-      }
-      setSaveError(error.message || 'Could not save this design.');
-    } finally {
-      setSaveLoading(false);
-    }
+    updatePrice(final);
   };
 
-  // Save design via REST and return design_id
-  const saveDesignToWP = async () => {
-    const token = import.meta.env.VITE_POLOTNO_WP_TOKEN;
-    if (!token) {
-      throw new Error('Missing VITE_POLOTNO_WP_TOKEN (set it in .env locally and in Vercel env vars).');
-    }
-
-    const pngBase64 = await store.toDataURL({ mimeType: 'image/png', quality: 1 });
-
-    // You said no PDF needed
-    const pdfBase64 = '';
-
-    const res = await fetch('https://tuteachercenter.org/wp-json/polotno/v1/save', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Polotno-Token': token,
-      },
-      body: JSON.stringify({ pngBase64, pdfBase64 }),
-    });
-
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Save failed');
-    return data;
-  };
-
-  const handleTestSave = async () => {
-    setPopupLoading(true);
-    try {
-      const data = await saveDesignToWP();
-      console.log('✅ REST save OK:', data);
-      alert(`Saved!\nDesign ID: ${data.design_id}\nPNG: ${data.png_url || ''}`);
-    } catch (err) {
-      console.error('❌ REST save test failed:', err);
-      alert(`REST save failed:\n${err.message || err}`);
-    } finally {
-      setPopupLoading(false);
-    }
-  };
-
-  const currentVariationId = useMemo(() => {
-    return resolveVariationId({
-      size: optSize,
-      amtPerPage: optAmt,
-      printColor: optColor,
-      paperType: optPaper,
-    });
-  }, [optSize, optAmt, optColor, optPaper]);
-
-  const currentPrice = useMemo(() => {
-    return resolvePrice({
-      size: optSize,
-      amtPerPage: optAmt,
-      printColor: optColor,
-      paperType: optPaper,
-    });
-  }, [optSize, optAmt, optColor, optPaper]);
-
-  const isCurrentSelectionValid = !!currentVariationId;
-
+  // Confirm → save design → add either regular printing or a custom poster.
   const handleConfirmAddToCart = async () => {
     console.log('🛒 Confirm & Add to Cart clicked');
     setPopupLoading(true);
 
     try {
-      if (!currentVariationId) {
-        alert('That combination is not available.');
-        return;
+      let productId;
+      let variationId = 0;
+      let attributes = {};
+      let customFields = {};
+
+      if (printMode === 'poster') {
+        if (!posterQuote.ok) {
+          alert(posterQuote.error || 'Please enter valid poster dimensions.');
+          return;
+        }
+
+        productId = CUSTOM_POSTER_PRODUCT_ID;
+
+        // These names exactly match the existing Woo poster calculator snippet.
+        customFields = {
+          ld_calc_material: String(posterQuote.material),
+          ld_calc_w: String(posterQuote.width),
+          ld_calc_h: String(posterQuote.height),
+          ld_calc_roll: String(posterQuote.roll),
+          ld_calc_price: String(posterQuote.price),
+          ld_calc_rate: String(posterQuote.rate),
+          ld_calc_charged: String(posterQuote.charged),
+          ld_calc_orientation: String(posterQuote.orientation),
+        };
+
+        // The current WordPress parent bridge forwards the attributes object
+        // into the Woo add-to-cart request, so include the fields there too.
+        attributes = customFields;
+      } else {
+        variationId = resolveVariationId(selection);
+        if (!variationId) {
+          alert('That combination is not available.');
+          return;
+        }
+
+        productId = REGULAR_PRINT_PRODUCT_ID;
+        attributes = {
+          attribute_pa_size: String(selection.size),
+          'attribute_pa_amt-per-page': String(selection.amtPerPage),
+          'attribute_pa_print-color': String(selection.printColor),
+          'attribute_pa_paper-type': String(selection.paperType),
+        };
       }
 
       const saved = await saveDesignToWP();
       const designId = saved.design_id;
+      const designJson = saved.designJson;
 
-      // Woo expects form-encoded for wc-ajax add_to_cart
-      const form = new URLSearchParams();
-      form.set('product_id', String(PRODUCT_ID));
-      form.set('variation_id', String(currentVariationId));
-      form.set('quantity', '1');
+      // Some parent-page bridge versions forward only a fixed set of
+      // top-level fields. Put the editable JSON inside attributes too, because
+      // that object is already forwarded for both regular and poster orders.
+      // The WordPress bridge removes this helper field before Woo variation
+      // processing and saves it as design-{id}.json.
+      const rpcAttributes = {
+        ...attributes,
+        polotno_design_json: designJson,
+      };
 
-      // variation attributes
-      form.set('attribute_pa_size', String(optSize));
-      form.set('attribute_pa_amt-per-page', String(optAmt));
-      form.set('attribute_pa_print-color', String(optColor));
-      form.set('attribute_pa_paper-type', String(optPaper));
+      if (inIframe()) {
+        console.log('📨 RPC to parent for AJAX add-to-cart');
 
-      // your custom field (must be captured by your Woo hook OR by $_REQUEST)
-      form.set('polotno_design_id', String(designId));
+        await postToParentRpc(
+          'POL_ADD_TO_CART',
+          {
+            product_id: productId,
+            variation_id: variationId,
+            quantity: 1,
+            attributes: rpcAttributes,
+            polotno_design_id: designId,
+            designJson,
+            polotno_design_json: designJson,
+            ...customFields,
+          },
+          { timeoutMs: 30000 }
+        );
 
-      const res = await fetch('https://tuteachercenter.org/?wc-ajax=add_to_cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-        body: form.toString(),
-        credentials: 'include', // IMPORTANT: keeps Woo session cookies
+        setOptionsOpen(false);
+        setCartSuccessOpen(true);
+        return;
+      }
+
+      // Standalone fallback: send the same fields through a Woo add-to-cart URL.
+      const params = new URLSearchParams();
+      params.set('add-to-cart', String(productId));
+      params.set('quantity', '1');
+      params.set('polotno_design_id', String(designId));
+
+      if (variationId) {
+        params.set('variation_id', String(variationId));
+      }
+
+      Object.entries(attributes).forEach(([key, value]) => {
+        params.set(key, String(value));
       });
 
-      const data = await res.json();
+      Object.entries(customFields).forEach(([key, value]) => {
+        params.set(key, String(value));
+      });
 
-      if (!data || data.error) {
-        throw new Error(data?.message || 'Add to cart failed');
-      }
-
-      // Update Woo cart fragments + trigger mini-cart open (theme/plugin listens for this)
-      if (data.fragments) {
-        Object.keys(data.fragments).forEach((selector) => {
-          const html = data.fragments[selector];
-          const el = document.querySelector(selector);
-          if (el) el.outerHTML = html;
-        });
-      }
-
-      // Fire Woo events that many themes use to open the mini cart
-      if (window.jQuery) {
-        window.jQuery(document.body).trigger('added_to_cart', [
-          data.fragments,
-          data.cart_hash,
-          null,
-        ]);
-      } else {
-        document.body.dispatchEvent(new CustomEvent('added_to_cart'));
-      }
-
-      // optional: close modal after success
-      setOptionsOpen(false);
+      window.location.href = `${WOO_BASE}/?${params.toString()}`;
     } catch (err) {
       console.error('❌ Add to cart failed:', err);
-      alert(err?.message || 'Could not add to cart. Please try again.');
+      alert(`Could not save/add to cart.\n\n${err?.message || err}`);
     } finally {
       setPopupLoading(false);
     }
@@ -460,10 +713,25 @@ const TopNav = observer(({ store }) => {
 
   const downloadMenu = (
     <Menu>
-      <MenuItem text="Save as Image" onClick={handleDownloadImage} />
-      <MenuItem text="Save as PDF" onClick={handleDownloadPDF} />
-      <MenuItem text="Test Save (Dev)" onClick={handleTestSave} />
+      <MenuItem text="Image" onClick={handleDownloadImage} />
+      <MenuItem text="PDF" onClick={handleDownloadPDF} />
+      <MenuItem text="Template" onClick={handleDownloadTemplate} />
     </Menu>
+  );
+
+  // UI helper: strike/fade unavailable values, but allow click
+  const OptionButton = ({ active, disabledLook, onClick, children }) => (
+    <Button
+      active={active}
+      onClick={onClick}
+      style={{
+        opacity: disabledLook ? 0.45 : 1,
+        textDecoration: disabledLook ? 'line-through' : 'none',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </Button>
   );
 
   return (
@@ -471,18 +739,18 @@ const TopNav = observer(({ store }) => {
       <div
         style={{
           width: '100%',
-          height: '50px',
+          height: '56px',
           background: 'linear-gradient(to right, #488fcc, #ce3c4f)',
           display: 'flex',
           alignItems: 'center',
-          padding: '0 16px',
+          padding: '0 18px',
           boxSizing: 'border-box',
           color: 'white',
           gap: '12px',
         }}
       >
-        <a href="https://tuteachercenter.org" style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo.webp" alt="Logo" style={{ height: '30px' }} />
+        <a href={WOO_BASE} style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/logo.webp" alt="Logo" style={{ height: '34px' }} />
         </a>
 
         <Button
@@ -491,9 +759,9 @@ const TopNav = observer(({ store }) => {
           onClick={() => setDialogOpen(true)}
           style={{
             fontWeight: 'bold',
-            fontSize: '16px',
+            fontSize: '17px',
             color: 'white',
-            padding: '9px 14px',
+            padding: '10px 15px',
             borderRadius: '3px',
             background: 'transparent',
           }}
@@ -504,40 +772,6 @@ const TopNav = observer(({ store }) => {
         </Button>
 
         <div style={{ flex: 1 }} />
-
-        {activeSavedName && (
-          <div
-            title={activeSavedName}
-            style={{
-              maxWidth: 180,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontSize: 12,
-              opacity: 0.92,
-            }}
-          >
-            {activeSavedName}
-          </div>
-        )}
-
-        <Button
-          icon="floppy-disk"
-          onClick={openSaveDialog}
-          style={{
-            textTransform: 'uppercase',
-            fontWeight: 700,
-            color: '#ffffff',
-            background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.85)',
-            borderRadius: '4px',
-            padding: '8px 14px',
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-        >
-          Save
-        </Button>
 
         <Popover content={downloadMenu} position="bottom-right">
           <button
@@ -571,7 +805,7 @@ const TopNav = observer(({ store }) => {
         </Popover>
 
         <Button
-          onClick={() => setOptionsOpen(true)}
+          onClick={openOptions}
           style={{
             marginLeft: '8px',
             textTransform: 'uppercase',
@@ -610,83 +844,6 @@ const TopNav = observer(({ store }) => {
         </div>
       )}
 
-      {/* Save to Account Dialog */}
-      <Dialog
-        isOpen={saveDialogOpen}
-        onClose={() => {
-          if (!saveLoading) setSaveDialogOpen(false);
-        }}
-        title={activeSavedId ? 'Save Design' : 'Save to My Account'}
-        canOutsideClickClose={!saveLoading}
-        canEscapeKeyClose={!saveLoading}
-      >
-        <div style={{ padding: 20 }}>
-          <label style={{ display: 'block', fontWeight: 700, marginBottom: 7 }}>
-            Design name
-          </label>
-          <InputGroup
-            autoFocus
-            value={saveName}
-            placeholder="Example: Classroom Rules Poster"
-            onChange={(event) => setSaveName(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !saveLoading) {
-                saveToAccount({ asCopy: false });
-              }
-            }}
-            disabled={saveLoading}
-          />
-
-          {saveError && (
-            <div
-              style={{
-                marginTop: 10,
-                padding: 9,
-                borderRadius: 4,
-                color: '#9b1c1c',
-                background: '#fff1f1',
-                border: '1px solid #e4b5b5',
-                fontSize: 13,
-              }}
-            >
-              {saveError}
-            </div>
-          )}
-
-          <div
-            style={{
-              marginTop: 16,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 9,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Button
-              onClick={() => setSaveDialogOpen(false)}
-              disabled={saveLoading}
-            >
-              Cancel
-            </Button>
-            {activeSavedId > 0 && (
-              <Button
-                onClick={() => saveToAccount({ asCopy: true })}
-                disabled={saveLoading}
-              >
-                Save a Copy
-              </Button>
-            )}
-            <Button
-              intent="primary"
-              loading={saveLoading}
-              onClick={() => saveToAccount({ asCopy: false })}
-            >
-              {activeSavedId ? 'Update Design' : 'Save Design'}
-            </Button>
-          </div>
-        </div>
-      </Dialog>
-
       {/* Print Options Modal */}
       <Dialog
         isOpen={optionsOpen}
@@ -697,100 +854,224 @@ const TopNav = observer(({ store }) => {
       >
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Size</div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Printing Type</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {sizeOptions.map((o) => (
-                <Button
-                  key={o.value}
-                  active={optSize === o.value}
-                  onClick={() => {
-                    setOptSize(o.value);
-                    normalizeSelectionForSize(o.value);
-                  }}
-                >
-                  {o.label}
-                </Button>
-              ))}
+              <Button
+                active={printMode === 'regular'}
+                onClick={() => {
+                  setPrintMode('regular');
+                  updatePrice(selection);
+                }}
+              >
+                Regular Printing
+              </Button>
+              <Button
+                active={printMode === 'poster'}
+                onClick={() => setPrintMode('poster')}
+              >
+                Poster Printing
+              </Button>
             </div>
           </div>
 
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Amount Per Page</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['1', '2', '4', '9', '35'].map((v) => {
-                const isPossible = possibleBySize.amts.has(v);
-                return (
-                  <Button
-                    key={v}
-                    active={optAmt === v}
-                    disabled={!isPossible}
-                    style={optionBtnStyle(isPossible)}
-                    onClick={() => setOptAmt(v)}
+          {printMode === 'regular' ? (
+            <>
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Size</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { v: '8-5x11', label: '8.5"×11"' },
+                    { v: '11x17', label: '11"×17"' },
+                    { v: '13x19', label: '13"×19"' },
+                    { v: '22x28', label: '22"×28"' },
+                  ].map((o) => (
+                    <OptionButton
+                      key={o.v}
+                      active={optSize === o.v}
+                      disabledLook={!avail.size(o.v)}
+                      onClick={() => setOptionSafely({ size: o.v })}
+                    >
+                      {o.label}
+                    </OptionButton>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Amount Per Page</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {['1', '2', '4', '9', '35'].map((v) => (
+                    <OptionButton
+                      key={v}
+                      active={optAmt === v}
+                      disabledLook={!avail.amt(v)}
+                      onClick={() => setOptionSafely({ amtPerPage: v })}
+                    >
+                      {v}
+                    </OptionButton>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Print Color</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <OptionButton
+                    active={optColor === 'black-and-white'}
+                    disabledLook={!avail.color('black-and-white')}
+                    onClick={() => setOptionSafely({ printColor: 'black-and-white' })}
                   >
-                    {v}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Print Color</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[
-                { value: 'black-and-white', label: 'Black and White' },
-                { value: 'color', label: 'Color' },
-              ].map((o) => {
-                const isPossible = possibleBySize.colors.has(o.value);
-                return (
-                  <Button
-                    key={o.value}
-                    active={optColor === o.value}
-                    disabled={!isPossible}
-                    style={optionBtnStyle(isPossible)}
-                    onClick={() => setOptColor(o.value)}
+                    Black and White
+                  </OptionButton>
+                  <OptionButton
+                    active={optColor === 'color'}
+                    disabledLook={!avail.color('color')}
+                    onClick={() => setOptionSafely({ printColor: 'color' })}
                   >
-                    {o.label}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
+                    Color
+                  </OptionButton>
+                </div>
+              </div>
 
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[
-                { value: 'hard', label: 'Hard' },
-                { value: 'soft', label: 'Soft' },
-              ].map((o) => {
-                const isPossible = possibleBySize.papers.has(o.value);
-                return (
-                  <Button
-                    key={o.value}
-                    active={optPaper === o.value}
-                    disabled={!isPossible}
-                    style={optionBtnStyle(isPossible)}
-                    onClick={() => setOptPaper(o.value)}
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <OptionButton
+                    active={optPaper === 'hard'}
+                    disabledLook={!avail.paper('hard')}
+                    onClick={() => setOptionSafely({ paperType: 'hard' })}
                   >
-                    {o.label}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
+                    Hard
+                  </OptionButton>
+                  <OptionButton
+                    active={optPaper === 'soft'}
+                    disabledLook={!avail.paper('soft')}
+                    onClick={() => setOptionSafely({ paperType: 'soft' })}
+                  >
+                    Soft
+                  </OptionButton>
+                </div>
+              </div>
 
-          {/* ✅ Price only (no selection box) */}
-          <div style={{ marginTop: 2, fontSize: 14 }}>
-            <strong>Price:</strong>{' '}
-            {typeof currentPrice === 'number' ? (
-              <span>{formatMoney(currentPrice)}</span>
-            ) : isCurrentSelectionValid ? (
-              <span>(price not mapped yet)</span>
-            ) : (
-              <span style={{ color: '#b00020' }}>Not available</span>
-            )}
-          </div>
+              <div style={{ borderTop: '1px solid rgba(0,0,0,0.12)', marginTop: 8, paddingTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>Price</div>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>
+                    {resolveVariationId(selection)
+                      ? fmtMoney(resolvePrice(selection)) || 'Price not mapped'
+                      : 'Not available'}
+                  </div>
+                </div>
+              </div>
+
+              {priceError ? (
+                <div style={{ fontSize: 12, opacity: 0.75 }}>{priceError}</div>
+              ) : null}
+
+              {!isCurrentComboValid ? (
+                <div style={{ fontSize: 12, opacity: 0.8 }}>
+                  That exact combination isn’t available — pick any option that isn’t crossed out.
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <div>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Paper Type</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Button
+                    active={posterMaterial === 'paper'}
+                    onClick={() => setPosterMaterial('paper')}
+                  >
+                    Paper
+                  </Button>
+                  <Button
+                    active={posterMaterial === 'canvas'}
+                    onClick={() => setPosterMaterial('canvas')}
+                  >
+                    Canvas
+                  </Button>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Width (inches)</div>
+                  <InputGroup
+                    type="number"
+                    min={1}
+                    step="0.01"
+                    inputMode="decimal"
+                    value={posterWidth}
+                    onChange={(e) => setPosterWidth(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Height (inches)</div>
+                  <InputGroup
+                    type="number"
+                    min={1}
+                    step="0.01"
+                    inputMode="decimal"
+                    value={posterHeight}
+                    onChange={(e) => setPosterHeight(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.45 }}>
+                Dimensions are rounded up to the nearest whole inch for pricing. Both printing
+                directions are calculated, and the cheaper price is used.
+              </div>
+
+              {posterQuote.ok ? (
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.12)', marginTop: 4, paddingTop: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span>Priced size</span>
+                    <strong>
+                      {posterQuote.width}″ × {posterQuote.height}″
+                    </strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span>Chosen roll</span>
+                    <strong>{posterQuote.roll}″</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+                    <span>Rate</span>
+                    <strong>{fmtMoney(posterQuote.rate)} / inch</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span>Charged inches</span>
+                    <strong>{posterQuote.charged}″</strong>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      borderTop: '1px solid rgba(0,0,0,0.08)',
+                      paddingTop: 10,
+                      fontSize: 18,
+                    }}
+                  >
+                    <strong>Price</strong>
+                    <strong>{fmtMoney(posterQuote.price)}</strong>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ color: '#b00020', fontSize: 13, fontWeight: 600 }}>
+                  {posterQuote.error}
+                </div>
+              )}
+            </>
+          )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <Button onClick={() => setOptionsOpen(false)} disabled={popupLoading}>
@@ -799,13 +1080,43 @@ const TopNav = observer(({ store }) => {
             <Button
               intent="primary"
               loading={popupLoading}
-              disabled={!isCurrentSelectionValid}
-              onClick={() => {
-                setOptionsOpen(false);
-                handleConfirmAddToCart();
-              }}
+              disabled={
+                printMode === 'regular'
+                  ? !resolveVariationId(selection)
+                  : !posterQuote.ok
+              }
+              onClick={handleConfirmAddToCart}
             >
               Confirm & Add to Cart
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Add to Cart Success Dialog */}
+      <Dialog
+        isOpen={cartSuccessOpen}
+        onClose={() => setCartSuccessOpen(false)}
+        title="Added to Cart"
+        canOutsideClickClose
+      >
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ fontSize: 15, lineHeight: 1.5 }}>
+            Your design was added to your cart.
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Button onClick={() => setCartSuccessOpen(false)}>
+              Keep Editing
+            </Button>
+
+            <Button
+              intent="primary"
+              onClick={() => {
+                window.parent.location.href = 'https://tuteachercenter.org/cart-2/';
+              }}
+            >
+              Go to Cart
             </Button>
           </div>
         </div>
@@ -835,10 +1146,22 @@ const TopNav = observer(({ store }) => {
           <Button onClick={() => handleResize(1728, 2016)}>24″ × 28″ (Oaktag)</Button>
           <hr />
           <div style={{ display: 'flex', gap: '8px' }}>
-            <InputGroup placeholder="Width (inches)" value={customWidth} onChange={(e) => setCustomWidth(e.target.value)} />
-            <InputGroup placeholder="Height (inches)" value={customHeight} onChange={(e) => setCustomHeight(e.target.value)} />
+            <InputGroup
+              placeholder="Width (inches)"
+              value={customWidth}
+              onChange={(e) => setCustomWidth(e.target.value)}
+            />
+            <InputGroup
+              placeholder="Height (inches)"
+              value={customHeight}
+              onChange={(e) => setCustomHeight(e.target.value)}
+            />
           </div>
-          <Button intent="primary" style={{ backgroundColor: '#488FCC', padding: '9px 14px' }} onClick={handleCustomResize}>
+          <Button
+            intent="primary"
+            style={{ backgroundColor: '#488FCC', padding: '9px 14px' }}
+            onClick={handleCustomResize}
+          >
             Apply Custom Size
           </Button>
         </div>
