@@ -99,8 +99,9 @@ const PageControls = observer((props) => {
         aria-label={`Page ${currentPage} of ${totalPages}`}
         style={{
           position: 'absolute',
-          top: `${props.yPadding + 4}px`,
+          top: `${props.yPadding}px`,
           left: `${props.xPadding}px`,
+          transform: 'translateY(calc(-100% - 6px))',
           zIndex: 20,
           padding: '4px 10px',
           borderRadius: '999px',
