@@ -1,5 +1,7 @@
 // src/App.jsx
+
 import React, { useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import { createStore } from 'polotno/model/store';
 import { replaceGlobalFonts } from 'polotno/config';
 import {
@@ -10,6 +12,7 @@ import {
 import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { Workspace } from 'polotno/canvas/workspace';
+import { PageControls as DefaultPageControls } from 'polotno/canvas/page-controls';
 import { runInAction } from 'mobx';
 
 import TopNav from './components/TopNav';
@@ -73,11 +76,55 @@ const CUSTOM_FONTS = [
 // This adds the local fonts without removing Polotno's default Google Fonts.
 replaceGlobalFonts(CUSTOM_FONTS);
 
-// ✅ Create store
+// Create store
 const store = createStore({ showCredit: false });
 store.addPage();
 
-// sections
+// Keep Polotno's normal page controls and add a noticeable page-count label.
+// The label only appears when the document contains more than one page.
+const PageControls = observer((props) => {
+  const totalPages = store.pages.length;
+
+  if (totalPages <= 1) {
+    return <DefaultPageControls {...props} />;
+  }
+
+  const pageIndex = store.pages.indexOf(props.page);
+  const currentPage = pageIndex >= 0 ? pageIndex + 1 : 1;
+  const labelTop = Math.max(6, props.yPadding - 38);
+  const labelLeft = props.xPadding + props.width / 2;
+
+  return (
+    <>
+      <DefaultPageControls {...props} />
+      <div
+        aria-label={`Page ${currentPage} of ${totalPages}`}
+        style={{
+          position: 'absolute',
+          top: `${labelTop}px`,
+          left: `${labelLeft}px`,
+          transform: 'translateX(-50%)',
+          zIndex: 20,
+          padding: '7px 16px',
+          borderRadius: '999px',
+          background: '#173f70',
+          color: '#ffffff',
+          fontSize: '16px',
+          fontWeight: 800,
+          lineHeight: 1.2,
+          letterSpacing: '0.4px',
+          whiteSpace: 'nowrap',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.28)',
+          pointerEvents: 'none',
+        }}
+      >
+        {currentPage} of {totalPages}
+      </div>
+    </>
+  );
+});
+
+// Sections
 console.log('Available section names:', DEFAULT_SECTIONS.map((s) => s.name));
 
 const getSectionByName = (name) =>
@@ -151,13 +198,14 @@ export default function App() {
           return;
         }
 
-        const templateRes = await fetch(assetUrl(match.jsonUrl, { version: true }));
+        const templateRes = await fetch(
+          assetUrl(match.jsonUrl, { version: true })
+        );
         if (!templateRes.ok) {
           throw new Error(`Template JSON HTTP ${templateRes.status}`);
         }
 
         const json = await templateRes.json();
-
         runInAction(() => {
           store.loadJSON(json);
         });
@@ -197,12 +245,17 @@ export default function App() {
             defaultSection="templates"
           />
         </SidePanelWrap>
+
         <WorkspaceWrap>
           <Toolbar
             store={store}
             components={{ TextFontFamily: HebrewFontFamily }}
           />
-          <Workspace store={store} />
+          <Workspace
+            store={store}
+            components={{ PageControls }}
+            pageGap={58}
+          />
         </WorkspaceWrap>
       </div>
     </PolotnoContainer>
