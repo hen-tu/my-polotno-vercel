@@ -1,195 +1,144 @@
-import React, { useState, useEffect } from 'react';
+// src/components/PhotosPanel.jsx
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { runInAction } from 'mobx';
-import { assetIndexUrl, assetUrl } from '../assetUrls';
-
-const ASSET_BASE_URL = 'https://hen-tu.github.io/polotno-assets-cf';
-
-function resolveAssetUrl(value) {
-  if (!value) return '';
-
-  const url = String(value).trim();
-
-  // If index already gives a full URL, use it as-is
-  if (
-    url.startsWith('http://') ||
-    url.startsWith('https://') ||
-    url.startsWith('data:') ||
-    url.startsWith('blob:')
-  ) {
-    return url;
-  }
-
-  // Otherwise treat it as a relative asset path
-  return `${ASSET_BASE_URL}/${url.replace(/^\/+/, '')}`;
-}
-
-function placeholderDataUrl(text = 'No image') {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="120">
-      <rect width="100%" height="100%" fill="#f3f3f3"/>
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-        font-family="Arial" font-size="13" fill="#777">${text}</text>
-    </svg>
-  `;
-
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
+import { action } from 'mobx';
+import { InputGroup, Spinner } from '@blueprintjs/core';
 
 const photosCache = { data: null };
 
 const PhotosPanelComponent = observer(({ store, query, setQuery }) => {
-  console.log('🚀 PhotosPanel component function run');
-
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState(photosCache.data || []);
   const [loading, setLoading] = useState(!photosCache.data);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    console.log('📡 Fetching photo list...');
-    if (photosCache.data) {
-      setPhotos(photosCache.data);
-      return;
-    }
+    if (photosCache.data) return;
 
-    fetch(assetIndexUrl('photos/index.json'))
+    let cancelled = false;
+    fetch('photos/index.json')
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText);
         return res.json();
       })
       .then((data) => {
-        const unique = Array.from(new Map(data.map(p => [p.id, { ...p }])).values());
+        if (cancelled) return;
+        const unique = Array.from(
+          new Map((Array.isArray(data) ? data : []).map((photo) => [photo.id, { ...photo }])).values()
+        );
         photosCache.data = unique;
         setPhotos(unique);
       })
-      .catch((err) => console.error('Failed to load photos list:', err))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.error('Failed to load photos list:', err);
+        if (!cancelled) setError('Photos could not be loaded.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleClick = (p) => {
+  const handleClick = action((photo) => {
     const page = store.activePage;
     if (!page) return;
 
-    const imageUrl = resolveAssetUrl(p.url || p.previewUrl);
-
-    if (!imageUrl) {
-      console.error('Photo has no usable URL:', p);
-      return;
-    }
-
     const pageW = page.computedWidth;
     const pageH = page.computedHeight;
+    const image = new window.Image();
+    image.src = photo.url;
 
-    const imgW = p.width || 600;
-    const imgH = p.height || 400;
+    image.onload = action(() => {
+      const padding = 40;
+      const maxW = pageW - padding * 2;
+      const maxH = pageH - padding * 2;
+      const scale = Math.min(maxW / image.width, maxH / image.height, 1);
+      const finalW = image.width * scale;
+      const finalH = image.height * scale;
 
-    const padding = 40;
-    const maxW = pageW - padding * 2;
-    const maxH = pageH - padding * 2;
-
-    const scale = Math.min(maxW / imgW, maxH / imgH, 1);
-
-    const finalW = imgW * scale;
-    const finalH = imgH * scale;
-
-    runInAction(() => {
       page.addElement({
         type: 'image',
-        src: imageUrl,
+        src: photo.url,
         width: finalW,
         height: finalH,
         x: (pageW - finalW) / 2,
         y: (pageH - finalH) / 2,
       });
     });
-  };
-    
-  const filteredPhotos = photos.filter((p) =>
-    (p.name || '').toLowerCase().includes(query.toLowerCase())
+
+    image.onerror = () => {
+      console.error('Failed to load image for sizing:', photo.url);
+    };
+  });
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredPhotos = photos.filter((photo) =>
+    String(photo.name || '').toLowerCase().includes(normalizedQuery)
   );
 
-  if (loading) {
-    return (
-      <div style={styles.loaderContainer}>
-        <div style={styles.loader}>Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ ...styles.panelContainer, height: '100%', maxHeight: '100vh' }}>
-      <div style={styles.searchWrapper}>
-        <input
-          type="text"
-          placeholder="Search photos..."
+    <div className="ttc-panel">
+      <div className="ttc-panel-fixed">
+        <InputGroup
+          fill
+          large
+          leftIcon="search"
+          placeholder="Search photos"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={styles.searchInput}
+          onChange={(event) => setQuery(event.target.value)}
+          aria-label="Search photos"
+          className="ttc-panel-search"
         />
+        {!loading && (
+          <div className="ttc-panel-count">
+            Showing {filteredPhotos.length} of {photos.length}
+          </div>
+        )}
       </div>
 
-      <div style={styles.scrollableContent}>
-        <div className="asset-masonry">
-          {filteredPhotos.map((p, index) => (
-            <div
-              key={`${p.id}-${p.url}`}
-              className="asset-thumb-card"
-              onClick={() => handleClick(p)}
-            >
-              <img
-                loading={index < 8 ? 'eager' : 'lazy'}
-                decoding="async"
-                src={resolveAssetUrl(p.previewUrl || p.url)}
-                alt={p.name || ''}
-                className="asset-thumb-image"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = placeholderDataUrl('No image');
-                }}
-              />
-              <div className="asset-thumb-label">{p.name}</div>
-            </div>
-          ))}
-        </div>
+      {error && <div className="ttc-panel-error">{error}</div>}
+
+      <div className="ttc-panel-content">
+        {loading ? (
+          <div className="ttc-panel-loading">
+            <Spinner size={34} />
+            <span>Loading photos…</span>
+          </div>
+        ) : filteredPhotos.length ? (
+          <div className="ttc-asset-grid">
+            {filteredPhotos.map((photo) => (
+              <button
+                type="button"
+                key={`${photo.id}-${photo.url}`}
+                className="ttc-asset-card"
+                onClick={() => handleClick(photo)}
+                title={photo.name}
+              >
+                <div className="ttc-asset-preview-wrap">
+                  <img
+                    loading="lazy"
+                    src={photo.previewUrl}
+                    alt={photo.name || 'Photo'}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src =
+                        'https://via.placeholder.com/160x110?text=No+Image';
+                    }}
+                    className="ttc-asset-preview"
+                  />
+                </div>
+                <span className="ttc-asset-label">{photo.name}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="ttc-panel-empty">No photos found</div>
+        )}
       </div>
     </div>
   );
 });
 
-const PhotosPanel = React.memo(PhotosPanelComponent);
-
-const styles = {
-  panelContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-  },
-  scrollableContent: {
-    flex: 1,
-    overflowY: 'auto',
-  },
-  loaderContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  loader: {
-    fontSize: '1.2rem',
-    color: '#555',
-  },
-  searchWrapper: {
-    padding: '8px 12px',
-    borderBottom: '1px solid #ddd',
-    background: '#fff',
-  },
-  searchInput: {
-    width: '100%',
-    padding: '6px 8px',
-    fontSize: '14px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    boxSizing: 'border-box',
-  },
-};
-
-export default PhotosPanel;
+export default React.memo(PhotosPanelComponent);

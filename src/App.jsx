@@ -1,87 +1,45 @@
 // src/App.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
 import { createStore } from 'polotno/model/store';
-import { replaceGlobalFonts } from 'polotno/config';
 import {
   PolotnoContainer,
   SidePanelWrap,
   WorkspaceWrap,
 } from 'polotno';
-import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import {
+  SidePanel,
+  DEFAULT_SECTIONS,
+  SectionTab,
+} from 'polotno/side-panel';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { Workspace } from 'polotno/canvas/workspace';
-import { runInAction } from 'mobx';
+import { PageControls as DefaultPageControls } from 'polotno/canvas/page-controls';
+import { Icon } from '@blueprintjs/core';
 
 import TopNav from './components/TopNav';
 import MyTextPanel from './components/MyTextPanel';
 import TemplatesPanel from './components/TemplatesPanel';
 import PhotosPanelWrapper from './components/PhotosPanelWrapper';
-import { assetIndexUrl, assetUrl } from './assetUrls';
-import BackgroundPanel from './components/BackgroundPanel';
-import HebrewFontFamily from './components/HebrewFontFamily';
+import SavedDesignsPanel from './components/SavedDesignsPanel';
+import { getSavedDesign } from './components/saved-designs-api';
 
-const CUSTOM_FONTS = [
-  {
-    fontFamily: 'Gveret Levin',
-    url: '/fonts/GveretLevin-Regular-hebrew.ttf',
-  },
-  {
-    fontFamily: 'Hebrew Script',
-    url: '/fonts/Hebrew%20Script.otf',
-  },
-  {
-    fontFamily: 'Huninn',
-    url: '/fonts/Huninn-Regular-hebrew.ttf',
-  },
-  {
-    fontFamily: 'Karantina',
-    styles: [
-      {
-        src: 'url("/fonts/Karantina-Light-Hebrew.ttf")',
-        fontStyle: 'normal',
-        fontWeight: '300',
-      },
-      {
-        src: 'url("/fonts/Karantina-Regular-hebrew.ttf")',
-        fontStyle: 'normal',
-        fontWeight: '400',
-      },
-      {
-        src: 'url("/fonts/Karantina-Bold-Hebrew.ttf")',
-        fontStyle: 'normal',
-        fontWeight: '700',
-      },
-    ],
-  },
-  {
-    fontFamily: 'Playpen Sans Hebrew',
-    styles: [
-      {
-        src: 'url("/fonts/PlaypenSansHebrew-VariableFont_wght.ttf")',
-        fontStyle: 'normal',
-        fontWeight: '400',
-      },
-      {
-        src: 'url("/fonts/PlaypenSansHebrew-VariableFont_wght.ttf")',
-        fontStyle: 'normal',
-        fontWeight: '700',
-      },
-    ],
-  },
-];
-
-// This adds the local fonts without removing Polotno's default Google Fonts.
-replaceGlobalFonts(CUSTOM_FONTS);
-
-// ✅ Create store
+// Create the Polotno store once for the full editor.
 const store = createStore({ showCredit: false });
 store.addPage();
 
-// sections
-console.log('Available section names:', DEFAULT_SECTIONS.map((s) => s.name));
-
 const getSectionByName = (name) =>
-  DEFAULT_SECTIONS.find((s) => s.name === name);
+  DEFAULT_SECTIONS.find((section) => section.name === name);
+
+const SavedDesignsSection = {
+  name: 'saved-designs',
+  Tab: (props) => (
+    <SectionTab name="Saved Designs" {...props}>
+      <Icon icon="floppy-disk" />
+    </SectionTab>
+  ),
+  Panel: SavedDesignsPanel,
+};
 
 const MY_SECTIONS = [
   {
@@ -89,6 +47,7 @@ const MY_SECTIONS = [
     title: 'My Templates',
     Panel: TemplatesPanel,
   },
+  SavedDesignsSection,
   {
     ...getSectionByName('photos'),
     Panel: PhotosPanelWrapper,
@@ -98,84 +57,87 @@ const MY_SECTIONS = [
     Panel: MyTextPanel,
   },
   getSectionByName('elements'),
-  {
-    ...getSectionByName('background'),
-    title: 'Background',
-    Panel: BackgroundPanel,
-  },
+  getSectionByName('background'),
   getSectionByName('upload'),
   getSectionByName('layers'),
 ].filter(Boolean);
 
-export default function App() {
+// Keeps Polotno's normal page controls and adds a clear page-number badge.
+// The badge is editor UI only; it does not become part of the printed design.
+const NumberedPageControls = observer((props) => {
+  const totalPages = store.pages.length;
+  const pageIndex = store.pages.indexOf(props.page);
+
+  return (
+    <>
+      <DefaultPageControls {...props} />
+      {totalPages > 1 && pageIndex >= 0 && (
+        <div
+          className="ttc-page-number-wrap"
+          style={{
+            top: `${Math.max(4, props.yPadding - 42)}px`,
+            left: `${props.xPadding}px`,
+            width: `${props.width}px`,
+          }}
+        >
+          <div className="ttc-page-number-badge">
+            PAGE {pageIndex + 1} OF {totalPages}
+          </div>
+        </div>
+      )}
+    </>
+  );
+});
+
+function SavedDesignAutoLoader({ editorStore }) {
+  const attemptedIdRef = useRef(null);
+
   useEffect(() => {
-    // Open Templates by default after the side panel mounts.
-    // The defaultSection prop below handles the initial render; this also
-    // prevents Polotno from falling back to Photos during startup.
-    const openTemplates = () => {
-      if (typeof store.openSidePanel === 'function') {
-        store.openSidePanel('templates');
-      }
-    };
-
-    openTemplates();
-    const frameId = window.requestAnimationFrame(openTemplates);
-    const timeoutId = window.setTimeout(openTemplates, 50);
-
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get('template');
+    const savedId = Number.parseInt(params.get('saved') || '', 10);
 
-    const cleanupDefaultOpen = () => {
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
-    };
+    if (!savedId || attemptedIdRef.current === savedId) return;
+    attemptedIdRef.current = savedId;
 
-    if (!slug) {
-      return cleanupDefaultOpen;
-    }
+    let cancelled = false;
 
-    const loadTemplateFromUrl = async () => {
+    (async () => {
       try {
-        console.log('Loading template from URL:', slug);
+        const data = await getSavedDesign(savedId);
+        if (cancelled) return;
 
-        const indexRes = await fetch(assetIndexUrl('templates/index.json'));
-        if (!indexRes.ok) {
-          throw new Error(`Template index HTTP ${indexRes.status}`);
+        editorStore.loadJSON(data.design);
+        if (typeof editorStore.waitLoading === 'function') {
+          await editorStore.waitLoading();
         }
 
-        const templates = await indexRes.json();
-        const match = templates.find((t) => t.id === slug);
-
-        if (!match) {
-          console.warn(`Template with id "${slug}" not found.`);
-          return;
+        if (!cancelled) {
+          window.dispatchEvent(
+            new CustomEvent('ttc-polotno-design-loaded', {
+              detail: {
+                id: data.item.id,
+                name: data.item.name,
+              },
+            })
+          );
         }
-
-        const templateRes = await fetch(assetUrl(match.jsonUrl, { version: true }));
-        if (!templateRes.ok) {
-          throw new Error(`Template JSON HTTP ${templateRes.status}`);
+      } catch (error) {
+        console.error('Could not auto-load saved design:', error);
+        if (!cancelled) {
+          window.alert(error.message || 'Could not open that saved design.');
         }
-
-        const json = await templateRes.json();
-
-        runInAction(() => {
-          store.loadJSON(json);
-        });
-
-        if (typeof store.waitLoading === 'function') {
-          await store.waitLoading();
-        }
-
-        console.log('Template loaded from URL:', slug);
-      } catch (err) {
-        console.error('Failed to load template from URL:', err);
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
+  }, [editorStore]);
 
-    loadTemplateFromUrl();
-    return cleanupDefaultOpen;
-  }, []);
+  return null;
+}
 
+export default function App() {
   return (
     <PolotnoContainer
       style={{
@@ -185,24 +147,23 @@ export default function App() {
         overflow: 'hidden',
       }}
     >
-      <div style={{ height: '56px', flexShrink: 0 }}>
+      <SavedDesignAutoLoader editorStore={store} />
+
+      <div style={{ height: '50px', flexShrink: 0 }}>
         <TopNav store={store} />
       </div>
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <SidePanelWrap>
-          <SidePanel
-            store={store}
-            sections={MY_SECTIONS}
-            defaultSection="templates"
-          />
+          <SidePanel store={store} sections={MY_SECTIONS} />
         </SidePanelWrap>
         <WorkspaceWrap>
-          <Toolbar
+          <Toolbar store={store} />
+          <Workspace
             store={store}
-            components={{ TextFontFamily: HebrewFontFamily }}
+            pageGap={72}
+            components={{ PageControls: NumberedPageControls }}
           />
-          <Workspace store={store} />
         </WorkspaceWrap>
       </div>
     </PolotnoContainer>
