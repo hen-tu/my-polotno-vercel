@@ -134,6 +134,7 @@ const MY_SECTIONS = [
   },
   {
     ...getSectionByName('photos'),
+    title: 'Images',
     Panel: PhotosPanelWrapper,
   },
   {
@@ -218,6 +219,30 @@ export default function App() {
 
     loadTemplateFromUrl();
     return cleanupDefaultOpen;
+  }, []);
+
+  useEffect(() => {
+    // Polotno's Upload panel is rendered dynamically. Add a narrow class only
+    // to its "Add file" button so it matches the custom panel buttons without
+    // changing sidebar navigation or thumbnail buttons.
+    const markUploadButton = () => {
+      document.querySelectorAll('button').forEach((button) => {
+        const label = String(button.textContent || '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase();
+
+        if (label === 'add file') {
+          button.classList.add('ttc-upload-add-file');
+        }
+      });
+    };
+
+    markUploadButton();
+    const observer = new MutationObserver(markUploadButton);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
   }, []);
 
   return (

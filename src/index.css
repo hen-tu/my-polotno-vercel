@@ -129,28 +129,202 @@ button:hover {
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+/* ======= SHARED CUSTOM-PANEL CONTROLS ======= */
+.ttc-panel {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  color: #1f2937;
+  background: #f8fafc;
+}
 
-/* ======= ASSET THUMBNAIL MASONRY ======= */
-
-.asset-masonry {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+.ttc-panel-scroll {
+  overflow-y: auto;
   padding: 12px;
 }
 
-.asset-thumb-card {
-  position: relative;
-  width: 100%;
-  cursor: pointer;
+.ttc-panel-button-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Material-style base used by every normal custom-panel action button. */
+.ttc-panel .ttc-panel-action,
+.ttc-panel button.ttc-panel-action,
+.ttc-panel .bp5-button.ttc-panel-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 40px;
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  overflow: hidden;
+  color: #1f2937;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 80ms ease;
+}
+
+.ttc-panel .ttc-panel-action:hover,
+.ttc-panel button.ttc-panel-action:hover,
+.ttc-panel .bp5-button.ttc-panel-action:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.12);
+}
+
+.ttc-panel .ttc-panel-action:active,
+.ttc-panel button.ttc-panel-action:active,
+.ttc-panel .bp5-button.ttc-panel-action:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.ttc-panel .ttc-panel-action:focus-visible,
+.ttc-panel button.ttc-panel-action:focus-visible,
+.ttc-panel .bp5-button.ttc-panel-action:focus-visible {
+  outline: 2px solid #2e8bf0;
+  outline-offset: 2px;
+}
+
+.ttc-panel .ttc-panel-action:disabled,
+.ttc-panel button.ttc-panel-action:disabled,
+.ttc-panel .bp5-button.ttc-panel-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.ttc-panel .ttc-panel-action-primary,
+.ttc-panel .ttc-panel-tab.is-active {
+  border-color: #2e8bf0;
+  color: #ffffff;
+  background: #2e8bf0;
+}
+
+.ttc-panel .ttc-panel-action-primary:hover,
+.ttc-panel .ttc-panel-tab.is-active:hover {
+  border-color: #246fca;
+  background: #246fca;
+}
+
+.ttc-background-panel .ttc-panel-tab {
+  justify-content: center;
+  min-width: 96px;
+}
+
+.ttc-background-panel > div:last-child .ttc-panel-action {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Keep the quote cards and their existing Add Quote link appearance unchanged. */
+.ttc-text-panel .ttc-quote-action,
+.ttc-text-panel .ttc-quote-action:hover,
+.ttc-text-panel .ttc-quote-action:active {
+  min-height: auto;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 4px;
+  color: #106ba3;
   background: transparent;
-  border: 1px solid transparent;
+  box-shadow: none;
+  font-weight: 400;
+  transform: none;
+}
+
+.ttc-color-swatch {
+  min-height: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* ======= MATCHING SEARCH FIELDS ======= */
+.ttc-panel-search,
+.polotno-container input[type="text"][placeholder*="Search"],
+.polotno-container input[type="search"][placeholder*="Search"] {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 9px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  outline: none !important;
+}
+
+.polotno-container .bp5-input-group:has(input[placeholder*="Search"]),
+.polotno-container .bp5-input-group:has(input[type="search"]) {
+  width: 100% !important;
+}
+
+.ttc-panel-search:focus,
+.polotno-container input[type="text"][placeholder*="Search"]:focus,
+.polotno-container input[type="search"][placeholder*="Search"]:focus {
+  border-color: #2e8bf0 !important;
+  box-shadow: 0 0 0 2px rgba(46, 139, 240, 0.16) !important;
+}
+
+/* ======= TWO-COLUMN NATURAL-RATIO ASSET THUMBNAILS ======= */
+.asset-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+  padding: 0 12px 12px;
+  box-sizing: border-box;
+}
+
+.asset-thumb-card,
+.asset-thumb-card:hover,
+.asset-thumb-card:active {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  color: inherit;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: left;
+  transform: none;
 }
 
 .asset-thumb-card:hover {
+  background: transparent;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+.asset-thumb-card:focus-visible {
+  outline: 2px solid #2e8bf0;
+  outline-offset: 2px;
 }
 
 .asset-thumb-image {
@@ -168,21 +342,117 @@ button:hover {
   top: 6px;
   left: 6px;
   max-width: calc(100% - 12px);
+  box-sizing: border-box;
   padding: 3px 8px;
+  overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
   color: #222;
+  background: rgba(255, 255, 255, 0.72);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.2;
   opacity: 0;
   pointer-events: none;
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
-  transition: opacity 0.15s ease;
+  white-space: nowrap;
+  transition: opacity 150ms ease;
 }
 
-.asset-thumb-card:hover .asset-thumb-label {
+.asset-thumb-card:hover .asset-thumb-label,
+.asset-thumb-card:focus-visible .asset-thumb-label {
   opacity: 1;
+}
+
+.ttc-empty-grid-message {
+  grid-column: 1 / -1;
+  padding: 20px 0;
+  color: #777;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Compact accessible toggle used in the templates panel. */
+.ttc-toggle,
+.ttc-toggle:hover,
+.ttc-toggle:active {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+  cursor: pointer;
+  transform: none;
+  transition: background-color 160ms ease;
+}
+
+.ttc-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ttc-toggle > span {
+  position: absolute;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.22);
+  transition: left 160ms ease;
+}
+
+.ttc-panel-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* ======= DEFAULT UPLOAD PANEL BUTTON ======= */
+button.ttc-upload-add-file,
+button.ttc-upload-add-file:hover,
+button.ttc-upload-add-file:active {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px !important;
+  box-sizing: border-box !important;
+  padding: 9px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 20px !important;
+  cursor: pointer !important;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 80ms ease !important;
+}
+
+button.ttc-upload-add-file:hover {
+  border-color: #94a3b8 !important;
+  background: #f8fafc !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.12) !important;
+}
+
+button.ttc-upload-add-file:active {
+  transform: translateY(1px) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+}
+
+button.ttc-upload-add-file:focus-visible {
+  outline: 2px solid #2e8bf0 !important;
+  outline-offset: 2px !important;
 }

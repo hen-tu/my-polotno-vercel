@@ -18,30 +18,16 @@ const PRESET_COLORS = [
   '#000000',
 ];
 
-const tabButtonStyle = (active) => ({
-  appearance: 'none',
-  border: active ? '1px solid #2e8bf0' : '1px solid #d0d7de',
-  borderRadius: 999,
-  background: active ? '#2e8bf0' : '#ffffff',
-  color: active ? '#ffffff' : '#333333',
-  padding: '10px 18px',
-  fontSize: 14,
-  fontWeight: 700,
-  cursor: 'pointer',
-});
+const makeGradient = (angle, start, end) =>
+  `linear-gradient(${angle}deg, ${start}, ${end})`;
 
-const actionButtonStyle = (primary = false) => ({
-  appearance: 'none',
-  width: '100%',
-  border: primary ? '1px solid #2e8bf0' : '1px solid #c9c9c9',
-  borderRadius: 6,
-  background: primary ? '#2e8bf0' : '#ffffff',
-  color: primary ? '#ffffff' : '#333333',
-  padding: '9px 12px',
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: 'pointer',
-});
+const isValidCssColor = (value) => {
+  if (!value) return false;
+  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
+    return true;
+  }
+  return CSS.supports('color', value);
+};
 
 const BackgroundPanel = observer(({ store }) => {
   const [mode, setMode] = useState('solid');
@@ -52,16 +38,56 @@ const BackgroundPanel = observer(({ store }) => {
 
   const backgroundValue = useMemo(() => {
     if (mode === 'gradient') {
-      return `linear-gradient(${gradientAngle}deg, ${gradientStart}, ${gradientEnd})`;
+      return makeGradient(gradientAngle, gradientStart, gradientEnd);
     }
     return solidColor;
   }, [mode, solidColor, gradientStart, gradientEnd, gradientAngle]);
 
-  const applyBackground = action(() => {
+  const applyToCurrentPage = action((value) => {
     const page = store?.activePage;
     if (!page) return;
-    page.set({ background: backgroundValue });
+    page.set({ background: value });
   });
+
+  const chooseSolidMode = () => {
+    setMode('solid');
+    applyToCurrentPage(solidColor);
+  };
+
+  const chooseGradientMode = () => {
+    setMode('gradient');
+    applyToCurrentPage(makeGradient(gradientAngle, gradientStart, gradientEnd));
+  };
+
+  const chooseSolidColor = (color) => {
+    setMode('solid');
+    setSolidColor(color);
+    if (isValidCssColor(color)) {
+      applyToCurrentPage(color);
+    }
+  };
+
+  const changeGradientStart = (color) => {
+    setMode('gradient');
+    setGradientStart(color);
+    if (isValidCssColor(color)) {
+      applyToCurrentPage(makeGradient(gradientAngle, color, gradientEnd));
+    }
+  };
+
+  const changeGradientEnd = (color) => {
+    setMode('gradient');
+    setGradientEnd(color);
+    if (isValidCssColor(color)) {
+      applyToCurrentPage(makeGradient(gradientAngle, gradientStart, color));
+    }
+  };
+
+  const changeGradientAngle = (angle) => {
+    setMode('gradient');
+    setGradientAngle(angle);
+    applyToCurrentPage(makeGradient(angle, gradientStart, gradientEnd));
+  };
 
   const applyBackgroundToAllPages = action(() => {
     if (!store?.pages?.length) return;
@@ -70,7 +96,7 @@ const BackgroundPanel = observer(({ store }) => {
     });
   });
 
-  const removeBackground = action(() => {
+  const resetToWhite = action(() => {
     const page = store?.activePage;
     if (!page) return;
     page.set({ background: '#ffffff' });
@@ -79,19 +105,19 @@ const BackgroundPanel = observer(({ store }) => {
   });
 
   return (
-    <div style={{ padding: 16 }}>
+    <div className="ttc-panel ttc-panel-scroll ttc-background-panel">
       <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         <button
           type="button"
-          style={tabButtonStyle(mode === 'solid')}
-          onClick={() => setMode('solid')}
+          className={`ttc-panel-action ttc-panel-tab${mode === 'solid' ? ' is-active' : ''}`}
+          onClick={chooseSolidMode}
         >
           Solid
         </button>
         <button
           type="button"
-          style={tabButtonStyle(mode === 'gradient')}
-          onClick={() => setMode('gradient')}
+          className={`ttc-panel-action ttc-panel-tab${mode === 'gradient' ? ' is-active' : ''}`}
+          onClick={chooseGradientMode}
         >
           Gradient
         </button>
@@ -100,7 +126,6 @@ const BackgroundPanel = observer(({ store }) => {
       {mode === 'solid' ? (
         <>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Background color</div>
-
           <div
             style={{
               display: 'grid',
@@ -115,7 +140,8 @@ const BackgroundPanel = observer(({ store }) => {
                 type="button"
                 aria-label={`Use ${color}`}
                 title={color}
-                onClick={() => setSolidColor(color)}
+                onClick={() => chooseSolidColor(color)}
+                className="ttc-color-swatch"
                 style={{
                   width: 30,
                   height: 30,
@@ -132,17 +158,21 @@ const BackgroundPanel = observer(({ store }) => {
             ))}
           </div>
 
+          <div style={{ fontWeight: 700, margin: '4px 0 8px' }}>
+            Custom Color (click to choose)
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <input
               type="color"
               value={solidColor}
-              onChange={(event) => setSolidColor(event.target.value)}
+              onChange={(event) => chooseSolidColor(event.target.value)}
               style={{ width: 46, height: 36, padding: 0, border: 0 }}
             />
             <input
               type="text"
               value={solidColor}
-              onChange={(event) => setSolidColor(event.target.value)}
+              onChange={(event) => chooseSolidColor(event.target.value)}
               aria-label="Background color value"
               style={{
                 flex: 1,
@@ -158,7 +188,6 @@ const BackgroundPanel = observer(({ store }) => {
       ) : (
         <>
           <div style={{ fontWeight: 700, marginBottom: 10 }}>Gradient colors</div>
-
           <label style={{ display: 'block', marginBottom: 12 }}>
             <span style={{ display: 'block', fontSize: 13, marginBottom: 5 }}>
               First color
@@ -167,13 +196,13 @@ const BackgroundPanel = observer(({ store }) => {
               <input
                 type="color"
                 value={gradientStart}
-                onChange={(event) => setGradientStart(event.target.value)}
+                onChange={(event) => changeGradientStart(event.target.value)}
                 style={{ width: 46, height: 36, padding: 0, border: 0 }}
               />
               <input
                 type="text"
                 value={gradientStart}
-                onChange={(event) => setGradientStart(event.target.value)}
+                onChange={(event) => changeGradientStart(event.target.value)}
                 style={{
                   flex: 1,
                   minWidth: 0,
@@ -194,13 +223,13 @@ const BackgroundPanel = observer(({ store }) => {
               <input
                 type="color"
                 value={gradientEnd}
-                onChange={(event) => setGradientEnd(event.target.value)}
+                onChange={(event) => changeGradientEnd(event.target.value)}
                 style={{ width: 46, height: 36, padding: 0, border: 0 }}
               />
               <input
                 type="text"
                 value={gradientEnd}
-                onChange={(event) => setGradientEnd(event.target.value)}
+                onChange={(event) => changeGradientEnd(event.target.value)}
                 style={{
                   flex: 1,
                   minWidth: 0,
@@ -224,32 +253,27 @@ const BackgroundPanel = observer(({ store }) => {
               max="360"
               step="1"
               value={gradientAngle}
-              onChange={(event) => setGradientAngle(Number(event.target.value))}
+              onChange={(event) => changeGradientAngle(Number(event.target.value))}
               style={{ width: '100%' }}
             />
           </label>
         </>
       )}
 
-      <div
-        style={{
-          height: 68,
-          margin: '18px 0',
-          borderRadius: 7,
-          border: '1px solid #d3d3d3',
-          background: backgroundValue,
-        }}
-      />
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <button type="button" style={actionButtonStyle(true)} onClick={applyBackground}>
-          Apply to this page
-        </button>
-        <button type="button" style={actionButtonStyle(false)} onClick={applyBackgroundToAllPages}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
+        <button
+          type="button"
+          className="ttc-panel-action ttc-panel-action-primary"
+          onClick={applyBackgroundToAllPages}
+        >
           Apply to all pages
         </button>
-        <button type="button" style={actionButtonStyle(false)} onClick={removeBackground}>
-          Reset to white
+        <button
+          type="button"
+          className="ttc-panel-action"
+          onClick={resetToWhite}
+        >
+          Back to white
         </button>
       </div>
     </div>

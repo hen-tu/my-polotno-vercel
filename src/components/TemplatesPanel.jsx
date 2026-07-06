@@ -1,221 +1,257 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { runInAction } from 'mobx';
-// removed assetUrls import — this panel uses resolveAssetUrl instead
+import { assetIndexUrl, assetUrl } from '../assetUrls';
 
-const TEMPLATE_ASSET_BASE =
+const TEMPLATE_MEDIA_BASE =
   'https://media.githubusercontent.com/media/hen-tu/polotno-assets-cf/clean-assets/templates';
+const TEMPLATE_RAW_BASE =
+  'https://raw.githubusercontent.com/hen-tu/polotno-assets-cf/clean-assets/templates';
+const TEMPLATE_PAGES_PREFIX =
+  'https://hen-tu.github.io/polotno-assets-cf/templates/';
 
-const getCleanAssetUrl = (url) => {
-  if (!url) return url;
+const templateJsonCache = new Map();
 
-  return url.replace(
-    'https://hen-tu.github.io/polotno-assets-cf/templates/',
-    `${TEMPLATE_ASSET_BASE}/`
-  );
-};
-
-const ASSET_BASE_URL = 'https://hen-tu.github.io/polotno-assets-cf';
-
-function resolveAssetUrl(value) {
-  if (!value) return '';
-
-  const url = String(value).trim();
-
-  // If index already gives a full URL, use it as-is
-  if (
-    url.startsWith('http://') ||
-    url.startsWith('https://') ||
-    url.startsWith('data:') ||
-    url.startsWith('blob:')
-  ) {
-    return url;
-  }
-
-  // Otherwise treat it as a relative asset path
-  return `${ASSET_BASE_URL}/${url.replace(/^\/+/, '')}`;
-}
-
-function placeholderDataUrl(text = 'No image') {
+function placeholderDataUrl(text = 'No preview') {
+  const safeText = String(text).replace(/[<>&]/g, '');
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="120">
-      <rect width="100%" height="100%" fill="#f3f3f3"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="240" height="160">
+      <rect width="100%" height="100%" fill="#f1f5f9"/>
       <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-        font-family="Arial" font-size="13" fill="#777">${text}</text>
-    </svg>
-  `;
+        fill="#64748b" font-family="Arial, sans-serif" font-size="16">${safeText}</text>
+    </svg>`;
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-const templateJsonCache = new Map();
+function uniqueUrls(values) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+function getTemplateAssetCandidates(value, { version = false } = {}) {
+  if (!value) return [];
+
+  const original = String(value).trim();
+  const resolved = assetUrl(original, { version });
+  const unversioned = assetUrl(original);
+
+  const mediaUrl = unversioned.startsWith(TEMPLATE_PAGES_PREFIX)
+    ? unversioned.replace(TEMPLATE_PAGES_PREFIX, `${TEMPLATE_MEDIA_BASE}/`)
+    : '';
+
+  const rawUrl = unversioned.startsWith(TEMPLATE_PAGES_PREFIX)
+    ? unversioned.replace(TEMPLATE_PAGES_PREFIX, `${TEMPLATE_RAW_BASE}/`)
+    : '';
+
+  // The media URL matches the route that worked before for Git LFS assets.
+  // The original/Pages and raw URLs remain as fallbacks.
+  return uniqueUrls([mediaUrl, resolved, rawUrl, unversioned]);
+}
+
+function setNextImageSource(event, candidates) {
+  const image = event.currentTarget;
+  const currentIndex = Number(image.dataset.fallbackIndex || 0);
+  const nextIndex = currentIndex + 1;
+
+  if (nextIndex < candidates.length) {
+    image.dataset.fallbackIndex = String(nextIndex);
+    image.src = candidates[nextIndex];
+    return;
+  }
+
+  image.onerror = null;
+  image.src = placeholderDataUrl('No preview');
+}
 
 const TemplatesPanel = observer(({ store }) => {
   const [templates, setTemplates] = useState([]);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-
-  // Toggles + active values
   const [categoryFilterOn, setCategoryFilterOn] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
-
   const [setFilterOn, setSetFilterOn] = useState(false);
   const [activeSet, setActiveSet] = useState(null);
 
-  // Debounce search
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedQuery(query.toLowerCase());
+    const timeout = window.setTimeout(() => {
+      setDebouncedQuery(query.trim().toLowerCase());
     }, 300);
-    return () => clearTimeout(timeout);
+
+    return () => window.clearTimeout(timeout);
   }, [query]);
 
-  // Load templates + optional auto-load by URL (?template=slug)
+  const getTemplateJson = async (template) => {
+    const candidates = getTemplateAssetCandidates(template.jsonUrl, {
+      version: true,
+    });
+
+    if (!candidates.length) {
+      throw new Error('Template has no JSON URL.');
+    }
+
+    const cacheKey = candidates.join('|');
+    if (templateJsonCache.has(cacheKey)) {
+      return templateJsonCache.get(cacheKey);
+    }
+
+    const promise = (async () => {
+      let lastError = null;
+
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} for ${url}`);
+          }
+
+          const text = await response.text();
+          if (text.startsWith('version https://git-lfs.github.com/spec/v1')) {
+            throw new Error(`Template JSON is still an LFS pointer: ${url}`);
+          }
+          if (text.trim().startsWith('<')) {
+            throw new Error(`Template JSON returned HTML instead of JSON: ${url}`);
+          }
+
+          return JSON.parse(text);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      throw lastError || new Error('Unable to load template JSON.');
+    })();
+
+    templateJsonCache.set(cacheKey, promise);
+    return promise;
+  };
+
   useEffect(() => {
-    fetch(`${ASSET_BASE_URL}/templates/index.json?v=${Date.now()}`, {
-      cache: 'no-store',
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+    fetch(assetIndexUrl('templates/index.json'), { cache: 'no-store' })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
       })
       .then((data) => {
-        const usableTemplates = data.filter((t) => {
-          return (
-            t.id !== 'sample-template' &&
-            !(t.jsonUrl || '').includes('sample-card.json') &&
-            !(t.previewUrl || '').includes('sample-template.png')
-          );
-        });
+        const rows = Array.isArray(data) ? data : [];
+        const usableTemplates = rows.filter(
+          (template) =>
+            template.id !== 'sample-template' &&
+            !String(template.jsonUrl || '').includes('sample-card.json') &&
+            !String(template.previewUrl || '').includes('sample-template.png')
+        );
 
         setTemplates(usableTemplates);
 
-        const params = new URLSearchParams(window.location.search);
-        const slug = params.get('template');
+        const slug = new URLSearchParams(window.location.search).get('template');
+        if (!slug) return;
 
-        if (slug) {
-          const match = usableTemplates.find((t) => t.id === slug);
-          if (match) {
-            // Set context but do NOT auto-enable toggles
-            setActiveCategory(match.category || null);
-            setActiveSet(match.set || null);
-            setSetFilterOn(Boolean(match.set));
-
-            getTemplateJson(match)
-              .then((json) => {
-                runInAction(() => {
-                  store.loadJSON(json);
-                });
-              })
-              .catch((err) => {
-                console.error('Failed to auto-load template from URL:', err);
-              });
-          } else {
-            console.warn(`Template with id "${slug}" not found.`);
-          }
+        const match = usableTemplates.find((template) => template.id === slug);
+        if (!match) {
+          console.warn(`Template with id "${slug}" not found.`);
+          return;
         }
+
+        setActiveCategory(match.category || null);
+        setActiveSet(match.set || null);
+        setSetFilterOn(Boolean(match.set));
+
+        getTemplateJson(match)
+          .then((json) => {
+            runInAction(() => store.loadJSON(json));
+          })
+          .catch((error) => {
+            console.error('Failed to auto-load template from URL:', error);
+          });
       })
-      .catch((err) => console.error('Failed to load templates:', err));
+      .catch((error) => console.error('Failed to load templates:', error));
   }, [store]);
 
-  // Filtering (AND logic if both toggles are on)
-  const filteredTemplates = templates.filter((t) => {
-    const matchesQuery = t.name.toLowerCase().includes(debouncedQuery);
-
+  const filteredTemplates = templates.filter((template) => {
+    const name = String(template.name || '').toLowerCase();
+    const matchesQuery = name.includes(debouncedQuery);
     const matchesCategory =
-      !categoryFilterOn || (t.category && t.category === activeCategory);
-
+      !categoryFilterOn ||
+      (template.category && template.category === activeCategory);
     const matchesSet =
-      !setFilterOn || (t.set && t.set === activeSet);
+      !setFilterOn || (template.set && template.set === activeSet);
 
     return matchesQuery && matchesCategory && matchesSet;
   });
 
-  // Reusable tiny switch UI (same look as your category toggle)
+  const openTemplate = async (template) => {
+    try {
+      const json = await getTemplateJson(template);
+      runInAction(() => store.loadJSON(json));
+
+      if (typeof store.waitLoading === 'function') {
+        await store.waitLoading();
+      }
+
+      setActiveCategory(template.category || null);
+      setActiveSet(template.set || null);
+      setSetFilterOn(Boolean(template.set));
+    } catch (error) {
+      console.error('Failed to load template:', error);
+    }
+  };
+
   const Toggle = ({ enabled, onToggle, disabled }) => (
-    <div
+    <button
+      type="button"
       onClick={() => {
         if (!disabled) onToggle(!enabled);
       }}
-      style={{
-        width: 36,
-        height: 20,
-        backgroundColor: enabled ? '#4caf50' : '#ccc',
-        borderRadius: 20,
-        position: 'relative',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        transition: 'background-color 0.2s',
-      }}
+      className="ttc-toggle"
+      disabled={disabled}
       aria-checked={enabled}
       role="switch"
+      style={{ backgroundColor: enabled ? '#2e8bf0' : '#cbd5e1' }}
     >
-      <div
-        style={{
-          width: 16,
-          height: 16,
-          backgroundColor: '#fff',
-          borderRadius: '50%',
-          position: 'absolute',
-          top: 2,
-          left: enabled ? 18 : 2,
-          transition: 'left 0.2s',
-        }}
-      />
-    </div>
+      <span style={{ left: enabled ? 18 : 2 }} />
+    </button>
   );
 
-  const getTemplateJson = async (t) => {
-    const url = resolveAssetUrl(t.jsonUrl);
-
-    if (templateJsonCache.has(url)) {
-      return templateJsonCache.get(url);
-    }
-
-    const promise = fetch(url).then(async (res) => {
-      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-
-      const text = await res.text();
-
-      if (text.startsWith('version https://git-lfs.github.com/spec/v1')) {
-        throw new Error(`Template JSON is still an LFS pointer: ${url}`);
-      }
-
-      if (text.trim().startsWith('<')) {
-        throw new Error(`Template JSON returned HTML instead of JSON: ${url}`);
-      }
-
-      return JSON.parse(text);
-    });
-
-    templateJsonCache.set(url, promise);
-    return promise;
-  };
-
   return (
-    <div style={{ padding: 12, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div
+      style={{
+        padding: 12,
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+      }}
+    >
       <div style={{ marginBottom: 12 }}>
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(event) => setQuery(event.target.value)}
           placeholder="Search templates..."
-          style={{
-            marginBottom: 8,
-            width: '100%',
-            padding: 8,
-            fontSize: 14,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-          }}
+          className="ttc-panel-search"
         />
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            marginTop: 10,
+          }}
+        >
+          <label
+            style={{
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
             <Toggle
               enabled={categoryFilterOn}
               disabled={!activeCategory}
-              onToggle={(val) => {
-                if (activeCategory) setCategoryFilterOn(val);
+              onToggle={(value) => {
+                if (activeCategory) setCategoryFilterOn(value);
               }}
             />
             <span>
@@ -228,12 +264,19 @@ const TemplatesPanel = observer(({ store }) => {
             </span>
           </label>
 
-          <label style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label
+            style={{
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
             <Toggle
               enabled={setFilterOn}
               disabled={!activeSet}
-              onToggle={(val) => {
-                if (activeSet) setSetFilterOn(val);
+              onToggle={(value) => {
+                if (activeSet) setSetFilterOn(value);
               }}
             />
             <span>
@@ -252,54 +295,41 @@ const TemplatesPanel = observer(({ store }) => {
         Showing {filteredTemplates.length} of {templates.length} templates
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         <div className="asset-masonry">
           {filteredTemplates.length > 0 ? (
-            filteredTemplates.map((t, index) => (
-              <div
-                key={t.id}
-                className="asset-thumb-card"
-                onClick={async () => {
-                  try {
-                    const json = await getTemplateJson(t);
+            filteredTemplates.map((template) => {
+              const previewCandidates = getTemplateAssetCandidates(
+                template.previewUrl,
+                { version: true }
+              );
 
-                    runInAction(() => {
-                      store.loadJSON(json);
-                    });
-
-                    setActiveCategory(t.category || null);
-                    setActiveSet(t.set || null);
-                    setSetFilterOn(Boolean(t.set));
-                  } catch (err) {
-                    console.error('Failed to load template:', err);
-                  }
-                }}
-              >
-                <img
-                  loading={index < 8 ? 'eager' : 'lazy'}
-                  decoding="async"
-                  src={resolveAssetUrl(t.previewUrl)}
-                  alt={t.name || ''}
-                  className="asset-thumb-image"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = placeholderDataUrl('No preview');
-                  }}
-                />
-                <div className="asset-thumb-label">{t.name}</div>
-              </div>
-            ))
+              return (
+                <button
+                  type="button"
+                  key={template.id}
+                  onClick={() => openTemplate(template)}
+                  className="asset-thumb-card"
+                  aria-label={`Open ${template.name}`}
+                >
+                  <img
+                    src={
+                      previewCandidates[0] || placeholderDataUrl('No preview')
+                    }
+                    alt={template.name}
+                    loading="lazy"
+                    data-fallback-index="0"
+                    onError={(event) =>
+                      setNextImageSource(event, previewCandidates)
+                    }
+                    className="asset-thumb-image"
+                  />
+                  <span className="asset-thumb-label">{template.name}</span>
+                </button>
+              );
+            })
           ) : (
-            <div
-              style={{
-                textAlign: 'center',
-                color: '#777',
-                fontSize: 14,
-                padding: '20px 0',
-              }}
-            >
-              No templates found
-            </div>
+            <div className="ttc-empty-grid-message">No templates found</div>
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from '@blueprintjs/core';
+import { action } from 'mobx';
 import templates from './my-text-templates';
 
 const cardStyle = {
@@ -20,101 +21,117 @@ const previewStyle = {
   marginTop: 4,
 };
 
-const MyTextPanel = observer(({ store }) => {
-  const getPage = () => store?.activePage;
+const normalizeFontWeight = (value) => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return value >= 600 ? 'bold' : 'normal';
+  return 'normal';
+};
 
-  const addText = ({
+const MyTextPanel = observer(({ store }) => {
+  const addText = action(({
     text,
     fontSize = 40,
     fontFamily = 'Lato',
-    yOffset = 0,
-    fill = '#111111',
-    align = 'left',
+    y = 100,
+    x = 100,
     width,
-    x,
-    fontWeight = 400,
-    fontStyle = 'normal',
-    lineHeight = 1.2,
+    fill,
+    align,
+    fontWeight,
+    fontStyle,
+    lineHeight,
   }) => {
-    const page = getPage();
+    const page = store?.activePage;
+    if (!page) return;
+
+    const element = {
+      type: 'text',
+      text: String(text ?? ''),
+      fontSize,
+      fontFamily,
+      x,
+      y,
+    };
+
+    if (Number.isFinite(width) && width > 0) element.width = width;
+    if (fill) element.fill = fill;
+    if (align) element.align = align;
+    if (fontWeight !== undefined) {
+      element.fontWeight = normalizeFontWeight(fontWeight);
+    }
+    if (typeof fontStyle === 'string') element.fontStyle = fontStyle;
+    if (Number.isFinite(lineHeight) && lineHeight > 0) {
+      element.lineHeight = lineHeight;
+    }
+
+    page.addElement(element);
+  });
+
+  const addQuickText = (text, fontSize) => {
+    const page = store?.activePage;
     if (!page) return;
 
     const pageWidth = page.computedWidth || page.width || 900;
-    const usableWidth = width || Math.max(360, pageWidth - 180);
-    const startX = x ?? Math.max(40, (pageWidth - usableWidth) / 2);
+    const horizontalPadding = 40;
 
-    page.addElement({
-      type: 'text',
-      text,
-      fontSize,
-      fontFamily,
-      x: startX,
-      y: 90 + yOffset,
-      width: usableWidth,
-      fill,
-      align,
-      fontWeight,
-      fontStyle,
-      lineHeight,
-    });
-  };
-
-  const addQuickText = (text, fontSize = 40, fontFamily = 'Lato') => {
     addText({
       text,
       fontSize,
-      fontFamily,
+      fontFamily: 'Lato',
+      x: horizontalPadding,
+      y: 100,
+      width: Math.max(120, pageWidth - horizontalPadding * 2),
       align: 'left',
-      fill: '#111111',
-      width: 700,
-      x: 100,
-      yOffset: 0,
+      lineHeight: 1.15,
     });
   };
 
   const addTemplate = (template) => {
-    const page = getPage();
+    const page = store?.activePage;
     if (!page) return;
 
+    const parts = Array.isArray(template?.parts)
+      ? template.parts
+      : [
+          {
+            text: template?.text || template?.label || 'Add text',
+            fontSize: template?.fontSize || 32,
+            fontFamily: template?.fontFamily || 'Lato',
+          },
+        ];
+
     const pageWidth = page.computedWidth || page.width || 900;
-    const usableWidth = Math.max(360, Math.min(pageWidth - 140, 900));
+    const usableWidth = Math.max(280, Math.min(pageWidth - 140, 900));
     const startX = Math.max(40, (pageWidth - usableWidth) / 2);
+    let currentY = 100;
 
-    let currentY = 0;
-
-    template.parts.forEach((part) => {
-      const text = part.text || '';
-      const fontSize = part.fontSize || 32;
-      const lines = text.split('\n').length;
-      const estimatedHeight = fontSize * lines * (part.lineHeight || 1.15);
+    parts.forEach((part) => {
+      const fontSize = Number(part?.fontSize) || 32;
+      const text = String(part?.text ?? '');
+      const lines = Math.max(1, text.split('\n').length);
+      const lineHeight = Number(part?.lineHeight) || 1.15;
+      const estimatedHeight = fontSize * lines * lineHeight;
 
       addText({
         text,
         fontSize,
-        fontFamily: part.fontFamily || 'Lato',
-        yOffset: currentY,
-        fill: part.fill || '#111111',
-        align: part.align || 'center',
-        width: part.width || usableWidth,
-        x: part.x ?? startX,
-        fontWeight: part.fontWeight || 400,
-        fontStyle: part.fontStyle || 'normal',
-        lineHeight: part.lineHeight || 1.15,
+        fontFamily: part?.fontFamily || 'Lato',
+        x: Number.isFinite(part?.x) ? part.x : startX,
+        y: currentY,
+        width: Number.isFinite(part?.width) ? part.width : usableWidth,
+        fill: part?.fill || '#111111',
+        align: part?.align || 'center',
+        fontWeight: part?.fontWeight,
+        fontStyle: part?.fontStyle,
+        lineHeight,
       });
 
-      currentY += estimatedHeight + (part.gapAfter ?? 12);
+      currentY += estimatedHeight + (Number(part?.gapAfter) || 12);
     });
   };
 
   return (
-    <div
-      style={{
-        padding: 12,
-        height: '100%',
-        overflowY: 'auto',
-        background: '#f8fafc',
-      }}
-    >
+    <div className="ttc-panel ttc-panel-scroll ttc-text-panel">
       <div style={{ marginBottom: 14 }}>
         <div
           style={{
@@ -129,17 +146,16 @@ const MyTextPanel = observer(({ store }) => {
           Quick Text
         </div>
 
-        <div style={{ display: 'grid', gap: 8 }}>
-          <Button onClick={() => addQuickText('Add a header', 48, 'Lato')}>
+        <div className="ttc-panel-button-stack">
+          <Button
+            className="ttc-panel-action"
+            onClick={() => addQuickText('Add a header', 48)}
+          >
             Add Header
           </Button>
-          <Button onClick={() => addQuickText('Add a subheading', 36, 'Lato')}>
-            Add Subhead
-          </Button>
           <Button
-            onClick={() =>
-              addQuickText('Add a little bit of body text', 24, 'Lato')
-            }
+            className="ttc-panel-action"
+            onClick={() => addQuickText('Add a little bit of body text', 24)}
           >
             Add Body Text
           </Button>
@@ -154,27 +170,22 @@ const MyTextPanel = observer(({ store }) => {
         }}
       />
 
-      <div
-        style={{
-          fontSize: 13,
-          fontWeight: 700,
-          color: '#394b59',
-          marginBottom: 10,
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-        }}
-      >
-        Sidebar Quote Templates
-      </div>
-
       {templates.map((template, index) => (
         <div
-          key={index}
+          key={`${template?.label || 'quote'}-${index}`}
           style={{
             ...cardStyle,
-            borderLeft: `5px solid ${template.accent || '#7c3aed'}`,
+            borderLeft: `5px solid ${template?.accent || '#7c3aed'}`,
           }}
           onClick={() => addTemplate(template)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              addTemplate(template);
+            }
+          }}
         >
           <div
             style={{
@@ -184,18 +195,17 @@ const MyTextPanel = observer(({ store }) => {
               marginBottom: 4,
             }}
           >
-            {template.label}
+            {template?.label}
           </div>
-
-          <div style={previewStyle}>{template.preview}</div>
-
+          <div style={previewStyle}>{template?.preview}</div>
           <div style={{ marginTop: 8 }}>
             <Button
               small
               minimal
               intent="primary"
-              onClick={(e) => {
-                e.stopPropagation();
+              className="ttc-quote-action"
+              onClick={(event) => {
+                event.stopPropagation();
                 addTemplate(template);
               }}
             >
