@@ -158,7 +158,7 @@ const BackgroundPanel = observer(({ store }) => {
             ))}
           </div>
 
-          <div style={{ fontWeight: 700, margin: '4px 0 8px' }}>
+          <div style={{ fontWeight: 700, margin: '40px 0 8px' }}>
             Custom Color (click to choose)
           </div>
 

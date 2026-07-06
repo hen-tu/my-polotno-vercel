@@ -149,6 +149,13 @@ const MyTextPanel = observer(({ store }) => {
         <div className="ttc-panel-button-stack">
           <Button
             className="ttc-panel-action"
+            style={{
+              fontSize: 28,
+              lineHeight: 1.1,
+              minHeight: 56,
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+            }}
             onClick={() => addQuickText('Add a header', 48)}
           >
             Add Header

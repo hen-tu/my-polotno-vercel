@@ -254,8 +254,8 @@ button:hover {
 
 /* ======= MATCHING SEARCH FIELDS ======= */
 .ttc-panel-search,
-.polotno-container input[type="text"][placeholder*="Search"],
-.polotno-container input[type="search"][placeholder*="Search"] {
+.polotno-container input[type="text"][placeholder*="search" i],
+.polotno-container input[type="search"][placeholder*="search" i] {
   display: block !important;
   width: 100% !important;
   min-width: 0 !important;
@@ -274,14 +274,14 @@ button:hover {
   outline: none !important;
 }
 
-.polotno-container .bp5-input-group:has(input[placeholder*="Search"]),
+.polotno-container .bp5-input-group:has(input[placeholder*="search" i]),
 .polotno-container .bp5-input-group:has(input[type="search"]) {
   width: 100% !important;
 }
 
 .ttc-panel-search:focus,
-.polotno-container input[type="text"][placeholder*="Search"]:focus,
-.polotno-container input[type="search"][placeholder*="Search"]:focus {
+.polotno-container input[type="text"][placeholder*="search" i]:focus,
+.polotno-container input[type="search"][placeholder*="search" i]:focus {
   border-color: #2e8bf0 !important;
   box-shadow: 0 0 0 2px rgba(46, 139, 240, 0.16) !important;
 }
@@ -455,4 +455,908 @@ button.ttc-upload-add-file:active {
 button.ttc-upload-add-file:focus-visible {
   outline: 2px solid #2e8bf0 !important;
   outline-offset: 2px !important;
+}
+
+/* ======= POLISHED POLOTNO OBJECT TOOLBAR =======
+   Keep one fixed-height toolbar. Polotno/Blueprint's numeric input contains
+   two small stacked arrow buttons, so those must NOT inherit the normal
+   36px toolbar-button height.
+*/
+.polotno-container .polotno-toolbar.bp5-navbar,
+.polotno-container div.polotno-toolbar.bp5-navbar {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  min-height: 50px !important;
+  height: 50px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 6px 12px !important;
+  gap: 4px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e4e7ec !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+}
+
+/* Polotno may render a second navbar inside the outer toolbar. */
+.polotno-container .polotno-toolbar.bp5-navbar > .bp5-navbar.polotno-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  flex: 1 0 100% !important;
+  width: 100% !important;
+  min-width: max-content !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Every left/right toolbar group uses the same actual height and center line. */
+.polotno-toolbar .bp5-navbar-group,
+.polotno-toolbar .polotno-toolbar-section,
+.polotno-toolbar .bp5-control-group,
+.polotno-toolbar .bp5-button-group:not(.bp5-vertical) {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  flex: 0 0 auto !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  gap: 4px !important;
+  line-height: normal !important;
+  top: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+}
+
+.polotno-toolbar .bp5-navbar-group.bp5-align-right {
+  margin-left: auto !important;
+}
+
+/* Clean separators between logical control groups. */
+.polotno-toolbar .polotno-toolbar-section + .polotno-toolbar-section {
+  margin-left: 6px !important;
+  padding-left: 10px !important;
+  border-left: 1px solid #e4e7ec !important;
+}
+
+.polotno-toolbar .bp5-navbar-divider {
+  align-self: center !important;
+  width: 1px !important;
+  height: 24px !important;
+  margin: 0 6px !important;
+  background: #e4e7ec !important;
+  border: 0 !important;
+}
+
+/* Normal toolbar buttons. Numeric-input arrow buttons are corrected below. */
+.polotno-toolbar .bp5-button,
+.polotno-toolbar button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  flex: 0 0 auto !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  color: #344054 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: normal !important;
+  vertical-align: middle !important;
+  cursor: pointer !important;
+  transform: none !important;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease !important;
+}
+
+.polotno-toolbar .bp5-button:hover,
+.polotno-toolbar button:hover {
+  color: #101828 !important;
+  background: #f2f4f7 !important;
+}
+
+.polotno-toolbar .bp5-button:active,
+.polotno-toolbar button:active,
+.polotno-toolbar .bp5-button.bp5-active {
+  color: #101828 !important;
+  background: #e9edf3 !important;
+}
+
+.polotno-toolbar .bp5-button:focus-visible,
+.polotno-toolbar button:focus-visible {
+  outline: 2px solid rgba(46, 139, 240, 0.42) !important;
+  outline-offset: 1px !important;
+}
+
+.polotno-toolbar .bp5-button:disabled,
+.polotno-toolbar button:disabled,
+.polotno-toolbar .bp5-button.bp5-disabled {
+  color: #98a2b3 !important;
+  background: transparent !important;
+  opacity: 0.52 !important;
+  cursor: default !important;
+}
+
+/* Keep icon glyphs centered instead of aligning to the text baseline. */
+.polotno-toolbar .bp5-icon,
+.polotno-toolbar .bp5-button .bp5-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  line-height: 0 !important;
+  color: currentColor !important;
+}
+
+.polotno-toolbar .bp5-icon > svg,
+.polotno-toolbar svg.bp5-icon,
+.polotno-toolbar button svg {
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  margin: 0 !important;
+  color: currentColor !important;
+  fill: currentColor !important;
+  vertical-align: middle !important;
+}
+
+.polotno-toolbar .bp5-button-text {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 18px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 18px !important;
+}
+
+/* Dropdowns and ordinary text/number fields. */
+.polotno-toolbar .bp5-input-group,
+.polotno-toolbar .bp5-html-select {
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+
+.polotno-toolbar .bp5-input,
+.polotno-toolbar input,
+.polotno-toolbar select,
+.polotno-toolbar .bp5-html-select select {
+  min-height: 36px !important;
+  height: 36px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border: 1px solid #d0d5dd !important;
+  border-radius: 7px !important;
+  color: #344054 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: normal !important;
+  vertical-align: middle !important;
+}
+
+.polotno-toolbar .bp5-input:hover,
+.polotno-toolbar input:hover,
+.polotno-toolbar select:hover {
+  border-color: #98a2b3 !important;
+}
+
+.polotno-toolbar .bp5-input:focus,
+.polotno-toolbar input:focus,
+.polotno-toolbar select:focus {
+  border-color: #667085 !important;
+  box-shadow: 0 0 0 2px rgba(102, 112, 133, 0.14) !important;
+  outline: none !important;
+}
+
+.polotno-toolbar .bp5-html-select select,
+.polotno-toolbar select {
+  min-width: 94px !important;
+  padding-left: 10px !important;
+  padding-right: 28px !important;
+}
+
+/*
+ * Blueprint NumericInput fix.
+ * The previous rule made BOTH stacked arrow buttons 36px tall. Together they
+ * became 72px tall inside a 50px toolbar, which is why one arrow was cut off
+ * above and the other appeared below the bar.
+ */
+.polotno-toolbar .bp5-numeric-input {
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  position: relative !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  vertical-align: middle !important;
+}
+
+.polotno-toolbar .bp5-numeric-input > .bp5-input-group,
+.polotno-toolbar .bp5-numeric-input .bp5-input-group {
+  min-height: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+
+.polotno-toolbar .bp5-numeric-input .bp5-button-group.bp5-vertical {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  align-self: stretch !important;
+  justify-content: center !important;
+  flex: 0 0 20px !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+
+.polotno-toolbar .bp5-numeric-input .bp5-button-group.bp5-vertical > .bp5-button,
+.polotno-toolbar .bp5-numeric-input .bp5-button-group.bp5-vertical > button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 18px !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 18px !important;
+  height: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.polotno-toolbar .bp5-numeric-input .bp5-button-group.bp5-vertical > .bp5-button .bp5-icon,
+.polotno-toolbar .bp5-numeric-input .bp5-button-group.bp5-vertical > button .bp5-icon {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
+}
+
+.polotno-toolbar .bp5-numeric-input .bp5-button-group.bp5-vertical svg {
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  min-height: 10px !important;
+}
+
+/* Prevent native browser number spinners from adding a second set of arrows. */
+.polotno-toolbar input[type="number"] {
+  appearance: textfield !important;
+  -moz-appearance: textfield !important;
+}
+
+.polotno-toolbar input[type="number"]::-webkit-inner-spin-button,
+.polotno-toolbar input[type="number"]::-webkit-outer-spin-button {
+  margin: 0 !important;
+  -webkit-appearance: none !important;
+}
+
+/* Undo/redo were previously forced to white. */
+.polotno-toolbar .undo-button.active .bp5-icon,
+.polotno-toolbar .redo-button.active .bp5-icon {
+  color: #344054 !important;
+}
+
+.polotno-toolbar .undo-button.disabled .bp5-icon,
+.polotno-toolbar .redo-button.disabled .bp5-icon {
+  color: #98a2b3 !important;
+}
+
+.polotno-toolbar .bp5-navbar-group.bp5-align-right .bp5-button,
+.polotno-toolbar .bp5-navbar-group.bp5-align-right button {
+  min-width: 34px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.polotno-toolbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.polotno-toolbar::-webkit-scrollbar {
+  height: 5px;
+}
+
+.polotno-toolbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.polotno-toolbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* ======= ELEMENTS SEARCH FIELD + RESIZE POPOVER ======= */
+/* Polotno uses different capitalization/markup for the Elements search field.
+   Match search placeholders case-insensitively and normalize its input group. */
+.polotno-container input[placeholder*="search" i],
+.polotno-container .bp5-input-group input[placeholder*="search" i] {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
+  padding-right: 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  outline: none !important;
+}
+
+.polotno-container .bp5-input-group:has(input[placeholder*="search" i]) {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  margin: 0 !important;
+}
+
+.polotno-container .bp5-input-group:has(input[placeholder*="search" i]) .bp5-icon {
+  top: 11px !important;
+}
+
+.polotno-container input[placeholder*="search" i]:focus,
+.polotno-container .bp5-input-group input[placeholder*="search" i]:focus {
+  border-color: #2e8bf0 !important;
+  box-shadow: 0 0 0 2px rgba(46, 139, 240, 0.16) !important;
+}
+
+.ttc-resize-popover-shell {
+  margin-top: 6px !important;
+}
+
+.ttc-resize-popover-shell .bp5-popover-content {
+  overflow: hidden !important;
+  border: 1px solid #d7dee8 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2) !important;
+}
+
+.ttc-resize-popover {
+  width: 320px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  padding: 16px !important;
+}
+
+.ttc-resize-popover-title {
+  margin: 0 0 12px;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.ttc-resize-preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ttc-resize-popover .ttc-panel-action,
+.ttc-resize-popover .bp5-button.ttc-panel-action {
+  width: 100% !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.ttc-resize-divider {
+  height: 1px;
+  margin: 14px 0;
+  background: #dbe2ea;
+}
+
+.ttc-resize-custom-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ttc-resize-input,
+.ttc-resize-input.bp5-input-group {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.ttc-resize-input input.bp5-input,
+.ttc-resize-input .bp5-input {
+  width: 100% !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  padding: 9px 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+.ttc-resize-input input.bp5-input:focus,
+.ttc-resize-input .bp5-input:focus {
+  border-color: #2e8bf0 !important;
+  box-shadow: 0 0 0 2px rgba(46, 139, 240, 0.16) !important;
+}
+
+
+/* ======= EXACT ELEMENTS SEARCH MATCH ======= */
+.ttc-elements-panel {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.ttc-elements-panel .bp5-input-group,
+.ttc-elements-panel .bp5-input-group.bp5-fill {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ttc-elements-panel input.bp5-input,
+.ttc-elements-panel input[type="text"],
+.ttc-elements-panel input[type="search"] {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 9px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  outline: none !important;
+}
+
+/* Templates and Images use plain search boxes, so remove Blueprint's icon
+   spacing from Elements to make the field visually identical. */
+.ttc-elements-panel .bp5-input-group > .bp5-icon,
+.ttc-elements-panel .bp5-input-left-container,
+.ttc-elements-panel .bp5-input-right-container {
+  display: none !important;
+}
+
+.ttc-elements-panel input.bp5-input:focus,
+.ttc-elements-panel input[type="text"]:focus,
+.ttc-elements-panel input[type="search"]:focus {
+  border-color: #2e8bf0 !important;
+  box-shadow: 0 0 0 2px rgba(46, 139, 240, 0.16) !important;
+}
+
+
+/* ======= ELEMENTS SECTION HEADINGS ======= */
+.ttc-elements-panel .ttc-elements-section-heading {
+  display: block !important;
+  margin: 32px 0 12px !important;
+  padding: 0 !important;
+  color: #1f2937 !important;
+  font-family: inherit !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+/* ======= SIDE TABS + ELEMENTS HEADINGS REFINEMENT ======= */
+/* Tables, Lines, and Shapes: 14px, bold, uppercase, with the existing 32px spacing. */
+.ttc-elements-panel .ttc-elements-section-heading {
+  margin: 32px 0 12px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Light-gray side-tab rail. */
+.polotno-side-panel .polotno-side-tabs-container,
+.polotno-side-panel .polotno-side-tabs-inner {
+  background: #f6f7f8 !important;
+}
+
+/* Inactive tabs stay light gray. Hover changes only the icon/title color. */
+.polotno-side-panel .polotno-side-panel-tab {
+  color: #4b5563 !important;
+  background: #f6f7f8 !important;
+  transition: color 140ms ease !important;
+}
+
+.polotno-side-panel .polotno-side-panel-tab:hover {
+  color: #488fcc !important;
+  background: #f6f7f8 !important;
+}
+
+/* Active tab is white with Teacher Center blue icon/title. */
+.polotno-side-panel .polotno-side-panel-tab.active,
+.polotno-side-panel .polotno-side-panel-tab.active:hover {
+  color: #488fcc !important;
+  background: #ffffff !important;
+}
+
+/* Make every icon type follow the tab's text color. */
+.polotno-side-panel .polotno-side-panel-tab .bp5-icon,
+.polotno-side-panel .polotno-side-panel-tab svg {
+  color: currentColor !important;
+}
+
+.polotno-side-panel .polotno-side-panel-tab svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+.polotno-side-panel .polotno-side-panel-tab svg [stroke]:not([stroke="none"]) {
+  stroke: currentColor !important;
+}
+
+
+/* ======= SIDE TAB RAIL: LIGHTER + NO DIVIDER ======= */
+/* Remove the vertical separator between the tab rail and the open panel. */
+.polotno-side-panel .polotno-side-tabs-container,
+.polotno-side-panel .polotno-side-tabs-inner,
+.polotno-side-panel .polotno-side-panel-tabs,
+.polotno-side-panel .polotno-side-panel-tab {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
+
+.polotno-side-panel .polotno-side-tabs-container + div,
+.polotno-side-panel .polotno-side-tabs-inner + div,
+.polotno-side-panel .polotno-side-panel-tabs + div,
+.polotno-side-panel .polotno-side-panel-content,
+.polotno-side-panel .polotno-side-panel-panel,
+.polotno-side-panel .polotno-side-panel-body {
+  border-left: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ======= SIDE TAB FINAL COLOR + DIVIDER FIX ======= */
+/* Slightly darker than #488fcc for active and hover states. */
+.polotno-side-panel .polotno-side-panel-tab:hover,
+.polotno-side-panel .polotno-side-panel-tab.active,
+.polotno-side-panel .polotno-side-panel-tab.active:hover {
+  color: #3f7fba !important;
+}
+
+/* Remove the separator at every layer. Some built-in Polotno panels add
+   their own border/pseudo-element, which is why it reappeared outside Templates. */
+.side-panel,
+.polotno-side-panel,
+.polotno-side-panel > div,
+.polotno-side-panel .polotno-side-tabs-container,
+.polotno-side-panel .polotno-side-tabs-inner,
+.polotno-side-panel .polotno-side-panel-tabs,
+.polotno-side-panel .polotno-side-panel-content,
+.polotno-side-panel .polotno-side-panel-panel,
+.polotno-side-panel .polotno-side-panel-body,
+.polotno-side-panel [class*="side-tabs"],
+.polotno-side-panel [class*="side-panel-content"],
+.polotno-side-panel [class*="side-panel-panel"],
+.polotno-side-panel [class*="side-panel-body"] {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+}
+
+.side-panel::before,
+.side-panel::after,
+.polotno-side-panel::before,
+.polotno-side-panel::after,
+.polotno-side-panel > div::before,
+.polotno-side-panel > div::after,
+.polotno-side-panel .polotno-side-tabs-container::before,
+.polotno-side-panel .polotno-side-tabs-container::after,
+.polotno-side-panel .polotno-side-tabs-inner::before,
+.polotno-side-panel .polotno-side-tabs-inner::after,
+.polotno-side-panel .polotno-side-panel-content::before,
+.polotno-side-panel .polotno-side-panel-content::after {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ======= SIDE TAB ICON SIZE ======= */
+/* Medium-size sidebar icons: between the original size and the larger 22px version. */
+.polotno-side-panel .polotno-side-panel-tab .bp5-icon,
+.polotno-side-panel .polotno-side-panel-tab svg {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  font-size: 20px !important;
+}
+
+/* ======= SIDE TAB SPACING ======= */
+/* Add a little breathing room between sidebar tabs without changing their size. */
+.polotno-side-panel .polotno-side-panel-tab {
+  margin: 0 0 4px !important;
+}
+
+.polotno-side-panel .polotno-side-panel-tab:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* ======= ASSET THUMBNAIL FOCUS CLEANUP ======= */
+/* Prevent the browser/Blueprint focus ring from remaining around a template
+   or image after it is clicked. Keep the hover treatment and hover label. */
+.asset-thumb-card:focus,
+.asset-thumb-card:focus-visible,
+.asset-thumb-card:active,
+.asset-thumb-card[tabindex]:focus,
+.asset-thumb-card[tabindex]:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Do not let a nested image or wrapper draw its own selected/focus ring. */
+.asset-thumb-card *:focus,
+.asset-thumb-card *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ======= TEXT + BACKGROUND PANEL WHITE BACKGROUND ======= */
+/* Remove the slight gray tint from these two custom panels only. */
+.ttc-text-panel,
+.ttc-background-panel,
+.ttc-text-panel .ttc-panel-scroll,
+.ttc-background-panel .ttc-panel-scroll {
+  background: #ffffff !important;
+}
+
+/* ======= RESIZE POPOVER POSITION REFINEMENT ======= */
+/* Keep the popup visually detached from the top bar and directly underneath it. */
+.ttc-resize-popover-shell {
+  margin-top: 12px !important;
+}
+
+/* ======= ADD-TO-CART DIALOG: MATCH RESIZE STYLING ======= */
+.ttc-cart-dialog.bp5-dialog {
+  width: 520px !important;
+  max-width: calc(100vw - 32px) !important;
+  overflow: hidden !important;
+  border: 1px solid #d7dee8 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2) !important;
+}
+
+.ttc-cart-success-dialog.bp5-dialog {
+  width: 420px !important;
+}
+
+.ttc-cart-dialog .bp5-dialog-header {
+  min-height: 52px !important;
+  box-sizing: border-box !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #dbe2ea !important;
+  background: #f8fafc !important;
+  box-shadow: none !important;
+}
+
+.ttc-cart-dialog .bp5-dialog-header .bp5-heading {
+  margin: 0 !important;
+  color: #1f2937 !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 22px !important;
+}
+
+.ttc-cart-dialog .bp5-dialog-close-button,
+.ttc-cart-dialog .bp5-dialog-close-button:hover {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  color: #475569 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ttc-cart-dialog .bp5-dialog-close-button:hover {
+  background: #eef2f6 !important;
+}
+
+.ttc-cart-dialog-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  box-sizing: border-box !important;
+  padding: 18px !important;
+  color: #1f2937 !important;
+  background: #f8fafc !important;
+}
+
+.ttc-cart-success-body {
+  gap: 16px !important;
+}
+
+/* Normal option and action buttons use the same material-style treatment as Resize. */
+.ttc-cart-dialog .bp5-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 9px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 20px !important;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 80ms ease !important;
+}
+
+.ttc-cart-dialog .bp5-button:hover {
+  border-color: #94a3b8 !important;
+  background: #f8fafc !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.12) !important;
+}
+
+.ttc-cart-dialog .bp5-button:active {
+  transform: translateY(1px) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+}
+
+.ttc-cart-dialog .bp5-button.bp5-active,
+.ttc-cart-dialog .bp5-button[aria-pressed="true"] {
+  border-color: #3f7fba !important;
+  color: #2f6fa9 !important;
+  background: #eef5fb !important;
+  box-shadow: inset 0 0 0 1px rgba(63, 127, 186, 0.18) !important;
+}
+
+.ttc-cart-dialog .bp5-button.bp5-intent-primary {
+  border-color: #3f7fba !important;
+  color: #ffffff !important;
+  background: #3f7fba !important;
+}
+
+.ttc-cart-dialog .bp5-button.bp5-intent-primary:hover {
+  border-color: #356fa5 !important;
+  background: #356fa5 !important;
+}
+
+.ttc-cart-dialog .bp5-button:disabled,
+.ttc-cart-dialog .bp5-button.bp5-disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.ttc-cart-dialog .bp5-input-group,
+.ttc-cart-dialog .bp5-input-group.bp5-fill {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.ttc-cart-dialog input.bp5-input,
+.ttc-cart-dialog .bp5-input {
+  width: 100% !important;
+  height: 40px !important;
+  box-sizing: border-box !important;
+  padding: 9px 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  outline: none !important;
+}
+
+.ttc-cart-dialog input.bp5-input:focus,
+.ttc-cart-dialog .bp5-input:focus {
+  border-color: #3f7fba !important;
+  box-shadow: 0 0 0 2px rgba(63, 127, 186, 0.16) !important;
+}
+
+.ttc-cart-dialog-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-top: 10px !important;
+}
+
+@media (max-width: 600px) {
+  .ttc-cart-dialog.bp5-dialog {
+    width: calc(100vw - 20px) !important;
+    margin: 10px !important;
+  }
+
+  .ttc-cart-dialog-body {
+    padding: 14px !important;
+  }
 }

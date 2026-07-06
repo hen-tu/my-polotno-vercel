@@ -322,7 +322,6 @@ const TopNav = observer(({ store }) => {
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
   const [popupLoading, setPopupLoading] = useState(false);
-  const resizeButtonRef = useRef(null);
 
   // Options modal
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -734,6 +733,70 @@ const TopNav = observer(({ store }) => {
     </Button>
   );
 
+  const canUndo = Boolean(store.history?.canUndo);
+  const canRedo = Boolean(store.history?.canRedo);
+
+  const historyButtonStyle = {
+    width: '36px',
+    minWidth: '36px',
+    height: '36px',
+    minHeight: '36px',
+    padding: 0,
+    border: 0,
+    borderRadius: '4px',
+    color: 'white',
+    background: 'transparent',
+    boxShadow: 'none',
+  };
+
+  const resizePopoverContent = (
+    <div className="ttc-panel ttc-resize-popover">
+      <div className="ttc-resize-popover-title">Resize Canvas</div>
+
+      <div className="ttc-resize-preset-list">
+        <Button className="ttc-panel-action" onClick={() => handleResize(612, 792)}>
+          8.5″ × 11″ (Letter)
+        </Button>
+        <Button className="ttc-panel-action" onClick={() => handleResize(792, 1224)}>
+          11″ × 17″ (Double)
+        </Button>
+        <Button className="ttc-panel-action" onClick={() => handleResize(936, 1368)}>
+          13″ × 19″ (Small Poster)
+        </Button>
+        <Button className="ttc-panel-action" onClick={() => handleResize(1296, 1728)}>
+          18″ × 24″ (Large Poster)
+        </Button>
+        <Button className="ttc-panel-action" onClick={() => handleResize(1728, 2016)}>
+          24″ × 28″ (Oaktag)
+        </Button>
+      </div>
+
+      <div className="ttc-resize-divider" />
+
+      <div className="ttc-resize-custom-row">
+        <InputGroup
+          className="ttc-resize-input"
+          placeholder="Width (inches)"
+          value={customWidth}
+          onChange={(e) => setCustomWidth(e.target.value)}
+        />
+        <InputGroup
+          className="ttc-resize-input"
+          placeholder="Height (inches)"
+          value={customHeight}
+          onChange={(e) => setCustomHeight(e.target.value)}
+        />
+      </div>
+
+      <Button
+        className="ttc-panel-action ttc-panel-action-primary"
+        onClick={handleCustomResize}
+      >
+        Apply Custom Size
+      </Button>
+    </div>
+  );
+
   return (
     <>
       <div
@@ -753,23 +816,75 @@ const TopNav = observer(({ store }) => {
           <img src="/logo.webp" alt="Logo" style={{ height: '34px' }} />
         </a>
 
-        <Button
+        <Popover
+          content={resizePopoverContent}
+          isOpen={dialogOpen}
+          onInteraction={(nextOpen) => setDialogOpen(nextOpen)}
+          position="bottom-left"
           minimal
-          elementRef={resizeButtonRef}
-          onClick={() => setDialogOpen(true)}
-          style={{
-            fontWeight: 'bold',
-            fontSize: '17px',
-            color: 'white',
-            padding: '10px 15px',
-            borderRadius: '3px',
-            background: 'transparent',
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+          usePortal
+          popoverClassName="ttc-resize-popover-shell"
         >
-          RESIZE
-        </Button>
+          <Button
+            minimal
+            style={{
+              fontWeight: 'bold',
+              fontSize: '17px',
+              color: 'white',
+              padding: '10px 15px',
+              borderRadius: '3px',
+              background: 'transparent',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            RESIZE
+          </Button>
+        </Popover>
+
+        <div
+          aria-label="Undo and redo"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2px',
+          }}
+        >
+          <Button
+            minimal
+            icon={<Icon icon="undo" color={canUndo ? '#ffffff' : '#9ca3af'} />}
+            title="Undo"
+            aria-label="Undo"
+            disabled={!canUndo}
+            onClick={() => store.history.undo()}
+            style={{ ...historyButtonStyle, opacity: 1 }}
+            onMouseOver={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              }
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          />
+          <Button
+            minimal
+            icon={<Icon icon="redo" color={canRedo ? '#ffffff' : '#9ca3af'} />}
+            title="Redo"
+            aria-label="Redo"
+            disabled={!canRedo}
+            onClick={() => store.history.redo()}
+            style={{ ...historyButtonStyle, opacity: 1 }}
+            onMouseOver={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              }
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          />
+        </div>
 
         <div style={{ flex: 1 }} />
 
@@ -851,8 +966,9 @@ const TopNav = observer(({ store }) => {
         title="Print Options"
         canOutsideClickClose={!popupLoading}
         enforceFocus
+        className="ttc-cart-dialog"
       >
-        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="ttc-cart-dialog-body">
           <div>
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Printing Type</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -1073,7 +1189,7 @@ const TopNav = observer(({ store }) => {
             </>
           )}
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+          <div className="ttc-cart-dialog-actions">
             <Button onClick={() => setOptionsOpen(false)} disabled={popupLoading}>
               Cancel
             </Button>
@@ -1099,13 +1215,14 @@ const TopNav = observer(({ store }) => {
         onClose={() => setCartSuccessOpen(false)}
         title="Added to Cart"
         canOutsideClickClose
+        className="ttc-cart-dialog ttc-cart-success-dialog"
       >
-        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="ttc-cart-dialog-body ttc-cart-success-body">
           <div style={{ fontSize: 15, lineHeight: 1.5 }}>
             Your design was added to your cart.
           </div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <div className="ttc-cart-dialog-actions">
             <Button onClick={() => setCartSuccessOpen(false)}>
               Keep Editing
             </Button>
@@ -1122,50 +1239,7 @@ const TopNav = observer(({ store }) => {
         </div>
       </Dialog>
 
-      {/* Resize Dialog */}
-      <Dialog
-        isOpen={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        title="Resize Canvas"
-        autoFocus
-        enforceFocus
-        canOutsideClickClose
-        style={{
-          width: '320px',
-          position: 'absolute',
-          top: '60px',
-          left: resizeButtonRef.current?.getBoundingClientRect().left ?? 100,
-          zIndex: 9999,
-        }}
-      >
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Button onClick={() => handleResize(612, 792)}>8.5″ × 11″ (Letter)</Button>
-          <Button onClick={() => handleResize(792, 1224)}>11″ × 17″ (Double)</Button>
-          <Button onClick={() => handleResize(936, 1368)}>13″ × 19″ (Small Poster)</Button>
-          <Button onClick={() => handleResize(1296, 1728)}>18″ × 24″ (Large Poster)</Button>
-          <Button onClick={() => handleResize(1728, 2016)}>24″ × 28″ (Oaktag)</Button>
-          <hr />
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <InputGroup
-              placeholder="Width (inches)"
-              value={customWidth}
-              onChange={(e) => setCustomWidth(e.target.value)}
-            />
-            <InputGroup
-              placeholder="Height (inches)"
-              value={customHeight}
-              onChange={(e) => setCustomHeight(e.target.value)}
-            />
-          </div>
-          <Button
-            intent="primary"
-            style={{ backgroundColor: '#488FCC', padding: '9px 14px' }}
-            onClick={handleCustomResize}
-          >
-            Apply Custom Size
-          </Button>
-        </div>
-      </Dialog>
+
     </>
   );
 });

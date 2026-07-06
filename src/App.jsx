@@ -1,7 +1,8 @@
 // src/App.jsx
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Icon } from '@blueprintjs/core';
 import { createStore } from 'polotno/model/store';
 import { replaceGlobalFonts } from 'polotno/config';
 import {
@@ -9,8 +10,12 @@ import {
   SidePanelWrap,
   WorkspaceWrap,
 } from 'polotno';
-import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import { SidePanel, DEFAULT_SECTIONS, SectionTab } from 'polotno/side-panel';
 import { Toolbar } from 'polotno/toolbar/toolbar';
+import {
+  TextFontSize as DefaultTextFontSize,
+  TextFill as DefaultTextFill,
+} from 'polotno/toolbar/text-toolbar';
 import { Workspace } from 'polotno/canvas/workspace';
 import { PageControls as DefaultPageControls } from 'polotno/canvas/page-controls';
 import { runInAction } from 'mobx';
@@ -82,6 +87,24 @@ store.addPage();
 
 // Keep Polotno's normal page controls and add a noticeable page-count label.
 // The label only appears when the document contains more than one page.
+// Hide Polotno's built-in undo/redo controls because they are shown
+// next to Resize in the custom top navigation.
+const History = () => null;
+
+// Keep Polotno's native controls, but place the text color picker immediately
+// after the font-size field instead of before the font family.
+const HiddenTextFill = () => null;
+
+const TextFontSizeAndFill = (props) => (
+  <div
+    className="ttc-text-size-and-fill"
+    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+  >
+    <DefaultTextFontSize {...props} />
+    <DefaultTextFill {...props} />
+  </div>
+);
+
 const PageControls = observer((props) => {
   const totalPages = store.pages.length;
 
@@ -126,6 +149,74 @@ console.log('Available section names:', DEFAULT_SECTIONS.map((s) => s.name));
 const getSectionByName = (name) =>
   DEFAULT_SECTIONS.find((s) => s.name === name);
 
+// The visible sidebar label comes from the section Tab component, not title.
+// Keep the internal section name as "photos" so store.openSidePanel still works.
+const photosSection = getSectionByName('photos');
+const ImagesTab = (props) => (
+  <SectionTab {...props} name="Images">
+    <Icon icon="media" size={20} />
+  </SectionTab>
+);
+PhotosPanelWrapper.title = 'Images';
+
+// Wrap the built-in Elements panel so its search control can be styled and
+// the Tables, Lines, and Shapes section headings can be marked reliably.
+const elementsSection = getSectionByName('elements');
+const DefaultElementsPanel = elementsSection?.Panel;
+const ELEMENT_SECTION_HEADINGS = new Set(['tables', 'lines', 'shapes']);
+
+const StyledElementsPanel = DefaultElementsPanel
+  ? observer((props) => {
+      const panelRef = useRef(null);
+
+      useEffect(() => {
+        const markSectionHeadings = () => {
+          const root = panelRef.current;
+          if (!root) return;
+
+          const candidates = root.querySelectorAll(
+            'h1, h2, h3, h4, h5, h6, div, span, p'
+          );
+
+          candidates.forEach((element) => {
+            const text = String(element.textContent || '')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .toLowerCase();
+
+            if (!ELEMENT_SECTION_HEADINGS.has(text)) return;
+            if (element.closest('button, [role="button"]')) return;
+
+            // Only mark the deepest exact text match, not all parent wrappers.
+            const hasExactChild = Array.from(element.children).some((child) => {
+              const childText = String(child.textContent || '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+              return ELEMENT_SECTION_HEADINGS.has(childText);
+            });
+
+            if (!hasExactChild) {
+              element.classList.add('ttc-elements-section-heading');
+            }
+          });
+        };
+
+        markSectionHeadings();
+        const observer = new MutationObserver(markSectionHeadings);
+        observer.observe(panelRef.current, { childList: true, subtree: true });
+
+        return () => observer.disconnect();
+      }, []);
+
+      return (
+        <div ref={panelRef} className="ttc-elements-panel">
+          <DefaultElementsPanel {...props} />
+        </div>
+      );
+    })
+  : null;
+
 const MY_SECTIONS = [
   {
     ...getSectionByName('templates'),
@@ -133,15 +224,22 @@ const MY_SECTIONS = [
     Panel: TemplatesPanel,
   },
   {
-    ...getSectionByName('photos'),
+    ...photosSection,
     title: 'Images',
+    Tab: ImagesTab,
     Panel: PhotosPanelWrapper,
   },
   {
     ...getSectionByName('text'),
     Panel: MyTextPanel,
   },
-  getSectionByName('elements'),
+  StyledElementsPanel
+    ? {
+        ...elementsSection,
+        title: elementsSection.title || 'Elements',
+        Panel: StyledElementsPanel,
+      }
+    : elementsSection,
   {
     ...getSectionByName('background'),
     title: 'Background',
@@ -270,7 +368,12 @@ export default function App() {
         <WorkspaceWrap>
           <Toolbar
             store={store}
-            components={{ TextFontFamily: HebrewFontFamily }}
+            components={{
+              TextFontFamily: HebrewFontFamily,
+              TextFill: HiddenTextFill,
+              TextFontSize: TextFontSizeAndFill,
+              History,
+            }}
           />
           <Workspace
             store={store}
