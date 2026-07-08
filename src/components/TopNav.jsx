@@ -883,32 +883,38 @@ const TopNav = observer(({ store }) => {
   };
 
   const fileMenu = (
-    <Menu>
-      <MenuItem
-        icon="floppy-disk"
-        text={currentAccountDesignId ? 'Save' : 'Save'}
-        label={currentAccountDesignId ? 'Update file' : 'Name file'}
-        onClick={handleFileSave}
-      />
-      <MenuItem
-        icon="duplicate"
-        text="Save as Copy"
-        onClick={handleFileSaveCopy}
-      />
-      <MenuItem
-        icon="folder-open"
-        text="My Saved Designs"
-        onClick={openSavedDesignsPanel}
-      />
-    </Menu>
+    <div className="ttc-topnav-menu-popover">
+      <div className="ttc-topnav-menu-title">Save Design</div>
+      <Menu className="ttc-topnav-menu">
+        <MenuItem
+          icon="floppy-disk"
+          text="Save"
+          label={currentAccountDesignId ? 'Update file' : 'Name file'}
+          onClick={handleFileSave}
+        />
+        <MenuItem
+          icon="duplicate"
+          text="Save as Copy"
+          onClick={handleFileSaveCopy}
+        />
+        <MenuItem
+          icon="folder-open"
+          text="My Saved Designs"
+          onClick={openSavedDesignsPanel}
+        />
+      </Menu>
+    </div>
   );
 
   const downloadMenu = (
-    <Menu>
-      <MenuItem text="Image" onClick={handleDownloadImage} />
-      <MenuItem text="PDF" onClick={handleDownloadPDF} />
-      <MenuItem text="Template" onClick={handleDownloadTemplate} />
-    </Menu>
+    <div className="ttc-topnav-menu-popover">
+      <div className="ttc-topnav-menu-title">Download</div>
+      <Menu className="ttc-topnav-menu">
+        <MenuItem icon="media" text="Image" onClick={handleDownloadImage} />
+        <MenuItem icon="document" text="PDF" onClick={handleDownloadPDF} />
+        <MenuItem icon="code" text="Template" onClick={handleDownloadTemplate} />
+      </Menu>
+    </div>
   );
 
   // UI helper: strike/fade unavailable values, but allow click
@@ -1009,21 +1015,15 @@ const TopNav = observer(({ store }) => {
           <img src="/logo.webp" alt="Logo" style={{ height: '34px' }} />
         </a>
 
-        <Popover content={fileMenu} position="bottom-left" minimal usePortal>
-          <Button
-            minimal
-            style={{
-              fontWeight: 'bold',
-              fontSize: '17px',
-              color: 'white',
-              padding: '10px 15px',
-              borderRadius: '3px',
-              background: 'transparent',
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-          >
-            FILE
+        <Popover
+          content={fileMenu}
+          position="bottom-left"
+          minimal
+          usePortal
+          popoverClassName="ttc-topnav-menu-popover-shell"
+        >
+          <Button minimal className="ttc-topbar-link-button">
+            SAVE
           </Button>
         </Popover>
 
@@ -1036,19 +1036,7 @@ const TopNav = observer(({ store }) => {
           usePortal
           popoverClassName="ttc-resize-popover-shell"
         >
-          <Button
-            minimal
-            style={{
-              fontWeight: 'bold',
-              fontSize: '17px',
-              color: 'white',
-              padding: '10px 15px',
-              borderRadius: '3px',
-              background: 'transparent',
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-          >
+          <Button minimal className="ttc-topbar-link-button">
             RESIZE
           </Button>
         </Popover>
@@ -1099,54 +1087,20 @@ const TopNav = observer(({ store }) => {
 
         <div style={{ flex: 1 }} />
 
-        <Popover content={downloadMenu} position="bottom-right">
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              borderRadius: '4px',
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              color: 'white',
-              backgroundColor: '#ce3c4f',
-              border: '1px solid white',
-              padding: '9px 16px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              transition: 'all 0.2s ease-in-out',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = 'white';
-              e.currentTarget.style.color = '#ce3c4f';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#ce3c4f';
-              e.currentTarget.style.color = 'white';
-            }}
-          >
+        <Popover
+          content={downloadMenu}
+          position="bottom-right"
+          minimal
+          usePortal
+          popoverClassName="ttc-topnav-menu-popover-shell"
+        >
+          <button type="button" className="ttc-topbar-action-button ttc-topbar-action-download">
             <Icon icon="download" />
             Download
           </button>
         </Popover>
 
-        <Button
-          onClick={openOptions}
-          style={{
-            marginLeft: '8px',
-            textTransform: 'uppercase',
-            color: '#ce3d50',
-            backgroundColor: '#ffffff',
-            borderRadius: '4px',
-            border: '1px solid #ce3d50',
-            padding: '6px 12px',
-            fontWeight: 600,
-            letterSpacing: '0.5px',
-            cursor: 'pointer',
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fceced')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
-        >
+        <Button onClick={openOptions} className="ttc-topbar-action-button ttc-topbar-action-cart">
           Add to Cart
         </Button>
       </div>
