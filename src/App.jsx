@@ -24,9 +24,11 @@ import TopNav from './components/TopNav';
 import MyTextPanel from './components/MyTextPanel';
 import TemplatesPanel from './components/TemplatesPanel';
 import PhotosPanelWrapper from './components/PhotosPanelWrapper';
+import SavedDesignsPanel from './components/SavedDesignsPanel';
 import { assetIndexUrl, assetUrl } from './assetUrls';
 import BackgroundPanel from './components/BackgroundPanel';
 import HebrewFontFamily from './components/HebrewFontFamily';
+import { announceCurrentAccountDesign, consumeLoginDraft, getAccountDesign } from './components/saved-designs-api';
 
 const CUSTOM_FONTS = [
   {
@@ -159,6 +161,12 @@ const ImagesTab = (props) => (
 );
 PhotosPanelWrapper.title = 'Images';
 
+const SavedTab = (props) => (
+  <SectionTab {...props} name="Saved">
+    <Icon icon="folder-close" size={20} />
+  </SectionTab>
+);
+
 // Wrap the built-in Elements panel so its search control can be styled and
 // the Tables, Lines, and Shapes section headings can be marked reliably.
 const elementsSection = getSectionByName('elements');
@@ -219,6 +227,12 @@ const StyledElementsPanel = DefaultElementsPanel
 
 const MY_SECTIONS = [
   {
+    name: 'saved-designs',
+    title: 'Saved',
+    Tab: SavedTab,
+    Panel: SavedDesignsPanel,
+  },
+  {
     ...getSectionByName('templates'),
     title: 'My Templates',
     Panel: TemplatesPanel,
@@ -266,17 +280,87 @@ export default function App() {
 
     const params = new URLSearchParams(window.location.search);
     const slug = params.get('template');
+    const savedDesignId = params.get('saved_design');
 
     const cleanupDefaultOpen = () => {
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(timeoutId);
     };
 
-    if (!slug) {
+    const loadSavedDesignFromUrl = async () => {
+      if (!savedDesignId) return false;
+
+      try {
+        console.log('Loading saved design from URL:', savedDesignId);
+        const data = await getAccountDesign(savedDesignId);
+        const json = typeof data.design_json === 'string'
+          ? JSON.parse(data.design_json)
+          : data.design_json;
+
+        if (!json) {
+          throw new Error('Saved design is missing editable JSON.');
+        }
+
+        runInAction(() => {
+          store.loadJSON(json);
+        });
+
+        if (typeof store.waitLoading === 'function') {
+          await store.waitLoading();
+        }
+
+        announceCurrentAccountDesign({
+          id: data.id || savedDesignId,
+          title: data.title || 'Saved Design',
+        });
+
+        console.log('Saved design loaded from URL:', savedDesignId);
+        return true;
+      } catch (err) {
+        console.error('Failed to load saved design from URL:', err);
+        return false;
+      }
+    };
+
+    const restoreLoginDraft = async () => {
+      const draft = consumeLoginDraft();
+      if (!draft?.designJson) return false;
+
+      try {
+        const json = typeof draft.designJson === 'string'
+          ? JSON.parse(draft.designJson)
+          : draft.designJson;
+
+        runInAction(() => {
+          store.loadJSON(json);
+        });
+
+        if (typeof store.waitLoading === 'function') {
+          await store.waitLoading();
+        }
+
+        announceCurrentAccountDesign({
+          id: null,
+          title: draft.title || 'Untitled Design',
+        });
+
+        console.log('Restored unsaved design after login.');
+        return true;
+      } catch (err) {
+        console.error('Failed to restore unsaved design after login:', err);
+        return false;
+      }
+    };
+
+    if (!slug && !savedDesignId) {
+      restoreLoginDraft();
       return cleanupDefaultOpen;
     }
 
     const loadTemplateFromUrl = async () => {
+      const loadedSavedDesign = await loadSavedDesignFromUrl();
+      if (loadedSavedDesign) return;
+      if (!slug) return;
       try {
         console.log('Loading template from URL:', slug);
 

@@ -3,6 +3,15 @@ import { observer } from 'mobx-react-lite';
 import { Button, Popover, Menu, MenuItem, Dialog, InputGroup, Spinner } from '@blueprintjs/core';
 import { Icon } from '@blueprintjs/core';
 import { downloadFile } from 'polotno/utils/download';
+import {
+  announceCurrentAccountDesign,
+  announceSavedDesignsRefresh,
+  clearLoginDraft,
+  getAccountStatus,
+  redirectToLogin,
+  saveAccountDesign,
+  saveLoginDraft,
+} from './saved-designs-api';
 import { action } from 'mobx';
 
 console.log('✅ TopNav loaded');
@@ -322,6 +331,16 @@ const TopNav = observer(({ store }) => {
   const [customWidth, setCustomWidth] = useState('');
   const [customHeight, setCustomHeight] = useState('');
   const [popupLoading, setPopupLoading] = useState(false);
+  const [fileDialogOpen, setFileDialogOpen] = useState(false);
+  const [fileDialogMode, setFileDialogMode] = useState('new');
+  const [fileName, setFileName] = useState('');
+  const [currentAccountDesignId, setCurrentAccountDesignId] = useState(null);
+  const [currentAccountDesignTitle, setCurrentAccountDesignTitle] = useState('');
+  const [fileSaving, setFileSaving] = useState(false);
+  const [fileSaveError, setFileSaveError] = useState('');
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [loginUrl, setLoginUrl] = useState('');
+  const [loginRedirecting, setLoginRedirecting] = useState(false);
 
   // Options modal
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -361,6 +380,21 @@ const TopNav = observer(({ store }) => {
     () => calculatePosterPrice(posterMaterial, posterWidth, posterHeight),
     [posterMaterial, posterWidth, posterHeight]
   );
+
+  useEffect(() => {
+    const handleCurrentDesign = (event) => {
+      const detail = event.detail || {};
+      if (!('id' in detail) && !detail.title) return;
+      setCurrentAccountDesignId(detail.id || null);
+      setCurrentAccountDesignTitle(detail.title || 'Saved Design');
+      setFileName(detail.title || 'Saved Design');
+    };
+
+    window.addEventListener('ttc-polotno-current-design', handleCurrentDesign);
+    return () => {
+      window.removeEventListener('ttc-polotno-current-design', handleCurrentDesign);
+    };
+  }, []);
 
   const isCurrentComboValid = useMemo(() => {
     return !!resolveVariationId(selection);
@@ -503,6 +537,144 @@ const TopNav = observer(({ store }) => {
     }
 
     return { ...data, designJson };
+  };
+
+  const buildAccountSavePayload = async () => {
+    if (typeof store.waitLoading === 'function') {
+      await store.waitLoading();
+    }
+
+    const designJson = JSON.stringify(store.toJSON());
+    let previewPng = '';
+
+    // Account saves only need a small thumbnail preview. A full PNG makes saves
+    // feel very slow on large designs, so use a small JPEG and keep the preview
+    // optional if the browser fails to render it.
+    try {
+      previewPng = await store.toDataURL({
+        mimeType: 'image/jpeg',
+        quality: 0.72,
+        pixelRatio: 0.22,
+      });
+
+      if (!previewPng || !String(previewPng).startsWith('data:image/')) {
+        previewPng = '';
+      }
+    } catch (err) {
+      console.warn('Saved-design preview could not be generated:', err);
+      previewPng = '';
+    }
+
+    return { designJson, previewPng };
+  };
+
+  const showLoginRequired = (err) => {
+    setLoginUrl(err?.loginUrl || err?.response?.login_url || '');
+    setLoginDialogOpen(true);
+  };
+
+  const preserveCurrentDesignAndLogIn = async () => {
+    setLoginRedirecting(true);
+
+    try {
+      if (typeof store.waitLoading === 'function') {
+        await store.waitLoading();
+      }
+
+      saveLoginDraft({
+        designJson: JSON.stringify(store.toJSON()),
+        title: currentAccountDesignTitle || fileName || 'Untitled Design',
+      });
+    } catch (err) {
+      console.warn('Could not preserve design before login:', err);
+    }
+
+    redirectToLogin(loginUrl);
+  };
+
+  const doAccountSave = async ({ title, saveAsCopy = false }) => {
+    const safeTitle = String(title || '').trim();
+    if (!safeTitle) {
+      setFileSaveError('Please enter a file name.');
+      return;
+    }
+
+    setFileSaving(true);
+    setFileSaveError('');
+
+    try {
+      const status = await getAccountStatus();
+      if (!status?.logged_in) {
+        const error = new Error('Please log in to save your design.');
+        error.code = 'not_logged_in';
+        error.loginUrl = status?.login_url;
+        throw error;
+      }
+
+      const payload = await buildAccountSavePayload();
+      const data = await saveAccountDesign({
+        designId: saveAsCopy ? null : currentAccountDesignId,
+        title: safeTitle,
+        designJson: payload.designJson,
+        previewPng: payload.previewPng,
+        saveAsCopy,
+      });
+
+      const saved = {
+        id: data.id,
+        title: data.title || safeTitle,
+      };
+
+      setCurrentAccountDesignId(saved.id);
+      setCurrentAccountDesignTitle(saved.title);
+      setFileName(saved.title);
+      setFileDialogOpen(false);
+      announceCurrentAccountDesign(saved);
+      announceSavedDesignsRefresh();
+      clearLoginDraft();
+    } catch (err) {
+      if (err.code === 'not_logged_in') {
+        setFileDialogOpen(false);
+        showLoginRequired(err);
+      } else {
+        setFileSaveError(err.message || 'Could not save this design.');
+      }
+    } finally {
+      setFileSaving(false);
+    }
+  };
+
+  const handleFileSave = async () => {
+    if (!currentAccountDesignId) {
+      setFileDialogMode('new');
+      setFileName(currentAccountDesignTitle || 'Untitled Design');
+      setFileSaveError('');
+      setFileDialogOpen(true);
+      return;
+    }
+
+    await doAccountSave({
+      title: currentAccountDesignTitle || fileName || 'Untitled Design',
+      saveAsCopy: false,
+    });
+  };
+
+  const handleFileSaveCopy = () => {
+    setFileDialogMode('copy');
+    setFileName(
+      currentAccountDesignTitle
+        ? `${currentAccountDesignTitle} copy`
+        : 'Untitled Design copy'
+    );
+    setFileSaveError('');
+    setFileDialogOpen(true);
+  };
+
+  const openSavedDesignsPanel = () => {
+    if (typeof store.openSidePanel === 'function') {
+      store.openSidePanel('saved-designs');
+    }
+    announceSavedDesignsRefresh();
   };
 
   // ✅ Price updater from local PRICE_MAP
@@ -710,6 +882,27 @@ const TopNav = observer(({ store }) => {
     }
   };
 
+  const fileMenu = (
+    <Menu>
+      <MenuItem
+        icon="floppy-disk"
+        text={currentAccountDesignId ? 'Save' : 'Save'}
+        label={currentAccountDesignId ? 'Update file' : 'Name file'}
+        onClick={handleFileSave}
+      />
+      <MenuItem
+        icon="duplicate"
+        text="Save as Copy"
+        onClick={handleFileSaveCopy}
+      />
+      <MenuItem
+        icon="folder-open"
+        text="My Saved Designs"
+        onClick={openSavedDesignsPanel}
+      />
+    </Menu>
+  );
+
   const downloadMenu = (
     <Menu>
       <MenuItem text="Image" onClick={handleDownloadImage} />
@@ -815,6 +1008,24 @@ const TopNav = observer(({ store }) => {
         <a href={WOO_BASE} style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/logo.webp" alt="Logo" style={{ height: '34px' }} />
         </a>
+
+        <Popover content={fileMenu} position="bottom-left" minimal usePortal>
+          <Button
+            minimal
+            style={{
+              fontWeight: 'bold',
+              fontSize: '17px',
+              color: 'white',
+              padding: '10px 15px',
+              borderRadius: '3px',
+              background: 'transparent',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+            onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            FILE
+          </Button>
+        </Popover>
 
         <Popover
           content={resizePopoverContent}
@@ -958,6 +1169,89 @@ const TopNav = observer(({ store }) => {
           <Spinner intent="primary" size={100} />
         </div>
       )}
+
+      {/* Account Save Dialog */}
+      <Dialog
+        isOpen={fileDialogOpen}
+        onClose={() => setFileDialogOpen(false)}
+        title={fileDialogMode === 'copy' ? 'Save a Copy' : 'Name This Design'}
+        canOutsideClickClose={!fileSaving}
+        enforceFocus
+        className="ttc-cart-dialog ttc-file-save-dialog"
+      >
+        <div className="ttc-cart-dialog-body">
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>File Name</div>
+            <InputGroup
+              autoFocus
+              value={fileName}
+              onChange={(e) => setFileName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  doAccountSave({
+                    title: fileName,
+                    saveAsCopy: fileDialogMode === 'copy',
+                  });
+                }
+              }}
+              placeholder="Untitled Design"
+            />
+          </div>
+
+          {fileSaveError ? (
+            <div className="ttc-file-save-error">{fileSaveError}</div>
+          ) : null}
+
+          <div className="ttc-cart-dialog-actions">
+            <Button onClick={() => setFileDialogOpen(false)} disabled={fileSaving}>
+              Cancel
+            </Button>
+            <Button
+              intent="primary"
+              loading={fileSaving}
+              onClick={() =>
+                doAccountSave({
+                  title: fileName,
+                  saveAsCopy: fileDialogMode === 'copy',
+                })
+              }
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Login Required Dialog */}
+      <Dialog
+        isOpen={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+        title="Log in required"
+        canOutsideClickClose={!loginRedirecting}
+        enforceFocus
+        className="ttc-cart-dialog ttc-file-save-dialog ttc-login-required-dialog"
+      >
+        <div className="ttc-cart-dialog-body">
+          <div className="ttc-login-required-message">
+            Please log in to save your design.
+          </div>
+          <div className="ttc-login-required-note">
+            Your current design will be restored after you log in.
+          </div>
+          <div className="ttc-cart-dialog-actions">
+            <Button onClick={() => setLoginDialogOpen(false)} disabled={loginRedirecting}>
+              Cancel
+            </Button>
+            <Button
+              intent="primary"
+              loading={loginRedirecting}
+              onClick={preserveCurrentDesignAndLogIn}
+            >
+              Log in
+            </Button>
+          </div>
+        </div>
+      </Dialog>
 
       {/* Print Options Modal */}
       <Dialog
