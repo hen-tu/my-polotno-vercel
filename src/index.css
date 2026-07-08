@@ -1510,7 +1510,7 @@ button.ttc-upload-add-file:focus-visible {
   box-shadow: none !important;
   font-family: inherit !important;
   font-size: 16px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   line-height: 38px !important;
   letter-spacing: 0.02em !important;
   text-transform: uppercase !important;
@@ -1544,7 +1544,7 @@ button.ttc-upload-add-file:focus-visible {
   border-radius: 6px !important;
   font-family: inherit !important;
   font-size: 14px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   line-height: 38px !important;
   letter-spacing: 0.02em !important;
   text-transform: uppercase !important;
@@ -1654,8 +1654,8 @@ button.ttc-upload-add-file:focus-visible {
   align-items: center !important;
   min-height: 40px !important;
   box-sizing: border-box !important;
-  margin: 0 0 8px !important;
-  padding: 9px 10px !important;
+  margin: 0 0 12px !important;
+  padding: 9px 12px !important;
   border: 1px solid #cbd5e1 !important;
   border-radius: 8px !important;
   color: #1f2937 !important;
@@ -1690,12 +1690,108 @@ button.ttc-upload-add-file:focus-visible {
 .ttc-topnav-menu .bp5-menu-item-icon,
 .ttc-topnav-menu .bp5-icon,
 .ttc-topnav-menu svg {
-  color: #3f7fba !important;
-  fill: currentColor !important;
+  display: none !important;
 }
 
 .ttc-topnav-menu .bp5-menu-item-label {
   color: #64748b !important;
   font-size: 12px !important;
   font-weight: 600 !important;
+}
+
+/* ======= SAVE/DOWNLOAD MENU BUTTON REFINEMENT ======= */
+/* No icons in the Save or Download dropdowns; keep clean, evenly spaced buttons. */
+.ttc-topnav-menu .bp5-menu-item {
+  gap: 0 !important;
+}
+
+.ttc-topnav-menu .bp5-menu-item::before {
+  display: none !important;
+}
+
+.ttc-topnav-menu .bp5-text-overflow-ellipsis,
+.ttc-topnav-menu .bp5-menu-item-label {
+  margin-left: 0 !important;
+}
+
+/* ======= SAVE / DOWNLOAD MENU SPACING + TOPBAR CASE UPDATE ======= */
+/* Move Save, Resize, and Download popovers down slightly (+5px). */
+.ttc-topnav-menu-popover-shell,
+.ttc-resize-popover-shell {
+  margin-top: 17px !important;
+}
+
+/* Use consistent real spacing between Save/Download menu buttons. */
+.ttc-topnav-menu.bp5-menu {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ttc-topnav-menu li {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.ttc-topnav-menu .bp5-menu-item,
+.ttc-topnav-menu .bp5-menu-item:hover,
+.ttc-topnav-menu .bp5-menu-item.bp5-active {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Download and Add to Cart read cleaner in Title Case. Keep Save/Resize as top-bar links. */
+.ttc-topbar-action-button,
+.ttc-topbar-action-button.bp5-button,
+.ttc-topbar-action-button:hover,
+.ttc-topbar-action-button.bp5-button:hover,
+.ttc-topbar-action-button:active,
+.ttc-topbar-action-button.bp5-button:active {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 700 !important;
+}
+
+/* ======= TOP NAV SIZE/WEIGHT FINAL TWEAK ======= */
+/* SAVE and RESIZE links should feel lighter than the primary action buttons. */
+.ttc-topbar-link-button.bp5-button,
+.ttc-topbar-link-button.bp5-button:hover,
+.ttc-topbar-link-button.bp5-button:active,
+.ttc-topbar-link-button.bp5-button.bp5-active {
+  font-weight: 600 !important;
+}
+
+/* Download and Add to Cart needed slightly larger text while keeping Title Case. */
+.ttc-topbar-action-button,
+.ttc-topbar-action-button.bp5-button,
+.ttc-topbar-action-button:hover,
+.ttc-topbar-action-button.bp5-button:hover,
+.ttc-topbar-action-button:active,
+.ttc-topbar-action-button.bp5-button:active {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+/* ======= TOP NAV ACTION TEXT SIZE FINAL TWEAK ======= */
+/* Make only Download and Add to Cart read larger/more polished. */
+.ttc-topbar-action-button,
+.ttc-topbar-action-button.bp5-button,
+.ttc-topbar-action-button:hover,
+.ttc-topbar-action-button.bp5-button:hover,
+.ttc-topbar-action-button:active,
+.ttc-topbar-action-button.bp5-button:active {
+  width: 148px !important;
+  min-width: 148px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
