@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { runInAction } from 'mobx';
+import { Spinner } from '@blueprintjs/core';
 import { assetIndexUrl, assetUrl } from '../assetUrls';
 
 const TEMPLATE_MEDIA_BASE =
@@ -44,6 +45,16 @@ function fetchWithTimeout(url, timeoutMs = CANDIDATE_FETCH_TIMEOUT_MS) {
 
   return fetch(url, { signal: controller.signal }).finally(() => {
     window.clearTimeout(timeoutId);
+  });
+}
+
+// Polotno's store.loadJSON() deep-clones the whole design synchronously
+// before adding anything, which can block the main thread for large
+// templates. Waiting two animation frames first guarantees the browser has
+// actually painted the "opening" spinner before that blocking work starts.
+function waitForNextPaint() {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
   });
 }
 
@@ -91,6 +102,7 @@ const TemplatesPanel = observer(({ store }) => {
   const [setFilterOn, setSetFilterOn] = useState(false);
   const [activeSet, setActiveSet] = useState(null);
   const [visibleCount, setVisibleCount] = useState(TEMPLATES_PAGE_SIZE);
+  const [openingTemplateId, setOpeningTemplateId] = useState(null);
   const loadMoreRef = useRef(null);
 
   useEffect(() => {
@@ -223,7 +235,14 @@ const TemplatesPanel = observer(({ store }) => {
   }, [hasMoreTemplates]);
 
   const openTemplate = async (template) => {
+    if (openingTemplateId) return;
+
+    setOpeningTemplateId(template.id);
     try {
+      // Let the spinner actually paint before the fetch/JSON-parse/loadJSON
+      // work below, which can block the main thread for large templates.
+      await waitForNextPaint();
+
       const json = await getTemplateJson(template);
       runInAction(() => store.loadJSON(json));
 
@@ -236,6 +255,8 @@ const TemplatesPanel = observer(({ store }) => {
       setSetFilterOn(Boolean(template.set));
     } catch (error) {
       console.error('Failed to load template:', error);
+    } finally {
+      setOpeningTemplateId(null);
     }
   };
 
@@ -348,13 +369,21 @@ const TemplatesPanel = observer(({ store }) => {
                 { version: true }
               );
 
+              const isOpeningThis = openingTemplateId === template.id;
+
               return (
                 <button
                   type="button"
                   key={template.id}
                   onClick={() => openTemplate(template)}
+                  disabled={!!openingTemplateId}
                   className="asset-thumb-card"
                   aria-label={`Open ${template.name}`}
+                  style={
+                    openingTemplateId && !isOpeningThis
+                      ? { opacity: 0.5, cursor: 'not-allowed' }
+                      : undefined
+                  }
                 >
                   <img
                     src={
@@ -369,6 +398,20 @@ const TemplatesPanel = observer(({ store }) => {
                     className="asset-thumb-image"
                   />
                   <span className="asset-thumb-label">{template.name}</span>
+                  {isOpeningThis && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(255,255,255,0.75)',
+                      }}
+                    >
+                      <Spinner size={28} />
+                    </div>
+                  )}
                 </button>
               );
             })
