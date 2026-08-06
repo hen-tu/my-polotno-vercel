@@ -28,6 +28,20 @@ function uniqueUrls(values) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
+const CANDIDATE_FETCH_TIMEOUT_MS = 6000;
+
+// A slow-but-not-yet-failed candidate (e.g. a stalled request) would otherwise
+// block the whole fallback chain until the browser's own timeout. Cap each
+// attempt so a slow candidate is skipped quickly instead of stalling the rest.
+function fetchWithTimeout(url, timeoutMs = CANDIDATE_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  return fetch(url, { signal: controller.signal }).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
+}
+
 function getTemplateAssetCandidates(value, { version = false } = {}) {
   if (!value) return [];
 
@@ -99,7 +113,7 @@ const TemplatesPanel = observer(({ store }) => {
 
       for (const url of candidates) {
         try {
-          const response = await fetch(url);
+          const response = await fetchWithTimeout(url);
           if (!response.ok) {
             throw new Error(`HTTP ${response.status} for ${url}`);
           }
@@ -126,7 +140,7 @@ const TemplatesPanel = observer(({ store }) => {
   };
 
   useEffect(() => {
-    fetch(assetIndexUrl('templates/index.json'), { cache: 'no-store' })
+    fetch(assetIndexUrl('templates/index.json'))
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
