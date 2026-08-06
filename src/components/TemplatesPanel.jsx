@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { runInAction } from 'mobx';
 import { assetIndexUrl, assetUrl } from '../assetUrls';
@@ -11,6 +11,11 @@ const TEMPLATE_PAGES_PREFIX =
   'https://hen-tu.github.io/polotno-assets-cf/templates/';
 
 const templateJsonCache = new Map();
+
+// Rendering every filtered template at once fires an image fetch for each
+// one on panel open. Render incrementally instead, and load more as the
+// user scrolls near the bottom.
+const TEMPLATES_PAGE_SIZE = 60;
 
 function placeholderDataUrl(text = 'No preview') {
   const safeText = String(text).replace(/[<>&]/g, '');
@@ -85,6 +90,8 @@ const TemplatesPanel = observer(({ store }) => {
   const [activeCategory, setActiveCategory] = useState(null);
   const [setFilterOn, setSetFilterOn] = useState(false);
   const [activeSet, setActiveSet] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(TEMPLATES_PAGE_SIZE);
+  const loadMoreRef = useRef(null);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -191,6 +198,29 @@ const TemplatesPanel = observer(({ store }) => {
 
     return matchesQuery && matchesCategory && matchesSet;
   });
+
+  // Show the first page again whenever the filters change what's in the list.
+  useEffect(() => {
+    setVisibleCount(TEMPLATES_PAGE_SIZE);
+  }, [debouncedQuery, categoryFilterOn, activeCategory, setFilterOn, activeSet]);
+
+  const visibleTemplates = filteredTemplates.slice(0, visibleCount);
+  const hasMoreTemplates = visibleCount < filteredTemplates.length;
+
+  useEffect(() => {
+    if (!hasMoreTemplates) return undefined;
+    const sentinel = loadMoreRef.current;
+    if (!sentinel) return undefined;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setVisibleCount((count) => count + TEMPLATES_PAGE_SIZE);
+      }
+    });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMoreTemplates]);
 
   const openTemplate = async (template) => {
     try {
@@ -311,8 +341,8 @@ const TemplatesPanel = observer(({ store }) => {
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         <div className="asset-masonry">
-          {filteredTemplates.length > 0 ? (
-            filteredTemplates.map((template) => {
+          {visibleTemplates.length > 0 ? (
+            visibleTemplates.map((template) => {
               const previewCandidates = getTemplateAssetCandidates(
                 template.previewUrl,
                 { version: true }
@@ -346,6 +376,7 @@ const TemplatesPanel = observer(({ store }) => {
             <div className="ttc-empty-grid-message">No templates found</div>
           )}
         </div>
+        {hasMoreTemplates && <div ref={loadMoreRef} style={{ height: 1 }} />}
       </div>
     </div>
   );
