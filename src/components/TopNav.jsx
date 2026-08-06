@@ -279,6 +279,8 @@ function postToParentRpc(type, payload, { timeoutMs = 9000 } = {}) {
     }, timeoutMs);
 
     function onMessage(event) {
+      if (event.origin !== WOO_BASE) return;
+
       const msg = event.data || {};
       if (msg.requestId !== requestId) return;
 
@@ -299,8 +301,8 @@ function postToParentRpc(type, payload, { timeoutMs = 9000 } = {}) {
 
     window.addEventListener('message', onMessage);
 
-    // Send to parent. Your bridge/plugin should validate origin on its side.
-    window.parent.postMessage({ type, requestId, payload }, '*');
+    // Send to parent. Scoped to the known WordPress origin (WOO_BASE).
+    window.parent.postMessage({ type, requestId, payload }, WOO_BASE);
   });
 }
 

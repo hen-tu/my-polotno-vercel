@@ -20,6 +20,8 @@ function postToParentRpc(type, payload = {}, { timeoutMs = 30000 } = {}) {
     }, timeoutMs);
 
     function onMessage(event) {
+      if (event.origin !== WOO_BASE) return;
+
       const msg = event.data || {};
       if (msg.requestId !== requestId) return;
 
@@ -31,7 +33,7 @@ function postToParentRpc(type, payload = {}, { timeoutMs = 30000 } = {}) {
     }
 
     window.addEventListener('message', onMessage);
-    window.parent.postMessage({ type, requestId, payload }, '*');
+    window.parent.postMessage({ type, requestId, payload }, WOO_BASE);
   });
 }
 
