@@ -84,7 +84,10 @@ const CUSTOM_FONTS = [
 replaceGlobalFonts(CUSTOM_FONTS);
 
 // Create store
-const store = createStore({ showCredit: false });
+const store = createStore({
+  key: import.meta.env.VITE_POLOTNO_KEY,
+  showCredit: false,
+});
 store.addPage();
 
 // Keep Polotno's normal page controls and add a noticeable page-count label.
