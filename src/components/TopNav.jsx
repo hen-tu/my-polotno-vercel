@@ -502,11 +502,13 @@ const TopNav = observer(({ store }) => {
     }
   };
 
-  // Save the PNG first through the existing parent-page RPC.
-  // Keep a serialized copy of the editable JSON so it can also be handed off
-  // during add-to-cart. This works even when an older parent save handler only
-  // forwards pngBase64 to WordPress.
-  const saveDesignToWP = async () => {
+  // Build the design export payload (PNG + editable JSON, plus a PDF for
+  // multi-page designs). This used to be POSTed to WordPress on its own via a
+  // separate POL_SAVE_DESIGN round trip before add-to-cart made a second
+  // request; the fields are now sent directly in the single add-to-cart
+  // request instead, since a full save-then-add sequence roughly doubles
+  // both the transferred bytes and the latency for large designs.
+  const buildCartDesignPayload = async () => {
     if (typeof store.waitLoading === 'function') {
       await store.waitLoading();
     }
@@ -536,27 +538,7 @@ const TopNav = observer(({ store }) => {
       }
     }
 
-    const result = await postToParentRpc(
-      'POL_SAVE_DESIGN',
-      { pngBase64, designJson, pdfBase64 },
-      { timeoutMs: 30000 }
-    );
-
-    if (!result || !result.ok) {
-      throw new Error(
-        result && result.error ? result.error : 'Save failed'
-      );
-    }
-
-    const data = result.data;
-
-    if (!data || !data.success) {
-      throw new Error(
-        data && data.error ? data.error : 'Save failed'
-      );
-    }
-
-    return { ...data, designJson };
+    return { pngBase64, designJson, pdfBase64 };
   };
 
   const buildAccountSavePayload = async () => {
@@ -838,33 +820,24 @@ const TopNav = observer(({ store }) => {
         };
       }
 
-      const saved = await saveDesignToWP();
-      const designId = saved.design_id;
-      const designJson = saved.designJson;
-
-      // Some parent-page bridge versions forward only a fixed set of
-      // top-level fields. Put the editable JSON inside attributes too, because
-      // that object is already forwarded for both regular and poster orders.
-      // The WordPress bridge removes this helper field before Woo variation
-      // processing and saves it as design-{id}.json.
-      const rpcAttributes = {
-        ...attributes,
-        polotno_design_json: designJson,
-      };
+      const { pngBase64, designJson, pdfBase64 } = await buildCartDesignPayload();
 
       if (inIframe()) {
         console.log('📨 RPC to parent for AJAX add-to-cart');
 
+        // Send the design bytes and the cart/product fields in one request.
+        // WordPress creates the design record and adds the item to the cart
+        // in the same call, instead of two sequential round trips.
         await postToParentRpc(
           'POL_ADD_TO_CART',
           {
             product_id: productId,
             variation_id: variationId,
             quantity: 1,
-            attributes: rpcAttributes,
-            polotno_design_id: designId,
+            attributes,
+            pngBase64,
             designJson,
-            polotno_design_json: designJson,
+            pdfBase64,
             ...customFields,
           },
           { timeoutMs: 30000 }
@@ -875,7 +848,16 @@ const TopNav = observer(({ store }) => {
         return;
       }
 
-      // Standalone fallback: send the same fields through a Woo add-to-cart URL.
+      // Standalone fallback (outside the WordPress iframe): a plain Woo
+      // add-to-cart URL can't carry the base64 design payload, so this path
+      // still needs an explicit save first to get a design_id.
+      const saved = await postToParentRpc(
+        'POL_SAVE_DESIGN',
+        { pngBase64, designJson, pdfBase64 },
+        { timeoutMs: 30000 }
+      );
+      const designId = saved?.data?.design_id;
+
       const params = new URLSearchParams();
       params.set('add-to-cart', String(productId));
       params.set('quantity', '1');
