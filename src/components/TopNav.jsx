@@ -518,9 +518,27 @@ const TopNav = observer(({ store }) => {
 
     const designJson = JSON.stringify(store.toJSON());
 
+    // The PNG preview only ever captures a single page. Multi-page designs
+    // also need a PDF so the order has every page, not just the first.
+    let pdfBase64 = '';
+    if (
+      Array.isArray(store.pages) &&
+      store.pages.length > 1 &&
+      typeof store.toPDFDataURL === 'function'
+    ) {
+      try {
+        const pdfDataURL = await store.toPDFDataURL();
+        if (pdfDataURL && String(pdfDataURL).startsWith('data:application/pdf')) {
+          pdfBase64 = pdfDataURL;
+        }
+      } catch (err) {
+        console.warn('Multi-page PDF export failed, continuing with PNG only:', err);
+      }
+    }
+
     const result = await postToParentRpc(
       'POL_SAVE_DESIGN',
-      { pngBase64, designJson },
+      { pngBase64, designJson, pdfBase64 },
       { timeoutMs: 30000 }
     );
 
