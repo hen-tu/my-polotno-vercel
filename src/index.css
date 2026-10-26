@@ -1812,3 +1812,23 @@ button.ttc-upload-add-file:focus-visible {
   stroke-linejoin: round;
   flex-shrink: 0;
 }
+
+/* ======= LUCIDE SIDEBAR ALIGNMENT + LABELS ======= */
+/* Center each icon and its label as one vertical stack. */
+.polotno-side-panel .polotno-side-panel-tab {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
+  gap: 5px !important;
+}
+.polotno-side-panel .polotno-side-panel-tab svg.ttc-lucide-sidebar-icon {
+  display: block !important;
+  flex: 0 0 20px !important;
+  align-self: center !important;
+  margin: 0 auto !important;
+}
