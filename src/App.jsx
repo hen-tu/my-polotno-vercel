@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Icon } from '@blueprintjs/core';
+import { FolderOpen, LayoutTemplate, Image, Type, Shapes, PanelsTopLeft, Upload, Layers } from 'lucide-react';
 import { createStore } from 'polotno/model/store';
 import { replaceGlobalFonts } from 'polotno/config';
 import {
@@ -154,21 +154,26 @@ console.log('Available section names:', DEFAULT_SECTIONS.map((s) => s.name));
 const getSectionByName = (name) =>
   DEFAULT_SECTIONS.find((s) => s.name === name);
 
-// The visible sidebar label comes from the section Tab component, not title.
-// Keep the internal section name as "photos" so store.openSidePanel still works.
-const photosSection = getSectionByName('photos');
-const ImagesTab = (props) => (
-  <SectionTab {...props} name="Images">
-    <Icon icon="media" size={20} />
+// Customize only the sidebar tabs; keep Polotno's section names and panels.
+// SectionTab handles the built-in selection, accessibility, and click behavior.
+const createLucideTab = (label, LucideIcon) => (props) => (
+  <SectionTab {...props} name={label}>
+    <LucideIcon className="ttc-lucide-sidebar-icon" size={20} strokeWidth={1.8} aria-hidden="true" />
   </SectionTab>
 );
-PhotosPanelWrapper.title = 'Images';
 
-const SavedTab = (props) => (
-  <SectionTab {...props} name="Saved">
-    <Icon icon="folder-close" size={20} />
-  </SectionTab>
-);
+const SavedTab = createLucideTab('Saved', FolderOpen);
+const TemplatesTab = createLucideTab('Templates', LayoutTemplate);
+const ImagesTab = createLucideTab('Images', Image);
+const TextTab = createLucideTab('Text', Type);
+const ElementsTab = createLucideTab('Elements', Shapes);
+const BackgroundTab = createLucideTab('Background', PanelsTopLeft);
+const UploadTab = createLucideTab('Uploads', Upload);
+const LayersTab = createLucideTab('Layers', Layers);
+
+// Keep the original internal "photos" name so programmatic navigation works.
+const photosSection = getSectionByName('photos');
+PhotosPanelWrapper.title = 'Images';
 
 // Wrap the built-in Elements panel so its search control can be styled and
 // the Tables, Lines, and Shapes section headings can be marked reliably.
@@ -238,6 +243,7 @@ const MY_SECTIONS = [
   {
     ...getSectionByName('templates'),
     title: 'My Templates',
+    Tab: TemplatesTab,
     Panel: TemplatesPanel,
   },
   {
@@ -248,22 +254,25 @@ const MY_SECTIONS = [
   },
   {
     ...getSectionByName('text'),
+    Tab: TextTab,
     Panel: MyTextPanel,
   },
   StyledElementsPanel
     ? {
         ...elementsSection,
         title: elementsSection.title || 'Elements',
+        Tab: ElementsTab,
         Panel: StyledElementsPanel,
       }
-    : elementsSection,
+    : (elementsSection ? { ...elementsSection, Tab: ElementsTab } : null),
   {
     ...getSectionByName('background'),
     title: 'Background',
+    Tab: BackgroundTab,
     Panel: BackgroundPanel,
   },
-  getSectionByName('upload'),
-  getSectionByName('layers'),
+  getSectionByName('upload') && { ...getSectionByName('upload'), Tab: UploadTab },
+  getSectionByName('layers') && { ...getSectionByName('layers'), Tab: LayersTab },
 ].filter(Boolean);
 
 export default function App() {

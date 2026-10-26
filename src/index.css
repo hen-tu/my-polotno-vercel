@@ -1795,3 +1795,20 @@ button.ttc-upload-add-file:focus-visible {
   letter-spacing: 0 !important;
   text-transform: none !important;
 }
+
+
+/* ======= LUCIDE SIDEBAR ICONS ======= */
+/* Limit the SVG overrides to the side navigation; no toolbar/icon changes. */
+.polotno-side-panel .polotno-side-panel-tab svg.ttc-lucide-sidebar-icon {
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
